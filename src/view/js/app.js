@@ -8,20 +8,20 @@ app.factory('socket', function(){
 app.config(function($routeProvider){
 	$routeProvider
 		.when('/',{
-			templateUrl: 'home.html'
+			templateUrl: './templates/home.html'
 		})
 		.when('/register',{
-			templateUrl: 'register.html'
+			templateUrl: './templates/register.html'
 		})
 		.when('/login',{
-			templateUrl: 'login.html'
+			templateUrl: './templates/login.html'
 		});
 
 });
 
 app.controller('syncController',function($scope,$http,socket){
 	$scope.syncData = [];
-	getAllData();
+	//getAllData();
 
 	/**
 	 * @description fetch the data from rethinkDB and render it
@@ -33,19 +33,18 @@ app.controller('syncController',function($scope,$http,socket){
 		}, function(err){});
 	 }
 
-	 // $$scope.updateVote = function(index) {
-  //   var data = {
-  //     "id" : $scope.pollData[index].id,
-  //     "option" : $scope.pollData[index].selected
-  //   };
-  //   $http.put("/polls",data).success(function(response) {
-  //     if(response.responseCode === 0) {
-  //       $scope.hiddenrows.push(index);
-  //     } else {
-  //       console.log("error");
-  //     }
-  //   });
-  // }
+	 	$scope.addNewData = function() {
+	 	var data = {"name" : $scope.syncData.name};
+	 	var message = {"title" : "", "message" : ""};
+
+		$http.post("/sync",data)
+			.then(function(response) {
+                $scope.data2Sync = "";
+                console.log("new data added");
+            }, function(err) {
+				console.log("error while adding new data");
+			});
+     }
 
 
 
