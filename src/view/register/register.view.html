@@ -1,36 +1,30 @@
-<link href="./templates/register/style.css" rel="stylesheet">
-
-<div class="container">
-    <div id="signup">
-        <div class="signup-screen">
-            <div class="space-bot text-center">
-                <h1>Sign up</h1>
-                <div class="divider"></div>
-            </div>
-            <form class="form-register" method="post" name="register" novalidate>
-                <div class="input-field col s6">
-                    <input id="device-name" type="text" class="validate" required>
-                    <label for="device-name">Device Name</label>
-                </div>
-                <div class="input-field col s6">
-                    <input id="email" type="email" name="email" ng-model="email" class="validate" required>
-                    <label for="email">Email</label>
-                </div>
-                <p class="alert alert-danger" ng-show="form-register.email.$error.email">Your email is invalid.</p>
-                <div class="input-field col s6">
-                    <input id="password" type="password" name="password" ng-model="password" ng-minlength='6' class="validate" required>
-                    <label for="password">Password</label>
-                </div>
-                <p class="alert alert-danger" ng-show="form-register.password.$error.minlength || form.password.$invalid">Your password must be at least 6 characters.</p>
-                <div class="space-top text-center">
-                    <button ng-disabled="form-register.$invalid" class="waves-effect waves-light btn done">
-                        <i class="material-icons left">done</i> Done
-                    </button>
-                    <button type="button" class="waves-effect waves-light btn cancel">
-                        <i class="material-icons left">clear</i>Cancel
-                    </button>
-                </div>
-            </form>
+<div class="col-md-6 col-md-offset-3">
+    <h2>Register</h2>
+    <form name="form" ng-submit="vm.register()" role="form">
+        <div class="form-group" ng-class="{ 'has-error': form.firstName.$dirty && form.firstName.$error.required }">
+            <label for="username">First name</label>
+            <input type="text" name="firstName" id="firstName" class="form-control" ng-model="vm.user.firstName" required />
+            <span ng-show="form.firstName.$dirty && form.firstName.$error.required" class="help-block">First name is required</span>
         </div>
-    </div>
+        <div class="form-group" ng-class="{ 'has-error': form.lastName.$dirty && form.lastName.$error.required }">
+            <label for="username">Last name</label>
+            <input type="text" name="lastName" id="Text1" class="form-control" ng-model="vm.user.lastName" required />
+            <span ng-show="form.lastName.$dirty && form.lastName.$error.required" class="help-block">Last name is required</span>
+        </div>
+        <div class="form-group" ng-class="{ 'has-error': form.username.$dirty && form.username.$error.required }">
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" class="form-control" ng-model="vm.user.username" required />
+            <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">Username is required</span>
+        </div>
+        <div class="form-group" ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" class="form-control" ng-model="vm.user.password" required />
+            <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" ng-disabled="form.$invalid || vm.dataLoading" class="btn btn-primary">Register</button>
+            <img ng-if="vm.dataLoading" src="../app-content/images/preloading.gif">
+            <a href="/login" class="btn btn-link">Cancel</a>
+        </div>
+    </form>
 </div>
