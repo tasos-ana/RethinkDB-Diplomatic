@@ -12,26 +12,23 @@
 
 html,
 body {
-    /*background-color: #fff;*/
     background-color: #252830;
     font-size: 15px;
     color: #565656;
     width: 100%;
+    min-height:100%;
     padding: 0;
     margin-left: 0;
     margin-right: 0;
     font-family: 'roboto', sans-serif;
     font-weight: 300;
-    /*background-image: url('../images/background.jpg');*/
-    /*background-repeat: no-repeat;*/
-    /*background-size: cover;*/
 }
 
 #navbarheader{
     width: 100%;
     height: 40px;
     background-color: #252830;
-    margin: 0px;
+    margin: 0;
 }
 
 #navbarheader-text{
@@ -47,12 +44,4 @@ body {
     height: 50px;
     margin: 0;
     padding: 0;
-}
-
-.group-container{
-    background-color: white;
-    width: 100%;
-    height: 80%;
-    margin-top: 200px;
-    size: auto;
 }

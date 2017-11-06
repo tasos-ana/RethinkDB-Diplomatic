@@ -25,6 +25,7 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname + '/view'));
 app.use(require('./controllers'));
 
+
 http.listen(3000, function(){
   console.log('listening on port 3000');
 });

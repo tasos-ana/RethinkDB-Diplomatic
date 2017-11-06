@@ -1,23 +1,27 @@
-var app = angular.module('starterApp', ['ngRoute', 'ngMessages']);
+var app = angular.module('starterApp', ['ngMaterial','ngRoute', 'ngMessages']);
 
 app.factory('socket', function(){
 	var socket = io.connect('http://localhost:3000')
 	return socket;
 });
 
-app.config(function($routeProvider){
-	$routeProvider
-		.when('/',{
-			templateUrl: './templates/home.html'
+app.config(
+	function($locationProvider,$routeProvider){
+		$locationProvider.html5Mode({enabled:true})
+		$routeProvider
+			.when('/',{
+				templateUrl: './templates/home.html'
+			})
+			.when('/register',{
+				templateUrl: './templates/register/register.html'
+			})
+			.when('/login',{
+				templateUrl: './templates/login.html'
+			}).
+			otherwise({
+				template: "Not Found"
 		})
-		.when('/register',{
-			templateUrl: './templates/register.html'
-		})
-		.when('/login',{
-			templateUrl: './templates/login.html'
-		});
-
-});
+	});
 
 app.controller('syncController',function($scope,$http,socket){
 	$scope.syncData = [];
