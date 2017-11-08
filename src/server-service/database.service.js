@@ -2,7 +2,7 @@
 var rethinkdb = require('rethinkdb');
 var async = require('async');
 
-class db {
+class DatabaseService {
     setupDb() {
         var self = this;
         async.waterfall([
@@ -17,20 +17,20 @@ class db {
             function(connection, callback) {
                 rethinkdb.dbCreate('pushUP').run(connection, function(err, result) {
                     if (err) {
-                        console.log("Database already created");
+                        console.log("Database with name'pushUP' already created");
                     } else {
-                        console.log("Created new database");
+                        console.log("Created new database with name 'pushUP'");
                     }
                     callback(null, connection);
                 });
             },
             function(connection, callback) {
-                rethinkdb.db('pushUP').tableCreate('table1').run(connection, function (err, result) {
+                rethinkdb.db('pushUP').tableCreate('accounts', {primaryKey: 'email'}).run(connection, function (err, result) {
                     connection.close();
                     if (err) {
-                        console.log("table already created");
+                        console.log("table with name 'accounts' already created");
                     } else {
-                        console.log("Created new table");
+                        console.log("Created new table with name 'accounts'");
                     }
                     callback(null, "Database is setup successfully");
                 });
@@ -60,4 +60,4 @@ class db {
   }
 }
 
-module.exports = db;
+module.exports = DatabaseService;

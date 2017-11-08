@@ -15,7 +15,7 @@
             vm.dataLoading = true;
             UserService.Create(vm.user)
                 .then(function (response) {
-                    if (response.success) {
+                    if (!response.responseCode) {
                         FlashService.Success('Registration successful', true);
                         $location.path('/login');
                     } else {

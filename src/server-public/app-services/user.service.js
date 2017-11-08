@@ -15,6 +15,7 @@
 
         return service;
 
+        // private functions
 
         function GetById(id) {
             return $http.get('/api/users/' + id).then(handleSuccess, handleError('Error getting user by id'));
@@ -25,11 +26,8 @@
         }
 
         function Create(user) {
-            return $http.post('/api/users', user).then(handleSuccess, handleError('Error creating user'));
+            return $http.post('/account', user).then(handleSuccess, handleError('Error creating user'));
         }
-
-
-        // private functions
 
         function handleSuccess(res) {
             return res.data;

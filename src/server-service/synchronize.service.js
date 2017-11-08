@@ -4,7 +4,8 @@ var rethinkdb = require('rethinkdb');
 var db = require('./database.service');
 var async = require('async');
 
-class sync {
+//TODO refactor on API
+class synchronize {
 	addNewData(dataSet,callback) {
 		async.waterfall([
 			function(callback){
@@ -64,4 +65,4 @@ class sync {
 }
 
 
-module.exports = sync;
+module.exports = synchronize;
