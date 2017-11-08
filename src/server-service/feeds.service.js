@@ -1,5 +1,5 @@
 var rethinkdb = require('rethinkdb');
-var db = require('./db');
+var db = require('./database.service');
 var r = new db();
 
 module.exports = function(socket){
