@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 //require model file
-var syncModel = require('../models/sync');
+var syncModel = require('../server-service/synchronize.service');
 
 router.route('/')
   .get(function(req,res) {
