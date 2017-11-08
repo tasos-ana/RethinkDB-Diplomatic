@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 
 var index = require('./server-routes/index.route');
 // var accounts = require('./server-routes/accounts.route');
-// var sync = require('./server-routes/synchronize.route');
+var sync = require('./server-routes/synchronize.route');
 
 var app = express();
 
@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'server-public')));
 
 app.use('/', index);
 // app.use('/account', accounts);
-// app.use('/sync', sync);
+app.use('/sync', sync);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
