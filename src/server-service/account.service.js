@@ -37,8 +37,32 @@ class AccountService {
         });
     }
 
-    authenticate(username, password , callback) {
-
+    authenticate(details, callback) {
+        async.waterfall([
+            function (callback) {
+                new db().connectToDb(function (err,connection) {
+                   if(err){
+                       return callback(true, 'Error connecting to database');
+                   }
+                   callback(null, connection);
+                });
+            },
+            function (connection, callback) {
+                rethinkdb.table('accounts').get(details.email)
+                    .run(connection,function (err,result) {
+                        connection.close();
+                        if(err){
+                            return callback(true, 'Error happens while getting user details');
+                        }
+                        if(result.password !== details.password){
+                            return callback(true, 'Email or password its wrong');
+                        }
+                        callback(null,result);
+                    });
+            }
+        ], function (err,data) {
+            callback(err === null ? false : true, data);
+        });
     }
 }
 

@@ -26,7 +26,7 @@
         }
 
         function Create(user) {
-            return $http.post('/account', user).then(handleSuccess, handleError('Error creating user'));
+            return $http.post('/account/create', user).then(handleSuccess, handleError('Error creating user'));
         }
 
         function handleSuccess(res) {

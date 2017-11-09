@@ -18,16 +18,19 @@
 
         function login() {
             vm.dataLoading = true;
-            AuthenticationService.Login(vm.username, vm.password, function (response) {
-                if (response.success) {
-                    AuthenticationService.SetCredentials(vm.username, vm.password);
-                    $location.path('/');
-                } else {
-                    FlashService.Error(response.message);
-                    vm.dataLoading = false;
-                }
+            AuthenticationService.Login(vm.email, vm.password)
+                .then(function (response) {
+                    if (response.success) {
+                        AuthenticationService.SetCredentials(vm.email, vm.password);
+                        vm.user = response.data;
+                        vm.dataLoading = false;
+                        $location.path('/home');
+                    } else {
+                        FlashService.Error(response.message);
+                        vm.dataLoading = false;
+                    }
             });
-        };
+        }
     }
 
 })();

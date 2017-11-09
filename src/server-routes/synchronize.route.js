@@ -10,9 +10,9 @@ router.route('/')
         // Calling our model function
         dataObject.getAllData(function(err,responseData){
             if(err) {
-                return res.json({"responseCode" : 1, "responseDesc" : responseData});
+                return res.json({"success" : false, "message" : responseData});
             }
-            res.json({"responseCode" : 0, "responseDesc" : "Success", "data" : responseData});
+            res.json({"success" : true, "message" : "Success", "data" : responseData});
         });
     })
     .post(function(req,res) {
@@ -21,9 +21,9 @@ router.route('/')
         // Calling our model function
         dataObject.addNewData(req.body, function(err,responseData){
             if(err){
-                return res.json({"responseCode" : 1, "responseDesc" : responseData});
+                return res.json({"success" : false, "message" : responseData});
             }
-            res.json({"responseCode" : 0, "responseDesc" : "Success", "data" : responseData});
+            res.json({"success" : true, "message" : "Success", "data" : responseData});
         });
     });
 
