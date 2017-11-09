@@ -1,22 +1,14 @@
 var express = require('express');
 var router = express.Router();
+var path = require('path');
 
-/* GET home page. */
 
-router.get('/home', function (req,res) {
-    res.redirect("http://localhost:3000/#!/home");
-});
+// serve angular front end files from root path
+router.use('/', express.static('server-public', { redirect: false }));
 
-router.get('/login', function (req,res) {
-    res.redirect("http://localhost:3000/#!/login");
-});
-
-router.get('/register', function (req,res) {
-    res.redirect("http://localhost:3000/#!/register");
-});
-
-router.get('/about', function (req,res) {
-    res.redirect("http://localhost:3000/#!/about");
+// rewrite virtual urls to angular app to enable refreshing of internal pages
+router.get('*', function (req, res, next) {
+    res.sendFile(path.resolve('server-public/index.html'));
 });
 
 module.exports = router;

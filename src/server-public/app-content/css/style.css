@@ -71,3 +71,14 @@ body {
     vertical-align: middle;  /* vertical alignment of the inline element */
     font: 16px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;        /* <-- reset the font property */
 }
+
+/* Title */
+
+h2 {
+    color: white;
+    font-family: 'Roboto';
+    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 25px;
+    text-align: center;
+}

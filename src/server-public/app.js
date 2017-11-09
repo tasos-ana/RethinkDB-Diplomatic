@@ -1,13 +1,13 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngMaterial','ngMessages','ngRoute','ngCookies'])
+        .module('starterApp',['ngRoute','ngCookies'])
         .config(config)
         .run(run);
 
     config.$inject = ['$routeProvider', '$locationProvider'];
     function config($routeProvider, $locationProvider) {
-
+        $locationProvider.html5Mode(true);
         $routeProvider
             .when('/',{
                 templateUrl: './app-view/welcome/welcome.view.html'
@@ -45,6 +45,9 @@
             var loggedIn = $rootScope.globals.currentUser;
             if (!validPage && !loggedIn) {
                 $location.path('/login');
+            }
+            if(loggedIn){
+                $location.path('/home');
             }
         });
     }
