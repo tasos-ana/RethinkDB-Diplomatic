@@ -1,12 +1,16 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngRoute','ngCookies'])
+        .module('starterApp',['ngMaterial','ngRoute','ngCookies'])
         .config(config)
         .run(run);
 
-    config.$inject = ['$routeProvider', '$locationProvider'];
-    function config($routeProvider, $locationProvider) {
+    config.$inject = ['$mdThemingProvider','$routeProvider', '$locationProvider'];
+    function config($mdThemingProvider,$routeProvider, $locationProvider) {
+        $mdThemingProvider.theme('default')
+            .primaryPalette('lime')
+            .accentPalette('cyan')
+            .dark();
         $locationProvider.html5Mode(true);
         $routeProvider
             .when('/',{
@@ -31,15 +35,29 @@
             .otherwise({redirectTo: '/'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies", "$http"];
-    function run($rootScope, $location, $cookies, $http) {
+    run.$inject = ['$rootScope', '$location', "$cookies", "$http",'$mdSidenav'];
+    function run($rootScope, $location, $cookies, $http,$mdSidenav) {
+        /*
+            Side bar
+         */
+        $rootScope.toggleLeft = buildToggler('left');
+        $rootScope.toggleRight = buildToggler('right');
+
+        function buildToggler(componentId) {
+            return function () {
+                $mdSidenav(componentId).toggle();
+            };
+        }
+        var p =  $location.path();
+        if(p === '/') p ='/Home'
+        $rootScope.pageName = p.split('/')[1];
         // keep user logged in after page refresh
         $rootScope.globals = $cookies.getObject('globals') || {};
         if ($rootScope.globals.currentUser) {
             $http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata;
         }
 
-        $rootScope.$on('$locationChangeStart', function (event, next, current) {
+        $rootScope.$on('$routeChangeSuccess','$locationChangeStart', function (event, next, current) {
             // redirect to login page if not logged in and trying to access a restricted page
             var validPage = $.inArray($location.path(), ['/home']) === -1;
             var loggedIn = $rootScope.globals.currentUser;
