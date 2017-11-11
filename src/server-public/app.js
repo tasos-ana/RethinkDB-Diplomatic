@@ -7,6 +7,12 @@
 
     config.$inject = ['$mdThemingProvider','$routeProvider', '$locationProvider'];
     function config($mdThemingProvider,$routeProvider, $locationProvider) {
+        // Configure a dark theme with primary foreground lime
+        $mdThemingProvider.theme('docs-dark', 'default')
+            .primaryPalette('lime')
+            .accentPalette('cyan')
+            .dark();
+
         $mdThemingProvider.theme('default')
             .primaryPalette('lime')
             .accentPalette('cyan')
