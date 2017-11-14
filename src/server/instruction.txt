@@ -1,0 +1,5 @@
+   install dependencies:
+     $ cd server && npm install
+
+   run the app:
+     $ DEBUG=pushup-refactoring:* npm start
