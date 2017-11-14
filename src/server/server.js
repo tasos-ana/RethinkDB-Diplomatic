@@ -4,7 +4,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var config = require('./config');
-var accounts = require('./lib/services/account');
+var accounts = require('./lib/routes/account');
 
 var app = express();
 

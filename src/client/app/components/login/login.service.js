@@ -3,24 +3,24 @@
 
     angular
         .module('starterApp')
-        .factory('AuthenticationService', AuthenticationService);
+        .factory('loginService', loginService);
 
-    AuthenticationService.$inject = ['$http', '$cookies', '$rootScope', '$timeout'];
-    function AuthenticationService($http, $cookies, $rootScope, $timeout) {
+    loginService.$inject = ['$http', '$cookies', '$rootScope'];
+    function loginService($http, $cookies, $rootScope) {
         var service = {};
 
-        service.Login = Login;
-        service.SetCredentials = SetCredentials;
-        service.ClearCredentials = ClearCredentials;
+        service.login = login;
+        service.setCredentials = setCredentials;
+        service.clearCredentials = clearCredentials;
 
         return service;
 
-        function Login(email, password) {
-            return $http.post('/account/authenticate', { email: email, password: password })
+        function login(email, password) {
+            return $http.post('/account/login', { email: email, password: password })
                 .then(handleSuccess,handleError('Error at user login'));
         }
 
-        function SetCredentials(email, password) {
+        function setCredentials(email, password) {
             var authdata = Base64.encode(email + ':' + password);
 
             $rootScope.globals = {
@@ -39,7 +39,7 @@
             $cookies.putObject('globals', $rootScope.globals, { expires: cookieExp });
         }
 
-        function ClearCredentials() {
+        function clearCredentials() {
             $rootScope.globals = {};
             $cookies.remove('globals');
             $http.defaults.headers.common.Authorization = 'Basic';

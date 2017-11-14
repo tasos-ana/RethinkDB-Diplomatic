@@ -7,7 +7,7 @@
 var app = require('../server');
 var debug = require('debug')('pushup-refactoring:server');
 var http = require('http');
-var db = require('../lib/services/database');
+var db = require('../lib/services/database.service');
 
 /**
  * Get port from environment and store in Express.

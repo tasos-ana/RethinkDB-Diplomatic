@@ -1,17 +1,18 @@
 'use strict';
 
 var rethinkdb = require('rethinkdb');
-var db = require('./database');
+var db = require('./database.service');
 var async = require('async');
+var debug = require('debug')('pushup-refactoring:server');
 
 class AccountService {
 
-    //TODO na ginei encrypt o kwdikos
     create(details, callback) {
         async.waterfall([
             function (callback) {
                 new db().connectToDb(function(err,connection) {
                     if(err){
+                        debug('Error at \'account.service:create\': connecting to database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null,connection);
@@ -19,7 +20,6 @@ class AccountService {
             },
             function(connection,callback) {
                 rethinkdb.table('accounts').insert({
-                    'deviceID' : [details.deviceID],
                     'nickname' : details.nickname,
                     'email'    : details.email,
                     'password' : details.password,
@@ -27,8 +27,11 @@ class AccountService {
                 }).run(connection,function(err,result){
                     connection.close();
                     if(err){
+                        debug('Error at \'account.service:create\': while creating new account email{' + details.email + '}');
                         return callback(true, 'Error happens while creating new account');
                     }
+                    debug('Add user: ' + details.email);
+                    debug('DB results' + result);
                     callback(null, result);
                 });
             }
@@ -42,6 +45,7 @@ class AccountService {
             function (callback) {
                 new db().connectToDb(function (err,connection) {
                     if(err){
+                        debug('Error at \'account.service:authenticate\': connecting to database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null, connection);
@@ -52,18 +56,27 @@ class AccountService {
                     .run(connection,function (err,result) {
                         connection.close();
                         if(err){
+                            debug('Error at \'account.service:authenticate\': cant get user with email \'' + details.email +'\'');
                             return callback(true, 'Error happens while getting user details');
                         }
-                        if(result.password !== details.password){
-                            return callback(true, 'Email or password its wrong');
+                        if(details.password !== null){
+                            if(result === null || result.password !== details.password){
+                                return callback(true, 'Email or password its wrong');
+                            }
+                            callback(null,{"nickname":result.nickname, "groupsID":result.groupsID});
+                        }else{
+                            if(result !== null){
+                                debug('validateEmail: email \'' + details.email + '\' already exists');
+                            }
+                            callback(null,{"nickname": "", "groupsID": ""});
                         }
-                        callback(null,result);
                     });
             }
         ], function (err,data) {
             callback(err === null ? false : true, data);
         });
     }
+
 }
 
 module.exports = AccountService;

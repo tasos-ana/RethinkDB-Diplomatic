@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngMaterial','ngRoute','ngCookies','ngMessages','validation.match'])
+        .module('starterApp',['ngMaterial','ngRoute','ngCookies','ngMessages','validation.match','angular-md5'])
         .config(config)
         .run(run);
 
@@ -42,8 +42,8 @@
             }).otherwise({redirectTo: '/home'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies", "$http",'$mdSidenav'];
-    function run($rootScope, $location, $cookies, $http,$mdSidenav) {
+    run.$inject = ['$rootScope', '$location', "$cookies", "$http",'$mdSidenav','$mdDialog'];
+    function run($rootScope, $location, $cookies, $http, $mdSidenav, $mdDialog) {
         /*
             Side bar
          */
@@ -75,9 +75,6 @@
             );
         };
 
-
-        $rootScope.loginStatus = false;
-
         // keep user logged in after page refresh
         $rootScope.globals = $cookies.getObject('globals') || {};
         if ($rootScope.globals.currentUser) {
@@ -88,9 +85,9 @@
             $rootScope.pageName = $location.path().split('/')[1];
             var loggedIn = $rootScope.globals.currentUser;
             if(loggedIn){
+                $rootScope.loginStatus = true;
                 var restrictedPage = $.inArray($location.path(), ['/home','/register']) !==  -1;
                 if(restrictedPage) {
-                    $rootScope.loginStatus = true;
                     $location.path('/dashboard');
                 }
             }else{
