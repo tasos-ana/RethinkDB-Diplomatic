@@ -55,7 +55,7 @@
             if(valid){
                 registerService.userByEmail(vm.user.email)
                     .then(function (response) {
-                       vm.emailExists = !response.success;
+                       vm.emailExists = response.success;
                     });
             }
         }

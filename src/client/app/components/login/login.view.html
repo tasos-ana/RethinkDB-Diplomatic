@@ -1,28 +1,31 @@
-<md-content layout-padding>
-    <form name="loginForm" ng-submit="vm.login($event)" role="form">
-        <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
-            <div layout="column">
-                <md-input-container>
-                    <label>Email</label>
-                    <input ng-disabled="vm.dataLoading" name='email' ng-model="vm.email" type='email' required>
-                    <div ng-messages="loginForm.email.$error">
-                        <div ng-message="required">This is required.</div>
-                    </div>
-                </md-input-container>
+<div layout="column" layout-align="top center">
+    <md-content layout-padding>
+        <form name="loginForm" ng-submit="vm.login($event)" role="form">
+            <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
+                <div layout="column">
+                    <md-input-container>
+                        <label>Email</label>
+                        <input ng-disabled="vm.dataLoading" name='email' ng-model="vm.email" type='email' required>
+                        <div ng-messages="loginForm.email.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
 
-                <md-input-container>
-                    <label>Password</label>
-                    <input ng-disabled="vm.dataLoading" name='password' ng-model="vm.password" type="password" required>
-                    <div ng-messages="loginForm.password.$error">
-                        <div ng-message="required">This is required.</div>
+                    <md-input-container>
+                        <label>Password</label>
+                        <input ng-disabled="vm.dataLoading" name='password' ng-model="vm.password" type="password" required>
+                        <div ng-messages="loginForm.password.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+                    <div layout="row">
+                        <md-button ng-disabled="vm.dataLoading" type="submit" class="md-accent">Login</md-button>
+                        <md-button ng-disabled="vm.dataLoading" type="reset" class="md-warn">Clear</md-button>
+                        <md-progress-circular ng-hide="!vm.dataLoading" class="md-primary" md-diameter="30px"></md-progress-circular>
                     </div>
-                </md-input-container>
-                <div layout="row">
-                    <md-button ng-disabled="vm.dataLoading" type="submit" class="md-accent">Login</md-button>
-                    <md-button ng-disabled="vm.dataLoading" type="reset" class="md-warn">Clear</md-button>
-                    <md-progress-circular ng-hide="!vm.dataLoading" class="md-primary" md-diameter="30px"></md-progress-circular>
                 </div>
-            </div>
-        </md-content>
-    </form>
-</md-content>
+            </md-content>
+        </form>
+    </md-content>
+</div>
+

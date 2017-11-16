@@ -25,7 +25,7 @@ router.route('/login')
 
 router.route('/user/:email')
     .get(function (req,res) {
-       new accountService().authenticate({"email": req.params.email, "password": null}, function (err,responseData) {
+       new accountService().getAccount(req.params.email, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

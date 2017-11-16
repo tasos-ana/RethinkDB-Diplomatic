@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var config = require('./config');
 var accounts = require('./lib/routes/account');
+var sync = require('./lib/routes/synchronize');
 
 var app = express();
 
@@ -18,6 +19,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/account', accounts);
+app.use('/sync', sync);
 
 require('./lib/routes/static').addRoutes(app, config);
 require('./lib/routes/appFile').addRoutes(app, config);

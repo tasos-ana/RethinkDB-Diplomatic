@@ -59,23 +59,47 @@ class AccountService {
                             debug('Error at \'account.service:authenticate\': cant get user with email \'' + details.email +'\'');
                             return callback(true, 'Error happens while getting user details');
                         }
-                        if(details.password !== null){
                             if(result === null || result.password !== details.password){
                                 return callback(true, 'Email or password its wrong');
                             }
-                            callback(null,{"nickname":result.nickname, "groupsID":result.groupsID});
-                        }else{
-                            if(result !== null){
-                                debug('validateEmail: email \'' + details.email + '\' already exists');
-                            }
-                            callback(null,{"nickname": "", "groupsID": ""});
-                        }
+                            callback(null,{"email": result.email, "nickname":result.nickname, "groupsID":result.groupsID});
                     });
             }
         ], function (err,data) {
             callback(err === null ? false : true, data);
         });
     }
+
+    getAccount(email, callback){
+        async.waterfall([
+            function (callback) {
+                new db().connectToDb(function (err,connection) {
+                    if(err){
+                        debug('Error at \'account.service:existsEmail\': connecting to database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            function (connection, callback) {
+                rethinkdb.table('accounts').get(email)
+                    .run(connection,function (err,result) {
+                        connection.close();
+                        if(err){
+                            debug('Error at \'account.service:existsEmail\': cant get user with email \'' + details.email +'\'');
+                            return callback(true, 'Error happens while getting user details');
+                        }
+                        if(result === null){
+                            return callback(true,'Email do not exists');
+                        }
+                        callback(null,{"email": result.email, "nickname":result.nickname, "groupsID":result.groupsID});
+                    });
+            }
+        ], function (err,data) {
+            callback(err === null ? false : true, data);
+        });
+    }
+
 
 }
 
