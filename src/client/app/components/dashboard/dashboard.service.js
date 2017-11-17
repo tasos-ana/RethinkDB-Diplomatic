@@ -11,6 +11,7 @@
 
         service.userByEmail = userByEmail;
         service.pushData = pushData;
+        service.getData = getData;
 
         return service;
 
@@ -20,9 +21,12 @@
         }
 
         function pushData(data) {
-            return $http.post('/sync/push',data).then(handleSuccess,handleError('Cant push data'));
+            return $http.post('/sync/push', data).then(handleSuccess,handleError('Cant push data'));
         }
 
+        function getData(table) {
+            return $http.get('sync/get/' + table).then(handleSuccess,handleError('Cant retrieve data from table:' + table));
+        }
 
         function handleSuccess(res) {
             return res.data;

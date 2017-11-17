@@ -13,4 +13,14 @@ router.route('/push')
         });
     });
 
+router.route('/get/:table')
+    .get(function (req,res) {
+        new syncService().get(req.params.table , function (err,responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 module.exports = router;
