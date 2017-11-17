@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('registerService', registerService);
 
-    registerService.$inject = ['$http'];
-    function registerService($http) {
+    registerService.$inject = ['$http','md5'];
+    function registerService($http, md5) {
         var service = {};
 
         service.userByEmail = userByEmail;
@@ -20,6 +20,7 @@
         }
 
         function create(user) {
+            user.password = md5.createHash(user.password || '');
             return $http.post('/account/create', user).then(handleSuccess, handleError('Error creating user'));
         }
 

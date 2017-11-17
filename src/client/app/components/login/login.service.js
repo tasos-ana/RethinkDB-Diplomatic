@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('loginService', loginService);
 
-    loginService.$inject = ['$http', '$cookies', '$rootScope'];
-    function loginService($http, $cookies, $rootScope) {
+    loginService.$inject = ['$http', '$cookies', '$rootScope','md5'];
+    function loginService($http, $cookies, $rootScope, md5) {
         var service = {};
 
         service.login = login;
@@ -16,6 +16,7 @@
         return service;
 
         function login(email, password) {
+            password = md5.createHash(password);
             return $http.post('/account/login', { email: email, password: password })
                 .then(handleSuccess,handleError('Error at user login'));
         }

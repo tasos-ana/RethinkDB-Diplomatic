@@ -19,12 +19,11 @@
         })();
 
         function login(ev) {
-            vm.password = md5.createHash(vm.password);
             vm.dataLoading = true;
             loginService.login(vm.email, vm.password)
                 .then(function (response) {
                     if (response.success) {
-                        loginService.setCredentials(vm.email, vm.password);
+                        loginService.setCredentials(vm.email, md5.createHash(vm.password));
                         $rootScope.user = response.data;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;

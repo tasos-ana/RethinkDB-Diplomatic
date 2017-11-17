@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$scope', '$location', 'registerService','md5'];
-    function RegisterController($rootScope,$scope, $location, registerService, md5) {
+    RegisterController.$inject = ['$rootScope', '$scope', '$location', 'registerService'];
+    function RegisterController($rootScope,$scope, $location, registerService) {
         var vm = this;
 
         vm.register = register;
@@ -25,7 +25,6 @@
                     'Got it');
             }else{
                 vm.dataLoading = true;
-                vm.user.password = md5.createHash(vm.user.password || '');
                 registerService.create(vm.user)
                     .then(function (response) {
                         if (response.success) {
