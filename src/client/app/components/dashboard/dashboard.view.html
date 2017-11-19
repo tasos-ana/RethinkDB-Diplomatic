@@ -45,7 +45,7 @@
                         <md-content>
                             <h3 ng-if="gID.data.length===0" align="center"> Nothing pushUPed yet.</h3>
                             <md-list layout-padding id="dataList" ng-if="gID.data.length!==0">
-                                <md-list-item class="md-2-line" ng-repeat="gData in gID.data">
+                                <md-list-item class="md-2-line" ng-repeat="gData in gID.data | reverse">
                                     <div class="md-list-item-text">
                                         <p style="color: gray; font-size: 10px; font-style: italic;">{{gData.date}}</p>
                                         <p style="font-size: 19px; color: white;">{{gData.data}}</p>
