@@ -15,6 +15,7 @@
         (function initController() {
             // reset login status
             $rootScope.loginStatus = false;
+            $rootScope.user = undefined;
             loginService.clearCredentials();
         })();
 
@@ -27,6 +28,7 @@
                         $rootScope.user = response.data;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
+                        $rootScope.dataLoading = true;
                         $location.path('/dashboard');
                     } else {
                         vm.dataLoading = false;
