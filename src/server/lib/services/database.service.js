@@ -86,6 +86,39 @@ class database {
         });
     }
 
+    validSocket(table,callback){
+        var self = this;
+        async.waterfall([
+            function (callback) {
+                self.connectToDb(function (err,connection) {
+                    if(err){
+                        debug('Error at \'database.service:validSocket\': connecting to database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            function (connection, callback) {
+                rethinkdb.table('sockets').get(table).update({enabled : true})
+                    .run(connection,function (err,result) {
+                        connection.close();
+                        if(err){
+                            debug('Error at \'database.service:validSocket\': cant update socket \'' + table +'\'');
+                            return callback(true, 'Error happens while updating socket flag');
+                        }
+                        var ret = false;
+                        if(result.unchanged === 1){
+                            ret = true;
+                        }
+                        callback(null,ret);
+                    });
+            }
+        ], function (err,data) {
+            callback(err === null ? false : true, data);
+        });
+    }
+
+
     connectToRethinkDbServer(callback) {
         rethinkdb.connect({
             host : config.db.host,

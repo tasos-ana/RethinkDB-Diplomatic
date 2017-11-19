@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$scope', '$location', 'dashboardService','socketService'];
-    function DashboardController($rootScope,$scope, $location, dashboardService, socketService) {
+    DashboardController.$inject = ['$rootScope', '$location', 'dashboardService','socketService'];
+    function DashboardController($rootScope, $location, dashboardService, socketService) {
         var vm = this;
 
         initController();
@@ -75,26 +75,39 @@
 
         function getAllData() {
             for (var index = 0; index< $rootScope.user.groups.length; ++index){
-                dashboardService.getData($rootScope.user.groups[index].id,index).then(function (response) {
-                    var index = 0;
+                dashboardService.getData($rootScope.user.groups[index].id).then(function (response) {
+                    const i = 0;
                     if(response.success){
-                        $rootScope.user.groups[index].data = response.data;
-                        $rootScope.user.groups[index].upload = {
+                        $rootScope.user.groups[i].data = response.data;
+                        $rootScope.user.groups[i].upload = {
                             data    : '',
                             type    : '',
                             time    : '',
                             table   : ''
                         };
-                        configureAllDates(index);
+                        configureAllDates(i);
                     }else{
-                        $rootScope.user.groups[index] += { data : undefined };
-                        console.log('cant retrieve data from table: ' + $rootScope.user.groups[index].id);
+                        $rootScope.user.groups[i] += { data : undefined };
+                        console.log('cant retrieve data from table: ' + $rootScope.user.groups[i].id);
                     }
-                    if(index === ($rootScope.user.groups.length-1)){
+                    if(i === ($rootScope.user.groups.length-1)){
                         $rootScope.dataLoading = false;
                     }
                 });
             }
+
+            socketService.emit($rootScope.user.groups[0].id);
+
+            //TODO na dw ean doulevei me $scope anti rootscope
+            socketService.on($rootScope.user.groups[0].id, function (data) {
+                $rootScope.$apply(function () {
+                    data.date = configureDate(new Date(), new Date(data.time));
+                    $rootScope.user.groups[0].data[$rootScope.user.groups[0].data.length] = data;
+                    console.log($rootScope.user.groups[0]);
+                });
+            });
+
+
         }
 
 
@@ -127,5 +140,6 @@
 
             return dateAsString;
         }
+
     }
 })();

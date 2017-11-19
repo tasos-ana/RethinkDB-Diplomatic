@@ -159,10 +159,24 @@ class AccountService {
                                     debug('Error at \'account.service:addGroup\' while update user group');
                                     return callback(true, 'Error while update user group');
                                 }
-                                connection.close();
-                                callback(null,data2return);
                            });
                         });
+
+
+                    /** 4th
+                     * Add group on sockets table with enabled : false
+                     */
+                    rethinkdb.table('sockets').insert({
+                        'id'        : data2return.id,
+                        'enabled'    : false
+                    }).run(connection,function (err,result) {
+                        if(err){
+                            debug('Error at \'account.service:addGroup\': while adding group{' + details.group + '} on sockets');
+                            return callback(true, 'Error happens while adding group on sockets');
+                        }
+                        connection.close();
+                        callback(null,data2return);
+                    });
                 });
             }
         ], function (err,data) {
