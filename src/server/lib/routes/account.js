@@ -33,4 +33,14 @@ router.route('/user/:email')
        });
     });
 
+router.route('/user/newGroup')
+    .post(function (req,res) {
+        new accountService().addGroup(req.body, function (err,responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 module.exports = router;
