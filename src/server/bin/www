@@ -7,17 +7,19 @@
 var app = require('../server');
 var debug = require('debug')('pushup-refactoring:server');
 var http = require('http');
+var config = require('../config')
 var db = require('../lib/services/database.service');
+
+
+var defaultPort = config.server.listenPort;
+var defaultAddress = config.server.listenAddress;
 
 /**
  * Get port from environment and store in Express.
  */
-
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || defaultPort);
 app.set('port', port);
 
-var address = '192.168.10.5';
-// var address = '147.52.151.55';
 /**
  * Create HTTP server.
  */
@@ -28,7 +30,7 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port,address);
+server.listen(port, defaultAddress);
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -80,15 +82,22 @@ function onError(error) {
   }
 }
 
+var io = require('socket.io').listen(server);
+var feed;
+
+io.on('connection',function (socket) {
+    feed = require('../lib/services/feeds.service')(socket);
+});
+
 /**
  * Event listener for HTTP server "listening" event.
  */
 
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  new db().setupDb('accounts','email');
-  debug('Listening on address ' + address +" at " + bind);
+    var addr = server.address();
+    var bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+    new db().initDb();
+    debug('Listening on address ' + defaultAddress + " at " + bind);
 }
