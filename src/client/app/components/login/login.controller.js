@@ -16,6 +16,7 @@
             // reset login status
             $rootScope.loginStatus = false;
             $rootScope.user = undefined;
+            //TODO na ginontai disable ola ta socket tou user
             loginService.clearCredentials();
         })();
 
