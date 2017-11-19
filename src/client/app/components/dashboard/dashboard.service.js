@@ -5,6 +5,7 @@
     angular
         .module('starterApp')
         .factory('dashboardService', dashboardService)
+        .filter('reverse',reverse)
         .factory('socketService', socketService);
 
     dashboardService.$inject = ['$http'];
@@ -51,6 +52,16 @@
         }
     }
 
+    reverse.$inject =[];
+    function reverse() {
+        return function(items) {
+            if(typeof items === 'undefined') { return; }
+            return angular.isArray(items) ?
+                items.slice().reverse() : // If it is an array, split and reverse it
+                (items + '').split('').reverse().join(''); // else make it a string (if it isn't already), and reverse it
+        };
+    }
+
     socketService.$inject = [];
     function socketService() {
             var socket = io();
@@ -61,6 +72,9 @@
                 },
                 emit: function (table) {
                     socket.emit('feed', table);
+                },
+                disconnect: function () {
+                    socket.disconnect();
                 }
             };
     }

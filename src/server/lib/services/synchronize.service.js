@@ -51,7 +51,7 @@ class SynchronizeService {
                 });
             },
             function(connection,callback) {
-                rethinkdb.table(table).orderBy(rethinkdb.desc("time"))
+                rethinkdb.table(table).orderBy("time")
                     .run(connection,function (err,cursor) {
                     connection.close();
                     if(err){
