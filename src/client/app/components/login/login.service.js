@@ -21,6 +21,11 @@
                 .then(handleSuccess,handleError('Error at user login'));
         }
 
+        function logout(email) {
+            return $http.post('/account/logout', {email:email})
+                .then(handleSuccess,handleError('Error at user logout'));
+        }
+
         function setCredentials(email, password) {
             var authdata = Base64.encode(email + ':' + password);
 
@@ -41,9 +46,21 @@
         }
 
         function clearCredentials() {
-            $rootScope.globals = {};
-            $cookies.remove('globals');
-            $http.defaults.headers.common.Authorization = 'Basic';
+            if($rootScope.globals.currentUser !== undefined) {
+                logout($rootScope.globals.currentUser.email)
+                    .then(function (response) {
+                        if (!response.success) {
+                            console.log('error while logout check it');
+                        }
+                        $rootScope.globals = {};
+                        $cookies.remove('globals');
+                        $http.defaults.headers.common.Authorization = 'Basic';
+                    });
+            }else{
+                $rootScope.globals = {};
+                $cookies.remove('globals');
+                $http.defaults.headers.common.Authorization = 'Basic';
+            }
         }
 
         function handleSuccess(res) {

@@ -12,6 +12,7 @@ var db = require('../lib/services/database.service');
 
 
 var defaultPort = config.server.listenPort;
+//TODO change on normal
 var defaultAddress = config.server.listenAddress;
 
 /**

@@ -15,7 +15,7 @@ router.route('/create')
 
 router.route('/login')
     .post(function (req,res) {
-        new accountService().authenticate(req.body, function (err,responseData) {
+        new accountService().getAccount(req.body, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -23,9 +23,19 @@ router.route('/login')
         });
     });
 
-router.route('/user/:email')
-    .get(function (req,res) {
-       new accountService().getAccount(req.params.email, function (err,responseData) {
+router.route('/logout')
+    .post(function (req,res) {
+        new accountService().logout(req.body.email, function (err,responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/user')
+    .post(function (req,res) {
+       new accountService().getAccount({email : req.body.email, password : null}, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
