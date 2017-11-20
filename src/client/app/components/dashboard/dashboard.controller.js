@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'dashboardService','socketService'];
-    function DashboardController($rootScope, $location, dashboardService, socketService) {
+    DashboardController.$inject = ['$rootScope', '$location', 'dashboardService','socketService','$timeout'];
+    function DashboardController($rootScope, $location, dashboardService, socketService, $timeout) {
         var vm = this;
 
         initController();
@@ -16,19 +16,81 @@
 
         function initController() {
             $rootScope.dataLoading = true;
-            dashboardService.userByEmail($rootScope.globals.currentUser.email)
-                .then(function (response) {
-                    if(response.success){
-                        $rootScope.user = response.data;
-                        if($rootScope.user.groups.length>0){
-                            getAllData();
+            if($rootScope.user === undefined || $rootScope.user ===null){
+                dashboardService.userByEmail($rootScope.globals.currentUser.email)
+                    .then(function (response) {
+                        if(response.success){
+                            console.log(response);
+                            $rootScope.user = response.data;
+                            prepareGroups();
                         }else{
-                            $rootScope.dataLoading = false;
+                            $location.path('/login');
                         }
-                    }else{
-                        $location.path('/login');
-                    }
+                        $rootScope.dataLoading = false;
+                    });
+            }else{
+                prepareGroups();
+                $rootScope.dataLoading = false;
+            }
+        }
+        
+        
+        function prepareGroups() {
+            for(var id in $rootScope.user.groups){
+
+                configureAllDates(id);
+
+                //INIT upload fields
+                $rootScope.user.groups[id].upload = {
+                    data    : '',
+                    type    : '',
+                    time    : '',
+                    table   : ''
+                };
+
+                //send emit on server
+                socketService.emit(id);
+
+                //on listen add the new data
+                socketService.on(id, function (data) {
+                    $timeout(function () {
+                        $rootScope.$apply(function () {
+                            data.date = configureDate(new Date(), new Date(data.time));
+                            $rootScope.user.groups[id].data[$rootScope.user.groups[id].data.length] = data;
+                        });
+                    });
                 });
+            }
+        }
+
+        function configureAllDates(index) {
+            var now = new Date();
+            for(var i = 0; i<$rootScope.user.groups[index].data.length; ++i){
+                var date = new Date($rootScope.user.groups[index].data[i].time);
+                $rootScope.user.groups[index].data[i].date = configureDate(now,date);
+            }
+        }
+
+        function configureDate(now,date) {
+            var dateAsString = 'Today';
+            var _dd = now.getDate(),
+                _mm = now.getMonth() + 1,
+                _yyyy = now.getYear();
+            var dd = date.getDate(),
+                mm = date.getMonth() + 1,
+                yyyy = date.getYear();
+
+            if( (yyyy !== _yyyy) || (mm !== _mm) || ((dd - _dd)>1) ){
+                dateAsString = dd + '/' + mm + '/' + yyyy;
+            }else{
+                if(dd !== _dd){
+                    dateAsString = 'Yesterday';
+                }
+            }
+
+            dateAsString += " @ " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+            return dateAsString;
         }
 
         function uploadData(index) {
@@ -65,81 +127,65 @@
                             time    : '',
                             table   : ''
                         };
-                        $rootScope.user.groups[$rootScope.user.groups.length] = response.data;
+                        const i = $rootScope.user.groups.length;
+                        $rootScope.user.groups[i] = response.data;
+
+                        socketService.emit($rootScope.user.groups[i].id);
+                        console.log($rootScope.user.groups[i]);
+                        socketService.on($rootScope.user.groups[i].id, function (data) {
+                            $timeout(function () {
+                                $rootScope.$apply(function () {
+                                    data.date = configureDate(new Date(), new Date(data.time));
+                                    $rootScope.user.groups[i].data[$rootScope.user.groups[i].data.length] = data;
+                                });
+                            });
+
+                        });
+
                     }else{
                         $location.path('/login');
                     }
                 });
         }
 
-
-        function getAllData() {
-            for (var index = 0; index< $rootScope.user.groups.length; ++index){
-                dashboardService.getData($rootScope.user.groups[index].id).then(function (response) {
-                    const i = 0;
-                    if(response.success){
-                        $rootScope.user.groups[i].data = response.data;
-                        $rootScope.user.groups[i].upload = {
-                            data    : '',
-                            type    : '',
-                            time    : '',
-                            table   : ''
-                        };
-                        configureAllDates(i);
-                    }else{
-                        $rootScope.user.groups[i] += { data : undefined };
-                        console.log('cant retrieve data from table: ' + $rootScope.user.groups[i].id);
-                    }
-                    if(i === ($rootScope.user.groups.length-1)){
-                        $rootScope.dataLoading = false;
-                    }
-                });
-            }
-
-            socketService.emit($rootScope.user.groups[0].id);
-
-            //TODO na dw ean doulevei me $scope anti rootscope
-            socketService.on($rootScope.user.groups[0].id, function (data) {
-                $rootScope.$apply(function () {
-                    data.date = configureDate(new Date(), new Date(data.time));
-                    $rootScope.user.groups[0].data[$rootScope.user.groups[0].data.length] = data;
-                    console.log($rootScope.user.groups[0]);
-                });
-            });
-
-
-        }
-
-
-        function configureAllDates(index) {
-            var now = new Date();
-            for(var i = 0; i<$rootScope.user.groups[index].data.length; ++i){
-                var date = new Date($rootScope.user.groups[index].data[i].time);
-                $rootScope.user.groups[index].data[i].date = configureDate(now,date);
-            }
-        }
-
-        function configureDate(now,date) {
-            var dateAsString = 'Today';
-            var _dd = now.getDate(),
-                _mm = now.getMonth() + 1,
-                _yyyy = now.getYear();
-            var dd = date.getDate(),
-                mm = date.getMonth() + 1,
-                yyyy = date.getYear();
-
-            if( (yyyy !== _yyyy) || (mm !== _mm) || ((dd - _dd)>1) ){
-                dateAsString = dd + '/' + mm + '/' + yyyy;
-            }else{
-                if(dd !== _dd){
-                    dateAsString = 'Yesterday';
-                }
-            }
-
-            dateAsString += " @ " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-
-            return dateAsString;
-        }
+        // //TODO remove
+        // function getAllData() {
+        //     $rootScope.user.allGroups = [];
+        //     for (var index = 0; index< $rootScope.user.groups.length; ++index){
+        //         var id = $rootScope.user.groups[index].id;
+        //         $rootScope.user.allGroups[id] = index;
+        //         dashboardService.getData($rootScope.user.groups[index].id).then(function (response) {
+        //             const i = $rootScope.user.allGroups[response.data.id];
+        //             if(response.success){
+        //                 $rootScope.user.groups[i].data = response.data.value;
+        //                 $rootScope.user.groups[i].upload = {
+        //                     data    : '',
+        //                     type    : '',
+        //                     time    : '',
+        //                     table   : ''
+        //                 };
+        //                 configureAllDates(i);
+        //
+        //                 socketService.emit($rootScope.user.groups[i].id);
+        //
+        //                 socketService.on($rootScope.user.groups[i].id, function (data) {
+        //                     $timeout(function () {
+        //                         $rootScope.$apply(function () {
+        //                             data.date = configureDate(new Date(), new Date(data.time));
+        //                             $rootScope.user.groups[i].data[$rootScope.user.groups[i].data.length] = data;
+        //                         });
+        //                     });
+        //                 });
+        //             }else{
+        //                 $rootScope.user.groups[i].data = undefined;
+        //                 console.log('cant retrieve data from table: ' + $rootScope.user.groups[i].id);
+        //             }
+        //             if(i === ($rootScope.user.groups.length-1)){
+        //                 $rootScope.dataLoading = false;
+        //             }
+        //         });
+        //     }
+        // }
 
     }
 })();

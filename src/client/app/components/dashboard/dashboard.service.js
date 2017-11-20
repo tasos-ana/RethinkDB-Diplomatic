@@ -21,7 +21,7 @@
 
         // private functions
         function userByEmail(email) {
-            return $http.get('/account/user/' + email)
+            return $http.post('/account/user', {email:email})
                 .then(handleSuccess, handleError('User do not exist'));
         }
 
@@ -64,7 +64,7 @@
 
     socketService.$inject = [];
     function socketService() {
-            var socket = io();
+            const socket = io();
 
             return {
                 on: function (eventName, callback) {
@@ -72,9 +72,6 @@
                 },
                 emit: function (table) {
                     socket.emit('feed', table);
-                },
-                disconnect: function () {
-                    socket.disconnect();
                 }
             };
     }
