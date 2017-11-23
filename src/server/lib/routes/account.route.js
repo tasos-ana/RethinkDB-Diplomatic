@@ -5,7 +5,7 @@ var accountService = require('../services/account.service');
 
 router.route('/create')
     .post(function (req,res) {
-        new accountService().create(req.body , function (err,responseData) {
+        new accountService().create(req.body, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -13,9 +13,9 @@ router.route('/create')
         });
     });
 
-router.route('/login')
-    .post(function (req,res) {
-        new accountService().getAccount(req.body, function (err,responseData) {
+router.route('/authenticate/:uEmail/:uPassword')
+    .get(function (req,res) {
+        new accountService().authenticate(req.param.uEmail, req.param.uPassword, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -23,9 +23,9 @@ router.route('/login')
         });
     });
 
-router.route('/logout')
-    .post(function (req,res) {
-        new accountService().logout(req.body.email, function (err,responseData) {
+router.route('/logout/:uEmail')
+    .get(function (req,res) {
+        new accountService().logout(req.param.uEmail, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -33,24 +33,15 @@ router.route('/logout')
         });
     });
 
-router.route('/user')
-    .post(function (req,res) {
-       new accountService().getAccount2(req.body.email, function (err,responseData) {
+
+router.route('/info/:uEmail')
+    .get(function (req,res) {
+       new accountService().accountInfo(req.param.uEmail, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
             res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
        });
-    });
-
-router.route('/user/newGroup')
-    .post(function (req,res) {
-        new accountService().addGroup(req.body, function (err,responseData) {
-            if(err){
-                return res.json({'success' : false, 'message': responseData, 'data' : null});
-            }
-            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
-        });
     });
 
 module.exports = router;
