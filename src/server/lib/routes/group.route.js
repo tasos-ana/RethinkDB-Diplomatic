@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
-var syncService = require('../services/synchronize.service');
+var groupService = require('../services/group.service');
 
-router.route('/push')
+router.route('/create')
     .post(function (req,res) {
-        new syncService().add(req.body , function (err,responseData) {
+        new groupService().create(req.body, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -13,9 +13,19 @@ router.route('/push')
         });
     });
 
-router.route('/get/:table')
+router.route('/retrieve/:gID')
     .get(function (req,res) {
-        new syncService().get(req.params.table , function (err,responseData) {
+        new groupService().retrieve(req.param.gID, function (err,responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/add')
+    .post(function (req,res) {
+        new groupService().add(req.body, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
