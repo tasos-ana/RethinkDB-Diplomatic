@@ -14,53 +14,97 @@
         vm.uploadData = uploadData;
         vm.createGroup = createGroup;
 
+        // function initController() {
+        //     $rootScope.dataLoading = true;
+        //     if($rootScope.user === undefined || $rootScope.user ===null){
+        //         dashboardService.userByEmail($rootScope.globals.currentUser.email)
+        //             .then(function (response) {
+        //                 if(response.success){
+        //                     $rootScope.user = response.data;
+        //                     prepareGroups();
+        //                 }else{
+        //                     $location.path('/login');
+        //                 }
+        //                 $rootScope.dataLoading = false;
+        //             });
+        //     }else{
+        //         prepareGroups();
+        //         $rootScope.dataLoading = false;
+        //     }
+        // }
+
         function initController() {
             $rootScope.dataLoading = true;
             if($rootScope.user === undefined || $rootScope.user ===null){
                 dashboardService.userByEmail($rootScope.globals.currentUser.email)
                     .then(function (response) {
                         if(response.success){
-                            console.log(response);
                             $rootScope.user = response.data;
-                            prepareGroups();
+                            getTables();
                         }else{
                             $location.path('/login');
                         }
                         $rootScope.dataLoading = false;
                     });
             }else{
-                prepareGroups();
+                getTables();
                 $rootScope.dataLoading = false;
             }
+        }
+
+        function getTables() {
+            for(var id in $rootScope.user.groups){
+                getTable(id);
+            }
+        }
+
+        function getTable(index) {
+            dashboardService.getData(index)
+                .then(function (response) {
+                    console.log(response);
+                    if(response.success){
+                       $rootScope.user.groups[response.data.id].data = response.data.value;
+                       prepareGroup(response.data.id);
+                       console.log($rootScope.user.groups[index]);
+                    }else{
+                       console.log('fail to log table ' + index);
+                       $location.path('/login');
+                    }
+            });
         }
         
         
         function prepareGroups() {
             for(var id in $rootScope.user.groups){
+                prepareGroup(id);
+            }
+        }
 
-                configureAllDates(id);
+        function prepareGroup(id){
+            configureAllDates(id);
 
-                //INIT upload fields
-                $rootScope.user.groups[id].upload = {
-                    data    : '',
-                    type    : '',
-                    time    : '',
-                    table   : ''
-                };
+            //INIT upload fields
+            $rootScope.user.groups[id].upload = {
+                data    : '',
+                type    : '',
+                time    : '',
+                table   : ''
+            };
 
-                //send emit on server
-                socketService.emit(id);
+            //send emit on server
+            socketService.emit(id);
 
-                //on listen add the new data
-                socketService.on(id, function (data) {
-                    $timeout(function () {
-                        $rootScope.$apply(function () {
-                            data.date = configureDate(new Date(), new Date(data.time));
-                            $rootScope.user.groups[id].data[$rootScope.user.groups[id].data.length] = data;
-                        });
+            //on listen add the new data
+            socketService.on(id, function (data) {
+                console.log('new data for table ' + id);
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        data.date = configureDate(new Date(), new Date(data.time));
+                        $rootScope.user.groups[id].data[$rootScope.user.groups[id].data.length] = data;
+                        console.log($rootScope.user.groups[id]);
                     });
                 });
-            }
+            });
         }
 
         function configureAllDates(index) {
@@ -94,6 +138,7 @@
         }
 
         function uploadData(index) {
+            $rootScope.user.groups[index].upload.uploadData = true;
             if($rootScope.user.groups[index].upload.data.length>0){
                 $rootScope.user.groups[index].upload.table = $rootScope.user.groups[index].id;
                 $rootScope.user.groups[index].upload.type = 'text';
@@ -106,10 +151,13 @@
                             time    : '',
                             table   : ''
                         };
+                        $rootScope.user.groups[index].upload.uploadData = false;
                     } else{
                         $location.path('/login');
                     }
                 });
+            }else{
+                $rootScope.user.groups[index].upload.uploadData = false;
             }
         }
 
@@ -121,71 +169,11 @@
             dashboardService.createGroup({user : curUser.email, group : vm.newGroupName})
                 .then(function (response) {
                     if(response.success){
-                        response.data.upload = {
-                            data    : '',
-                            type    : '',
-                            time    : '',
-                            table   : ''
-                        };
-                        const i = $rootScope.user.groups.length;
-                        $rootScope.user.groups[i] = response.data;
-
-                        socketService.emit($rootScope.user.groups[i].id);
-                        console.log($rootScope.user.groups[i]);
-                        socketService.on($rootScope.user.groups[i].id, function (data) {
-                            $timeout(function () {
-                                $rootScope.$apply(function () {
-                                    data.date = configureDate(new Date(), new Date(data.time));
-                                    $rootScope.user.groups[i].data[$rootScope.user.groups[i].data.length] = data;
-                                });
-                            });
-
-                        });
-
-                    }else{
-                        $location.path('/login');
+                        $rootScope.user.groups[response.data.id] = response.data;
+                        prepareGroup($rootScope.user.groups[response.data.id].id);
+                        console.log($rootScope.user.groups);
                     }
                 });
         }
-
-        // //TODO remove
-        // function getAllData() {
-        //     $rootScope.user.allGroups = [];
-        //     for (var index = 0; index< $rootScope.user.groups.length; ++index){
-        //         var id = $rootScope.user.groups[index].id;
-        //         $rootScope.user.allGroups[id] = index;
-        //         dashboardService.getData($rootScope.user.groups[index].id).then(function (response) {
-        //             const i = $rootScope.user.allGroups[response.data.id];
-        //             if(response.success){
-        //                 $rootScope.user.groups[i].data = response.data.value;
-        //                 $rootScope.user.groups[i].upload = {
-        //                     data    : '',
-        //                     type    : '',
-        //                     time    : '',
-        //                     table   : ''
-        //                 };
-        //                 configureAllDates(i);
-        //
-        //                 socketService.emit($rootScope.user.groups[i].id);
-        //
-        //                 socketService.on($rootScope.user.groups[i].id, function (data) {
-        //                     $timeout(function () {
-        //                         $rootScope.$apply(function () {
-        //                             data.date = configureDate(new Date(), new Date(data.time));
-        //                             $rootScope.user.groups[i].data[$rootScope.user.groups[i].data.length] = data;
-        //                         });
-        //                     });
-        //                 });
-        //             }else{
-        //                 $rootScope.user.groups[i].data = undefined;
-        //                 console.log('cant retrieve data from table: ' + $rootScope.user.groups[i].id);
-        //             }
-        //             if(i === ($rootScope.user.groups.length-1)){
-        //                 $rootScope.dataLoading = false;
-        //             }
-        //         });
-        //     }
-        // }
-
     }
 })();

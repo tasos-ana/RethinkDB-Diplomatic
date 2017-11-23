@@ -29,7 +29,6 @@
                         $rootScope.user = response.data;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
-                        $rootScope.dataLoading = true;
                         $location.path('/dashboard');
                     } else {
                         vm.dataLoading = false;

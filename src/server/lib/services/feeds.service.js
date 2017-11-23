@@ -23,6 +23,7 @@ module.exports = function(socket) {
                        }
                        if(result.replaced === 1){
                            callback(null,connection);
+                           debug('feeds from table: '+table);
                        }else{
                            return callback(true,'Error already listen socket',connection);
                        }

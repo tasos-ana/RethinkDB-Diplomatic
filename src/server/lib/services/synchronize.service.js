@@ -63,8 +63,7 @@ class SynchronizeService {
                             debug('Error at \'synchronize.service:get\': cant convert data to array');
                             return callback(true, 'Error happens while converting data to array');
                         }
-                        var ret = {id : table, value:results};
-                        callback(null,ret);
+                        callback(null,{id : table, value:results});
                     });
                 });
             }

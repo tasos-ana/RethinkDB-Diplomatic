@@ -35,7 +35,7 @@ router.route('/logout')
 
 router.route('/user')
     .post(function (req,res) {
-       new accountService().getAccount({email : req.body.email, password : null}, function (err,responseData) {
+       new accountService().getAccount2(req.body.email, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
