@@ -70,7 +70,7 @@
 
 
         /*
-            Side bar
+         * Side bar
          */
         $rootScope.toggleLeft = buildToggler('left');
         $rootScope.toggleRight = buildToggler('right');

@@ -18,7 +18,6 @@ app.use(cookieParser());
 
 app.use('/account', require('./lib/routes/account.route'));
 app.use('/group', require('./lib/routes/group.route'));
-app.use('/sync', require('./lib/routes/sync.route'));
 
 require('./lib/routes/static.route').addRoutes(app, config);
 require('./lib/routes/appFile.route').addRoutes(app, config);

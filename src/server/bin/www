@@ -5,14 +5,14 @@
  */
 
 var app = require('../server');
-var debug = require('debug')('pushup-refactoring:server');
+var debug = require('debug')('pushup :server');
 var http = require('http');
+
 var config = require('../config')
 var db = require('../lib/services/database.service');
 
 
 var defaultPort = config.server.listenPort;
-//TODO change on normal
 var defaultAddress = config.server.listenAddress;
 
 /**
@@ -84,10 +84,19 @@ function onError(error) {
 }
 
 var io = require('socket.io').listen(server);
-var feed;
+var syncService = require('../lib/services/sync.service');
 
 io.on('connection',function (socket) {
-    feed = require('../lib/services/feeds.service')(socket);
+  var sync = new syncService();
+
+  socket.on('sync', function (gID) {
+     sync.feed(socket, gID);
+  });
+
+  socket.on('disconnect',function () {
+     sync.disconnect();
+  });
+
 });
 
 /**
