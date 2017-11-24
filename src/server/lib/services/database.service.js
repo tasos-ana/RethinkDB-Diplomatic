@@ -1,8 +1,16 @@
 "use strict";
 var rethinkdb = require('rethinkdb');
 var async = require('async');
-var debug = require('debug')('pushup-refactoring:server');
 var config = require('../../config');
+
+const r_clr = '\x1b[41m'; //red bg color
+const g_clr = '\x1b[42m'; //green bg color
+const b_clr = '\x1b[44m'; //blue bg color
+const w_clr = '\x1b[0m'; //white bg color
+
+var debugError = require('debug')(r_clr + 'pushup: server' + w_clr);
+var debugCorrect = require('debug')(g_clr + 'pushup: server' + w_clr);
+var debugStatus = require('debug')(b_clr + 'pushup: server' + w_clr);
 
 class database {
 
@@ -12,6 +20,7 @@ class database {
             function(callback) {
                 self.connectToRethinkDbServer(function(err, connection) {
                     if (err) {
+                        debugError('Database.service@initDb: cant connect to database');
                         return callback(true, "Error in connecting RethinkDB");
                     }
                     callback(null, connection);
@@ -20,9 +29,9 @@ class database {
             function(connection, callback) {
                 rethinkdb.dbCreate(config.db.defaultName).run(connection, function(err, result) {
                     if (err) {
-                        debug("Database with name \'" + config.db.defaultName + "\' already created");
+                        debugStatus('Database <' + config.db.defaultName + '> already created');
                     } else {
-                        console.log("Created new database with name \'"+ config.db.defaultName + "\'");
+                        debugCorrect('Database <' + config.db.defaultName + '> created successful');
                     }
                     callback(null, connection);
                 });
@@ -33,9 +42,9 @@ class database {
                     const key = config.db.defaultTables[i].key;
                     rethinkdb.db(config.db.defaultName).tableCreate(table, {primaryKey: key}).run(connection, function (err, result) {
                         if (err) {
-                            debug("table with name '" + table + "' already created");
+                            debugStatus('Table : key <' + table + ' : ' + key + '> for database <' + config.db.defaultName + '> already created');
                         } else {
-                            console.log("Created new table '" + table + "' with primary key '" + key +"' ");
+                            debugCorrect('Table : key <' + table + ' : ' + key + '> created for database <' + config.db.defaultName + '> successful');
                         }
                         if(table === config.db.lastTable){
                             connection.close();
@@ -45,45 +54,7 @@ class database {
                 }
             }
         ], function(err, data) {
-            debug(data);
-        });
-    }
-
-    //TODO remove
-    initTable(table,key) {
-        var self = this;
-        async.waterfall([
-            function(callback) {
-                self.connectToRethinkDbServer(function(err, connection) {
-                    if (err) {
-                        return callback(true, "Error in connecting RethinkDB");
-                    }
-                    callback(null, connection);
-                });
-            },
-            function(connection, callback) {
-                rethinkdb.dbCreate(config.db.defaultName).run(connection, function(err, result) {
-                    if (err) {
-                        debug("Database with name \'" + config.db.defaultName + "\' already created");
-                    } else {
-                        console.log("Created new database with name \'"+ config.db.defaultName + "\'");
-                    }
-                    callback(null, connection);
-                });
-            },
-            function(connection, callback) {
-                rethinkdb.db(config.db.defaultName).tableCreate(table, {primaryKey: key}).run(connection, function (err, result) {
-                    connection.close();
-                    if (err) {
-                        debug("table with name '" + table + "' already created");
-                    } else {
-                        console.log("Created new table '" + table + "' with primary key '" + key +"' ");
-                    }
-                    callback(null, "Database is setup successfully");
-                });
-            }
-        ], function(err, data) {
-            debug(data);
+            debugCorrect(data);
         });
     }
 
