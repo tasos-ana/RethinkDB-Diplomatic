@@ -5,29 +5,17 @@
         .module('starterApp')
         .factory('loginService', loginService);
 
-    loginService.$inject = ['$http', '$cookies', '$rootScope','md5'];
-    function loginService($http, $cookies, $rootScope, md5) {
+    loginService.$inject = ['$http', '$cookies', '$rootScope'];
+    function loginService($http, $cookies, $rootScope) {
         var service = {};
 
-        service.login = login;
         service.setCredentials = setCredentials;
         service.clearCredentials = clearCredentials;
 
         return service;
 
-        function login(email, password) {
-            password = md5.createHash(password);
-            return $http.post('/account/login', { email: email, password: password })
-                .then(handleSuccess,handleError('Error at user login'));
-        }
-
-        function logout(email) {
-            return $http.post('/account/logout', {email:email})
-                .then(handleSuccess,handleError('Error at user logout'));
-        }
-
         function setCredentials(email, password) {
-            var authdata = Base64.encode(email + ':' + password);
+            const authdata = Base64.encode(email + ':' + password);
 
             $rootScope.globals = {
                 currentUser: {
@@ -45,32 +33,11 @@
             $cookies.putObject('globals', $rootScope.globals, { expires: cookieExp });
         }
 
+        //TODO emit disconect
         function clearCredentials() {
-            if($rootScope.globals.currentUser !== undefined) {
-                logout($rootScope.globals.currentUser.email)
-                    .then(function (response) {
-                        if (!response.success) {
-                            console.log('error while logout check it');
-                        }
-                        $rootScope.globals = {};
-                        $cookies.remove('globals');
-                        $http.defaults.headers.common.Authorization = 'Basic';
-                    });
-            }else{
-                $rootScope.globals = {};
-                $cookies.remove('globals');
-                $http.defaults.headers.common.Authorization = 'Basic';
-            }
-        }
-
-        function handleSuccess(res) {
-            return res.data;
-        }
-
-        function handleError(error) {
-            return function () {
-                return { success: false, message: error };
-            };
+            $rootScope.globals = {};
+            $cookies.remove('globals');
+            $http.defaults.headers.common.Authorization = 'Basic';
         }
     }
 

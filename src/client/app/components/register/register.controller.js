@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$scope', '$location', 'registerService'];
-    function RegisterController($rootScope,$scope, $location, registerService) {
+    RegisterController.$inject = ['$rootScope', '$location', 'httpService'];
+    function RegisterController($rootScope, $location, httpService) {
         var vm = this;
 
         vm.register = register;
@@ -25,17 +25,11 @@
                     'Got it');
             }else{
                 vm.dataLoading = true;
-                registerService.create(vm.user)
+                httpService.accountCreate(vm.user)
                     .then(function (response) {
                         if (response.success) {
                             $rootScope.user = vm.user;
-                            vm.user = null;
-                            $rootScope.showAlert(
-                                ev,
-                                'Register status',
-                                'Register complete!',
-                                'Register complete',
-                                'Log in');
+                            vm.dataLoading = false;
                             $location.path('/login');
                         } else {
                             $rootScope.showAlert(
@@ -52,7 +46,7 @@
      
         function validateEmail(valid) {
             if(valid){
-                registerService.userByEmail(vm.user.email)
+                httpService.accountGetUserByEmail(vm.user.uEmail)
                     .then(function (response) {
                        vm.emailExists = response.success;
                     });

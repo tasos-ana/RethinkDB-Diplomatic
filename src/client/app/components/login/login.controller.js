@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'md5'];
-    function LoginController($rootScope, $location, loginService, md5) {
+    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService', 'md5'];
+    function LoginController($rootScope, $location, loginService, httpService, md5) {
         var vm = this;
 
         vm.login = login;
@@ -16,16 +16,17 @@
             // reset login status
             $rootScope.loginStatus = false;
             $rootScope.user = undefined;
-            //TODO na ginontai disable ola ta socket tou user
+
             loginService.clearCredentials();
+
         })();
 
         function login(ev) {
             vm.dataLoading = true;
-            loginService.login(vm.email, vm.password)
+            httpService.accountAuthenticate(vm.user)
                 .then(function (response) {
                     if (response.success) {
-                        loginService.setCredentials(vm.email, md5.createHash(vm.password));
+                        loginService.setCredentials(vm.user.uEmail, md5.createHash(vm.user.uPassword));
                         $rootScope.user = response.data;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
