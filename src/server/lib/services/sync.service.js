@@ -4,18 +4,13 @@ var rethinkdb = require('rethinkdb');
 var db = require('./database.service');
 var async = require('async');
 
-const r_clr = '\x1b[41m'; //red bg color
-const g_clr = '\x1b[42m'; //green bg color
-const b_clr = '\x1b[44m'; //blue bg color
-const w_clr = '\x1b[0m'; //white bg color
-
-var debugError = require('debug')(r_clr + 'pushup: server' + w_clr);
-var debugCorrect = require('debug')(g_clr + 'pushup: server' + w_clr);
-var debugStatus = require('debug')(b_clr + 'pushup: server' + w_clr);
+var debug = require('./debug.service');
 
 class SyncService {
 
-    private gStatus = {};
+    constructor(){
+        this.gStatus = {};
+    }
 
     feed(socket, gID){
         const self = this;
@@ -31,7 +26,7 @@ class SyncService {
             //TODO otan ginete disconnect tha prepei na ginetai mono apo 1 device kai oxi apo ola
             function (connection, callback) {
                 self.gStatus[gID] = {connected : true};
-                debugStatus('Start feeding on group <' + gID + '>');
+                debug.status('Start feeding on group <' + gID + '>');
                 rethinkdb.table(gID).changes().run(connection,function (err, cursor) {
                     if(err){
                         self.gStatus[gID].connected = false;
@@ -40,7 +35,7 @@ class SyncService {
                     }
                     cursor.each(function (err, row) {
                        if(row !== undefined){
-                           debugStatus('Feed <' + debugCorrect(JSON.stringify(row)) +'> received for group <' + gID + '>');
+                           debug.status('Feed <' + debug.correct(JSON.stringify(row)) +'> received for group <' + gID + '>');
                            if(Object.keys(row).length>0){
                                if(self.gStatus[gID].connected){
                                    if(row.new_val.id !== 'socket'){
@@ -54,10 +49,10 @@ class SyncService {
                                }else{
                                     cursor.close(function (err) {
                                        if(err){
-                                           debugError('Sync.service@feed: cant close cursor');
+                                           debug.error('Sync.service@feed: cant close cursor');
                                        }
                                     });
-                                    debugCorrect('Feed for group <' + gID + '> closed successful');
+                                    debug.correct('Feed for group <' + gID + '> closed successful');
                                     connection.close();
                                     return callback(null, '');
                                }
@@ -79,7 +74,7 @@ class SyncService {
         }
     }
 
-    private disconnectGroup(gID){
+    disconnectGroup(gID){
         var self = this;
         async.waterfall([
             function (callback) {
@@ -103,7 +98,7 @@ class SyncService {
             }
         ],function (err, msg) {
             if(err){
-                debugError(msg);
+                debug.error(msg);
             }
         });
     }
