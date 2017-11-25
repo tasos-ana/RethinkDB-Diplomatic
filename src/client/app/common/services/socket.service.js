@@ -17,7 +17,7 @@
                 socket.on(eventName,callback);
             },
             emit: function (table) {
-                socket.emit('feed', table);
+                socket.emit('sync', table);
             }
         };
     }
