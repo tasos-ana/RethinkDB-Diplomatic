@@ -28,6 +28,7 @@ class SyncService {
                    callback(null, connection);
                 });
             },
+            //TODO otan ginete disconnect tha prepei na ginetai mono apo 1 device kai oxi apo ola
             function (connection, callback) {
                 self.gStatus[gID] = {connected : true};
                 debugStatus('Start feeding on group <' + gID + '>');
@@ -42,12 +43,14 @@ class SyncService {
                            debugStatus('Feed <' + debugCorrect(JSON.stringify(row)) +'> received for group <' + gID + '>');
                            if(Object.keys(row).length>0){
                                if(self.gStatus[gID].connected){
-                                   socket.broadcast.emit(gID,{
-                                       "data"  : row.new_val.data,
-                                       "id"    : row.new_val.id,
-                                       "time"  : row.new_val.time,
-                                       "type"  : row.new_val.type
-                                   });
+                                   if(row.new_val.id !== 'socket'){
+                                       socket.broadcast.emit(gID,{
+                                           "data"  : row.new_val.data,
+                                           "id"    : row.new_val.id,
+                                           "time"  : row.new_val.time,
+                                           "type"  : row.new_val.type
+                                       });
+                                   }
                                }else{
                                     cursor.close(function (err) {
                                        if(err){

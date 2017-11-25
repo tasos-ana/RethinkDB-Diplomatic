@@ -10,6 +10,9 @@
         const socket = io();
 
         return {
+            disconnect: function () {
+              socket.emit('disconnect');
+            },
             on: function (eventName, callback) {
                 socket.on(eventName,callback);
             },
