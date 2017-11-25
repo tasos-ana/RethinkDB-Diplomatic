@@ -182,7 +182,7 @@ class GroupService {
                                 return callback(true, 'Error happens while converting data to array');
                             }
                             debugCorrect('Retrieve data from group <' + gID + '> successful');
-                            callback(null,{id : gID, value:results});
+                            callback(null,{id : gID, value: results});
                         });
                     });
             }

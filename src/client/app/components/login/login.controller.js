@@ -7,18 +7,18 @@
 
     LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService', 'md5'];
     function LoginController($rootScope, $location, loginService, httpService, md5) {
-        var vm = this;
+        const vm = this;
 
         vm.login = login;
-        vm.dataLoading = false;
 
         (function initController() {
+            vm.dataLoading = false;
+
             // reset login status
             $rootScope.loginStatus = false;
             $rootScope.user = undefined;
 
             loginService.clearCredentials();
-
         })();
 
         function login(ev) {

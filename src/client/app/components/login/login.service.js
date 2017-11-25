@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('loginService', loginService);
 
-    loginService.$inject = ['$http', '$cookies', '$rootScope'];
-    function loginService($http, $cookies, $rootScope) {
+    loginService.$inject = ['$http', '$cookies', '$rootScope', 'socketService'];
+    function loginService($http, $cookies, $rootScope, socketService) {
         var service = {};
 
         service.setCredentials = setCredentials;
@@ -14,12 +14,12 @@
 
         return service;
 
-        function setCredentials(email, password) {
-            const authdata = Base64.encode(email + ':' + password);
+        function setCredentials(uEmail, uPassword) {
+            const authdata = Base64.encode(uEmail + ':' + uPassword);
 
             $rootScope.globals = {
                 currentUser: {
-                    email: email,
+                    email: uEmail,
                     authdata: authdata
                 }
             };
@@ -35,6 +35,7 @@
 
         //TODO emit disconect
         function clearCredentials() {
+            socketService.disconnect();
             $rootScope.globals = {};
             $cookies.remove('globals');
             $http.defaults.headers.common.Authorization = 'Basic';

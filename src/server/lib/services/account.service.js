@@ -77,9 +77,9 @@ class AccountService {
                             }else{
                                 debugCorrect('User <' + uEmail + '> authenticated');
                                 callback(null, {
-                                    email: result.email,
-                                    nickname : result.nickname,
-                                    groups : result.groups});
+                                    email       : result.email,
+                                    nickname    : result.nickname,
+                                    groups      : result.groups});
                             }
                         }
                     });
