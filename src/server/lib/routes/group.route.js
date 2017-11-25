@@ -15,7 +15,7 @@ router.route('/create')
 
 router.route('/retrieve/:gID')
     .get(function (req,res) {
-        new groupService().retrieve(req.param.gID, function (err,responseData) {
+        new groupService().retrieve(req.params.gID, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

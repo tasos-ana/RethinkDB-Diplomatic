@@ -15,7 +15,7 @@ router.route('/create')
 
 router.route('/authenticate/:uEmail/:uPassword')
     .get(function (req,res) {
-        new accountService().authenticate(req.param.uEmail, req.param.uPassword, function (err,responseData) {
+        new accountService().authenticate(req.params.uEmail, req.params.uPassword, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -25,7 +25,7 @@ router.route('/authenticate/:uEmail/:uPassword')
 
 router.route('/logout/:uEmail')
     .get(function (req,res) {
-        new accountService().logout(req.param.uEmail, function (err,responseData) {
+        new accountService().logout(req.params.uEmail, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -36,7 +36,7 @@ router.route('/logout/:uEmail')
 
 router.route('/info/:uEmail')
     .get(function (req,res) {
-       new accountService().accountInfo(req.param.uEmail, function (err,responseData) {
+       new accountService().accountInfo(req.params.uEmail, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
