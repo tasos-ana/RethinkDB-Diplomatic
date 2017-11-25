@@ -3,7 +3,7 @@
 
     angular
         .module('starterApp')
-        .factory('httpService', httpService)
+        .factory('httpService', httpService);
 
     httpService.$inject = ['$http', 'md5'];
     function httpService($http, md5) {
@@ -29,18 +29,13 @@
 
         function accountCreate(user) {
             user.uPassword = md5.createHash(user.uPassword || '');
-            return $http.post('/account/create', user).then(handleSuccess, handleError('Error creating user'));
+            return $http.post('/account/create', user)
+                .then(handleSuccess, handleError('Error creating user'));
         }
 
         function accountAuthenticate(user) {
             return $http.get('/account/authenticate/' + user.uEmail + '/' + md5.createHash(user.uPassword))
                 .then(handleSuccess,handleError('Error at user login'));
-        }
-
-        //TODO remove mallon
-        function logout(email) {
-            return $http.post('/account/logout', {email:email})
-                .then(handleSuccess,handleError('Error at user logout'));
         }
 
         function groupAddData(data) {
