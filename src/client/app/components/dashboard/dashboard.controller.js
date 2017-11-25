@@ -36,7 +36,7 @@
 
             if($rootScope.user.groups[gID].upload.data.length>0){
 
-                $rootScope.user.groups[gID].upload.table = $rootScope.user.groups[gID].id;
+                $rootScope.user.groups[gID].upload.gID = $rootScope.user.groups[gID].id;
                 $rootScope.user.groups[gID].upload.type = 'text';
                 $rootScope.user.groups[gID].upload.time = Date.now();
 
@@ -68,7 +68,7 @@
             httpService.groupCreate({uEmail : curUser.email, gName : vm.group.name})
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.user.groups[response.data.id] = response.data;
+                        $rootScope.user.groups[response.data.gID] = {id: response.data.gID, name: response.data.gName};
                         dashboardService.getAccountGroups();
                         vm.group.creating = false;
                         vm.group.name = '';
