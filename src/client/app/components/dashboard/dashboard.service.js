@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('dashboardService', dashboardService);
 
-    dashboardService.$inject = ['$rootScope', '$location', 'socketService', '$timeout'];
-    function dashboardService($rootScope, $location, socketService, $timeout) {
+    dashboardService.$inject = ['$rootScope', '$location', 'httpService', 'socketService', '$timeout'];
+    function dashboardService($rootScope, $location, httpService, socketService, $timeout) {
         var service = {};
 
         service.getAccountGroups = getAccountGroups;
@@ -91,7 +91,5 @@
 
             return dateAsString;
         }
-
-
     }
 })();

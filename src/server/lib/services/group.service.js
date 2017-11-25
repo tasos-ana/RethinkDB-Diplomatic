@@ -85,15 +85,15 @@ class GroupService {
              * Assign that id on user groups
              */
             function(newGroup, responseData, connection, callback) {
-                rethinkdb.table('accounts').get(details.gEmail).update({
+                rethinkdb.table('accounts').get(details.uEmail).update({
                     groups: newGroup
                 }).run(connection, function (err, result) {
                     if (err) {
-                        debug.error('Group.service@create: cant update user <' + details.gEmail + '> groups');
+                        debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
                         return callback(true, 'Error happens while update user groups');
                     }
 
-                    debug.status('New group <' + details.gName + '> inserted on user <' + details.gEmail + '> groups successful');
+                    debug.status('New group <' + details.gName + '> inserted on user <' + details.uEmail + '> groups successful');
 
                     callback(null,responseData,connection);
                 });
@@ -105,9 +105,9 @@ class GroupService {
             function (responseData, connection, callback) {
                 rethinkdb.table(responseData.gID).insert({
                     id          : 'socket',
-                    data        : 'Group created by ' + details.gEmail,
+                    data        : 'Group created by ' + details.uEmail,
                     type        : 'text',
-                    connected   : false,
+                    lastLogin   : Date.now(),
                     time        : Date.now()
                 }).run(connection,function (err,result) {
                     if (err) {
@@ -116,34 +116,36 @@ class GroupService {
                     }
 
                     debug.status('Add socket on group <' + responseData.gID + '>');
+                    debug.correct('New group <' + responseData.gID + '> added successful on user <' + details.uEmail + '>');
 
                     callback(null, connection, responseData);
                 });
-            },
-            /**
-             * Stage 5
-             * get the data from table
-             */
-            function(connection, responseData, callback) {
-                rethinkdb.table(responseData.gID).orderBy("time")
-                    .run(connection,function (err,cursor) {
-                        if(err){
-                            debug.error('Group.service@create: cant get data from group <' + responseData.gID + '>');
-                            return callback(true, 'Error happens while getting user details');
-                        }
-                        cursor.toArray(function(err, results) {
-                            if (err){
-                                debug.error('Group.service@create: cant convert cursor from group <' + responseData.gID + '> to array');
-                                return callback(true, 'Error happens while converting data to array');
-                            }
-                            responseData.data = results;
-
-                            debug.correct('New group <' + responseData.gID + '> added successful on user <' + details.uEmail + '>');
-
-                            callback(null,connection,responseData);
-                        });
-                    });
             }
+            // ,
+            // /**
+            //  * Stage 5
+            //  * get the data from table
+            //  */
+            // function(connection, responseData, callback) {
+            //     rethinkdb.table(responseData.gID).orderBy("time")
+            //         .run(connection,function (err,cursor) {
+            //             if(err){
+            //                 debug.error('Group.service@create: cant get data from group <' + responseData.gID + '>');
+            //                 return callback(true, 'Error happens while getting user details');
+            //             }
+            //             cursor.toArray(function(err, results) {
+            //                 if (err){
+            //                     debug.error('Group.service@create: cant convert cursor from group <' + responseData.gID + '> to array');
+            //                     return callback(true, 'Error happens while converting data to array');
+            //                 }
+            //                 responseData.data = results;
+            //
+            //                 debug.correct('New group <' + responseData.gID + '> added successful on user <' + details.uEmail + '>');
+            //
+            //                 callback(null,connection,responseData);
+            //             });
+            //         });
+            // }
         ], function (err,connection, data) {
             connection.close();
             callback(err !== null, data);
