@@ -7,13 +7,16 @@
 
     RegisterController.$inject = ['$rootScope', '$location', 'httpService'];
     function RegisterController($rootScope, $location, httpService) {
-        var vm = this;
+        const vm = this;
 
         vm.register = register;
-        vm.validateEmail = validateEmail;
+        vm.accountEmailExists = accountEmailExists;
 
-        vm.dataLoading = false;
-        vm.emailExists = false;
+
+        (function initController() {
+            vm.dataLoading = false;
+            vm.emailExists = false;
+        })();
 
         function register(ev) {
             if(vm.emailExists){
@@ -28,24 +31,24 @@
                 httpService.accountCreate(vm.user)
                     .then(function (response) {
                         if (response.success) {
+                            //TODO na emfanizete minima oti egine register
                             $rootScope.user = vm.user;
-                            vm.dataLoading = false;
                             $location.path('/login');
                         } else {
+                            vm.dataLoading = false;
                             $rootScope.showAlert(
                                 ev,
                                 'Register status',
                                 'Something goes wrong with registration, try again later',
                                 'Register fail',
                                 'Got it');
-                            vm.dataLoading = false;
                         }
                     });
             }
         }
      
-        function validateEmail(valid) {
-            if(valid){
+        function accountEmailExists(isValid) {
+            if(isValid){
                 httpService.accountGetUserByEmail(vm.user.uEmail)
                     .then(function (response) {
                        vm.emailExists = response.success;

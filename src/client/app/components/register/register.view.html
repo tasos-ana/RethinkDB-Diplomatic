@@ -18,7 +18,7 @@
                     <md-input-container>
                         <label for="email">Email</label>
                         <input type='email' id="email" name='email' ng-model="vm.user.uEmail" ng-disabled="vm.dataLoading"
-                               ng-blur="vm.validateEmail(registerForm.email.$valid)"
+                               ng-blur="vm.accountEmailExists(registerForm.email.$valid)"
                                required ng-pattern="/^.+@.+\..+$/">
                         <div ng-messages="registerForm.email.$error" role="alert">
                             <div ng-message="required">This is required.</div>
@@ -46,7 +46,7 @@
                         <label for="confirmPassword">Confirm password</label>
                         <input type="password" id="confirmPassword" name="confirmPassword"
                                ng-model="vm.user.uConfirmPassword" ng-disabled="vm.dataLoading"
-                               required data-match="vm.user.password">
+                               required data-match="vm.user.uPassword">
                         <div ng-messages="registerForm.confirmPassword.$error">
                             <div ng-message="required">Please confirm your password.</div>
                             <div ng-message="match">Passwords do not match.</div>
