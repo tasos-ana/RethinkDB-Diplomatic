@@ -27,23 +27,25 @@
                     'Register fail',
                     'Got it');
             }else{
-                vm.dataLoading = true;
-                httpService.accountCreate(vm.user)
-                    .then(function (response) {
-                        if (response.success) {
-                            //TODO na emfanizete minima oti egine register
-                            $rootScope.user = vm.user;
-                            $location.path('/login');
-                        } else {
-                            vm.dataLoading = false;
-                            $rootScope.showAlert(
-                                ev,
-                                'Register status',
-                                'Something goes wrong with registration, try again later',
-                                'Register fail',
-                                'Got it');
-                        }
-                    });
+                if(vm.user.uPassword === vm.user.uConfirmPassword){
+                    vm.dataLoading = true;
+                    httpService.accountCreate(vm.user)
+                        .then(function (response) {
+                            if (response.success) {
+                                //TODO na emfanizete minima oti egine register
+                                $rootScope.user = vm.user;
+                                $location.path('/login');
+                            } else {
+                                vm.dataLoading = false;
+                                $rootScope.showAlert(
+                                    ev,
+                                    'Register status',
+                                    'Something goes wrong with registration, try again later',
+                                    'Register fail',
+                                    'Got it');
+                            }
+                        });
+                }
             }
         }
      
