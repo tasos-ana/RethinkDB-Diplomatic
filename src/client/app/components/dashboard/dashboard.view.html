@@ -8,15 +8,20 @@
             <md-tab-label>Add group</md-tab-label>
             <md-tab-body>
                 <div layout="column" layout-align="center center">
-                    <form name="newGroupForm" ng-submit="vm.createGroup()" role="form">
+                    <form name="newGroupForm" ng-submit="vm.groupCreate()" role="form">
                         <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
                             <div layout="row" layout-xs="column">
                                 <md-input-container flex>
-                                    <label for="newTableName">Group name</label>
-                                    <input type='text' id="newTableName" name='newTableName' ng-model="vm.group.gName" required>
+                                    <label for="newGroupName">Group name</label>
+                                    <input type='text' id="newGroupName" name='newGroupName' ng-model="vm.group.name" required>
                                 </md-input-container>
-                                <md-button type="submit" class="md-accent">Add
-                                    <span class="glyphicon glyphicon-list-alt"></span></md-button>
+                                <div layout="row">
+                                    <md-button type="submit" ng-disabled="vm.group.creating" class="md-accent">
+                                        <span class="glyphicon glyphicon-list-alt"> Add </span>
+                                    </md-button>
+                                    <md-progress-circular ng-hide="!vm.group.creating" class="md-primary" md-diameter="30px">
+                                    </md-progress-circular>
+                                </div>
                             </div>
                         </md-content>
                     </form>
@@ -30,6 +35,7 @@
                 <div layout="row">
                     <div  flex="5"></div>
                     <div layout="column" flex>
+
                         <form name="pushingForm" ng-submit="vm.uploadData(gID.id)" role="form">
                             <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
                                 <div layout="row" layout-xs="column">
@@ -42,9 +48,14 @@
                                 </div>
                             </md-content>
                         </form>
-                        <md-content>
-                            <h3 ng-if="gID.data.length===0" align="center"> Nothing pushUPed yet.</h3>
-                            <md-list layout-padding id="dataList" ng-if="gID.data.length!==0">
+
+                        <div layout="column" layout-align="end center" ng-hide="gID.dataLoading">
+                            <md-progress-circular md-diameter="80"></md-progress-circular>
+                            <div>Loading . . .</div>
+                        </div>
+
+                        <md-content ng-hide="gID.dataLoading">
+                            <md-list layout-padding id="dataList">
                                 <md-list-item class="md-2-line" ng-repeat="gData in gID.data | reverse">
                                     <div class="md-list-item-text">
                                         <p style="color: gray; font-size: 10px; font-style: italic;">{{gData.date}}</p>
@@ -54,6 +65,7 @@
                                 </md-list-item>
                             </md-list>
                         </md-content>
+
                     </div>
                     <div  flex="5"></div>
                 </div>
