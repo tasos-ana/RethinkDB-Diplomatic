@@ -1,12 +1,11 @@
 'use strict';
 
 const rethinkdb = require('rethinkdb');
-const db = require('./database.service');
-const async = require('async');
+const db        = require('./database.service');
+const async     = require('async');
+const debug     = require('./debug.service');
 
-const debug = require('./debug.service');
-
-const syncService = function () {
+var syncService = function () {
     var groups = [];
 
     return{
@@ -38,12 +37,14 @@ const syncService = function () {
                             if(row !== undefined){
                                 if(Object.keys(row).length>0){
                                     if(row.new_val.id !== 'socket'){
-                                        socket.broadcast.emit(gID,{
+                                        debug.status('Broadcast new data for group <' + gID + '>');
+                                        socket.emit(gID, {
                                             "data"  : row.new_val.data,
                                             "id"    : row.new_val.id,
                                             "time"  : row.new_val.time,
                                             "type"  : row.new_val.type
                                         });
+                                        // socket.emit(listenOn);
                                     }else{
                                         cursor.close(function (err) {
                                             if(err){
@@ -58,6 +59,9 @@ const syncService = function () {
                             }
                         });
                     });
+                }else{
+                    connection.close();
+                    callback(null,'');
                 }
             }
         ], function (err, msg) {
