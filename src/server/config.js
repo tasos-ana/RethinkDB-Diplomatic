@@ -1,4 +1,6 @@
-var path = require('path');
+const path = require('path');
+
+process.env.ENCRYPTION_KEY = 'HXUE+mGsk,A(wsZu4+v4alKp/d&21R^m';
 
 module.exports = {
     db: {

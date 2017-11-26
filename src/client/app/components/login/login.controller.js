@@ -26,8 +26,8 @@
             httpService.accountAuthenticate(vm.user)
                 .then(function (response) {
                     if (response.success) {
-                        loginService.setCredentials(vm.user.uEmail, md5.createHash(vm.user.uPassword));
-                        $rootScope.user = response.data;
+                        loginService.setCredentials(vm.user.uEmail, response.data.cookie);
+                        $rootScope.user = response.data.value;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
                         $location.path('/dashboard');

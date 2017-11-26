@@ -14,30 +14,35 @@
 
         return service;
 
-        function setCredentials(uEmail, uPassword) {
-            const authdata = Base64.encode(uEmail + ':' + uPassword);
+        function setCredentials(uEmail, cookie) {
+            // const authdata = Base64.encode(uEmail + ':' + uPassword);
+
+            // $rootScope.globals = {
+            //     currentUser: {
+            //         email: uEmail,
+            //         authdata: authdata
+            //     }
+            // };
 
             $rootScope.globals = {
-                currentUser: {
-                    email: uEmail,
-                    authdata: authdata
-                }
+              currentUser: {
+                  email : uEmail,
+                  authdata  : cookie}
             };
 
             // set default auth header for http requests
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata;
+            $http.defaults.headers.common['Authorization'] = 'Basic ' + cookie;
 
             // store user details in globals cookie that keeps user logged in for 1 week (or until they logout)
             const cookieExp = new Date();
             cookieExp.setHours(cookieExp.getHours() + 1);
-            $cookies.putObject('globals', $rootScope.globals, { expires: cookieExp });
+            $cookies.putObject('LOGIN INFO', $rootScope.globals, { expires: cookieExp });
         }
-
-        //TODO emit disconect
+        
         function clearCredentials() {
             socketService.logout();
             $rootScope.globals = {};
-            $cookies.remove('globals');
+            $cookies.remove('LOGIN INFO');
             $http.defaults.headers.common.Authorization = 'Basic';
         }
     }

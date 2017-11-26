@@ -1,11 +1,13 @@
 'use strict';
 
-const rethinkdb = require('rethinkdb');
-const async     = require('async');
-const db        = require('./database.service');
-const debug     = require('./debug.service');
+const rethinkdb  = require('rethinkdb');
+const async      = require('async');
+const db         = require('./database.service');
+const debug      = require('./debug.service');
+const encryption = require('./encryption.service');
 
-var accountService = function () {
+
+const accountService = function () {
     return {
         create          : _create,
         authenticate    : _authenticate,
@@ -73,10 +75,14 @@ var accountService = function () {
                                 return callback(true, 'Email or password its wrong');
                             }else{
                                 debug.correct('User <' + uEmail + '> authenticated');
+                                const cookie = encryption.encrypt(JSON.stringify({uEmail: uEmail, uPassword:uPassword}));
                                 callback(null, {
-                                    email       : result.email,
-                                    nickname    : result.nickname,
-                                    groups      : result.groups});
+                                    cookie      : cookie ,
+                                    response    : {
+                                        email       : result.email,
+                                        nickname    : result.nickname,
+                                        groups      : result.groups
+                                }});
                             }
                         }
                     });

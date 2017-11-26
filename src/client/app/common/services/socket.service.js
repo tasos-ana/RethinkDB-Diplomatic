@@ -7,7 +7,6 @@
 
     socketService.$inject = [];
     function socketService() {
-        console.log('socket connect');
         var socket = io();
 
         return {

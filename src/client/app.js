@@ -45,7 +45,7 @@
     run.$inject = ['$rootScope', '$location', "$cookies", "$http",'$mdSidenav','$mdDialog'];
     function run($rootScope, $location, $cookies, $http, $mdSidenav, $mdDialog) {
         // keep user logged in after page refresh
-        $rootScope.globals = $cookies.getObject('globals') || {};
+        $rootScope.globals = $cookies.getObject('LOGIN INFO') || {};
         if ($rootScope.globals.currentUser) {
             $http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata;
         }
