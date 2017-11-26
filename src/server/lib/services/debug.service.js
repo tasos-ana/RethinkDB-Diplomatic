@@ -1,24 +1,30 @@
 "use strict";
-const r_clr = '\x1b[41m'; //red bg color
-const g_clr = '\x1b[42m'; //green bg color
-const b_clr = '\x1b[44m'; //blue bg color
-const w_clr = '\x1b[0m'; //white bg color
+const dbg = require('debug')('pushup:server');
 
-var dbg = require('debug')('pushup:server');
+const debug = function(){
 
-class debug {
+    const r_clr = '\x1b[31m'; // red color
+    const g_clr = '\x1b[32m'; // green color
+    const b_clr = '\x1b[36m'; // blue color
+    const w_clr = '\x1b[37m'; // white color
 
-    static error(msg){
+    return {
+      error     : _error,
+      status    : _status,
+      correct   : _correct
+    };
+
+    function _error(msg) {
         dbg(r_clr + msg + w_clr);
     }
 
-    static status(msg){
+    function _status(msg) {
         dbg(b_clr + msg + w_clr);
     }
 
-    static correct(msg){
+    function _correct(msg) {
         dbg(g_clr + msg + w_clr);
     }
-}
+}();
 
 module.exports = debug;

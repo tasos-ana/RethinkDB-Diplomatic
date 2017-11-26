@@ -1,6 +1,6 @@
-var express = require('express');
-var compression = require('compression');
-var favicon = require('serve-favicon');
+const express = require('express');
+const compression = require('compression');
+const favicon = require('serve-favicon');
 
 exports.addRoutes = function(app, config) {
     // Serve up the favicon

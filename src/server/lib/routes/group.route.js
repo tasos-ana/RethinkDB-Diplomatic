@@ -1,11 +1,10 @@
-var express = require('express');
-var router = express.Router();
-
-var groupService = require('../services/group.service');
+const express = require('express');
+const router = express.Router();
+const groupService = require('../services/group.service');
 
 router.route('/create')
     .post(function (req,res) {
-        new groupService().create(req.body, function (err,responseData) {
+        groupService.groupService().create(req.body, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -15,7 +14,7 @@ router.route('/create')
 
 router.route('/retrieve/:gID')
     .get(function (req,res) {
-        new groupService().retrieve(req.params.gID, function (err,responseData) {
+        groupService.retrieve(req.params.gID, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -25,7 +24,7 @@ router.route('/retrieve/:gID')
 
 router.route('/add')
     .post(function (req,res) {
-        new groupService().add(req.body, function (err,responseData) {
+        groupService.add(req.body, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

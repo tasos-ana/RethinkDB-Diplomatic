@@ -1,13 +1,19 @@
 "use strict";
-var rethinkdb = require('rethinkdb');
-var async = require('async');
-var config = require('../../config');
-var debug = require('./debug.service');
 
-class database {
+const rethinkdb = require('rethinkdb');
+const async     = require('async');
+const config    = require('../../config');
+const debug     = require('./debug.service');
 
-    initDb(){
-        var self = this;
+const databaseService = function () {
+    return {
+        initDB                      : _initDB,
+        connectToRethinkDbServer    : _connectToRethinkDbServer,
+        connectToDb                 : _connectToDb
+    };
+    
+    function _initDB() {
+        const self = this;
         async.waterfall([
             function(callback) {
                 self.connectToRethinkDbServer(function(err, connection) {
@@ -54,7 +60,7 @@ class database {
         });
     }
 
-    connectToRethinkDbServer(callback) {
+    function _connectToRethinkDbServer(callback) {
         rethinkdb.connect({
             host : config.db.host,
             port : config.db.listenPort
@@ -63,7 +69,7 @@ class database {
         });
     }
 
-    connectToDb(callback) {
+    function _connectToDb(callback) {
         rethinkdb.connect({
             host : config.db.host,
             port : config.db.listenPort,
@@ -72,6 +78,7 @@ class database {
             callback(err,connection);
         });
     }
-}
 
-module.exports = database;
+}();
+
+module.exports = databaseService;

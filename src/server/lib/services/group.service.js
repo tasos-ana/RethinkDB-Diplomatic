@@ -1,17 +1,23 @@
 'use strict';
-var rethinkdb = require('rethinkdb');
-var async = require('async');
-var db = require('./database.service');
 
-var debug = require('./debug.service');
+const rethinkdb = require('rethinkdb');
+const async     = require('async');
+const db        = require('./database.service');
+const debug     = require('./debug.service');
 
-class GroupService {
+const groupSevice = function () {
+    return {
+        create      : _create,
+        retrieve    : _retrieve,
+        add         : _add
+    };
+
     //TODO na ginei kati san transcation
     //Otan ginetai kapoio fail na diagrafei ola ta tables
-    create(details, callback){
+    function _create(details, callback) {
         async.waterfall([
             function (callback) {
-                new db().connectToDb(function (err,connection) {
+                db.connectToDb(function (err,connection) {
                     if(err){
                         debug.error('Group.service@create: can\'t connect to database');
                         return callback(true, 'Error connecting to database');
@@ -121,41 +127,16 @@ class GroupService {
                     callback(null, connection, responseData);
                 });
             }
-            // ,
-            // /**
-            //  * Stage 5
-            //  * get the data from table
-            //  */
-            // function(connection, responseData, callback) {
-            //     rethinkdb.table(responseData.gID).orderBy("time")
-            //         .run(connection,function (err,cursor) {
-            //             if(err){
-            //                 debug.error('Group.service@create: cant get data from group <' + responseData.gID + '>');
-            //                 return callback(true, 'Error happens while getting user details');
-            //             }
-            //             cursor.toArray(function(err, results) {
-            //                 if (err){
-            //                     debug.error('Group.service@create: cant convert cursor from group <' + responseData.gID + '> to array');
-            //                     return callback(true, 'Error happens while converting data to array');
-            //                 }
-            //                 responseData.data = results;
-            //
-            //                 debug.correct('New group <' + responseData.gID + '> added successful on user <' + details.uEmail + '>');
-            //
-            //                 callback(null,connection,responseData);
-            //             });
-            //         });
-            // }
         ], function (err,connection, data) {
             connection.close();
             callback(err !== null, data);
         });
     }
 
-    retrieve(gID, callback) {
+    function _retrieve(gID, callback) {
         async.waterfall([
             function (callback) {
-                new db().connectToDb(function(err,connection) {
+                db.connectToDb(function(err,connection) {
                     if(err){
                         debug.error('Group.service@retrieve: cant connect on database');
                         return callback(true, 'Error connecting to database');
@@ -186,10 +167,10 @@ class GroupService {
         });
     }
 
-    add(details, callback) {
+    function _add(details, callback) {
         async.waterfall([
             function (callback) {
-                new db().connectToDb(function(err,connection) {
+                db.connectToDb(function(err,connection) {
                     if(err){
                         debug.error('Group.service@add: cant connect on database');
                         return callback(true, 'Error connecting to database');
@@ -216,6 +197,7 @@ class GroupService {
             callback(err !== null, data);
         });
     }
-}
 
-module.exports = GroupService;
+}();
+
+module.exports = groupSevice;

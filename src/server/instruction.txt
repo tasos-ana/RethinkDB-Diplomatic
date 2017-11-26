@@ -2,4 +2,4 @@
      $ cd server && npm install
 
    run the app:
-     $ DEBUG=pushup-refactoring:* npm start
+     $ DEBUG=pushup:* npm start

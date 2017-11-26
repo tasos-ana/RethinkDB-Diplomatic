@@ -1,17 +1,21 @@
 'use strict';
 
-var rethinkdb = require('rethinkdb');
-var async = require('async');
-var db = require('./database.service');
+const rethinkdb = require('rethinkdb');
+const async     = require('async');
+const db        = require('./database.service');
+const debug     = require('./debug.service');
 
-var debug = require('./debug.service');
+var accountService = function () {
+    return {
+        create          : _create,
+        authenticate    : _authenticate,
+        accountInfo     : _accountInfo
+    };
 
-class AccountService {
-
-    create(details, callback) {
+    function _create(details, callback){
         async.waterfall([
             function (callback) {
-                new db().connectToDb(function(err,connection) {
+                db.connectToDb(function(err,connection) {
                     if(err){
                         debug.error('Account.service: create error: connecting on database');
                         return callback(true, 'Error connecting to database');
@@ -40,10 +44,10 @@ class AccountService {
         });
     }
 
-    authenticate(uEmail, uPassword, callback) {
+    function _authenticate(uEmail, uPassword, callback) {
         async.waterfall([
             function (callback) {
-                new db().connectToDb(function (err,connection) {
+                db.connectToDb(function (err,connection) {
                     if(err){
                         debug.error('Account.service@authenticate: connecting to database');
                         return callback(true, 'Error connecting to database');
@@ -82,70 +86,10 @@ class AccountService {
         });
     }
 
-    logout(uEmail, callback){
-        const self = this;
+    function _accountInfo(uEmail, callback) {
         async.waterfall([
             function (callback) {
-                new db().connectToDb(function (err,connection) {
-                    if(err){
-                        debug.error('Account.service@logout: connecting to database');
-                        return callback(true, 'Error connecting to database');
-                    }
-                    callback(null, connection);
-                });
-            },
-            function (connection, callback) {
-                rethinkdb.table('accounts').get(uEmail).getField('groups')
-                    .run(connection,function (err,groups) {
-                        if(err){
-                            debug.error('Account.service@logout: cant get groups for user <' + uEmail + '>');
-                            return callback(true, 'Error happens while getting user details');
-                        }
-                        for(var i=0; i<groups.length; ++i){
-                            self.disableSocket(groups[i].id,function (err,response) {});
-                        }
-                        debug.status('User <' + uEmail + '> log out');
-                        callback(null,'Logged out');
-                        connection.close();
-                    });
-            }
-        ], function (err,data) {
-            callback(err !== null, data);
-        });
-    }
-
-    disableSocket(table, callback){
-        async.waterfall([
-            function (callback) {
-                new db().connectToDb(function (err,conn) {
-                    if(err){
-                        debug.error('Account.service@disableSocket: cant connect to database');
-                        return callback(true, 'Error connecting to database');
-                    }
-                    callback(null, conn);
-                });
-            },
-            function (conn, callback) {
-                rethinkdb.table(table).get('socket').update({connected:false})
-                    .run(conn,function (err,results) {
-                        conn.close();
-                        if(err){
-                            debug.error('Account.service@disableSocket: cant update socket flag');
-                            return callback(true, 'Error on updating socket flag');
-                        }
-                        debug.correct('Socket for table <' + table + '> change to false');
-                        callback(null,'Socket set connected to false');
-                    });
-            }
-        ], function (err,data) {
-            callback(err !== null, data);
-        });
-    }
-
-    accountInfo(uEmail, callback){
-        async.waterfall([
-            function (callback) {
-                new db().connectToDb(function (err,connection) {
+                db.connectToDb(function (err,connection) {
                     if(err){
                         debug.error('Account.service@accountInfo: cant connect to database');
                         return callback(true, 'Error connecting to database');
@@ -173,6 +117,7 @@ class AccountService {
             callback(err !== null, data);
         });
     }
-}
 
-module.exports = AccountService;
+}();
+
+module.exports = accountService;
