@@ -92,7 +92,7 @@ const accountService = function () {
         });
     }
 
-    function _accountInfo(uEmail, callback) {
+    function _accountInfo(uEmail,cookie, callback) {
         async.waterfall([
             function (callback) {
                 db.connectToDb(function (err,connection) {
@@ -115,8 +115,23 @@ const accountService = function () {
                             debug.status('User <' + uEmail + '> do not exists');
                             return callback(true,'Email do not exists');
                         }
-                        debug.correct('Account info for <' + uEmail + '> retrieved');
-                        callback(null,{"email": result.email, "nickname":result.nickname, "groups":result.groups});
+
+                        /**
+                         * Validate that the details that we retrieve it's valid for the user that login
+                         */
+                        try{
+                            const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                            if(cookieDetails.uEmail !== uEmail || cookieDetails.uPassword !== result.password){
+                                debug.error('Account.service@accountInfo: user details and cookie isnt match');
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                debug.correct('Account info for <' + uEmail + '> retrieved');
+                                callback(null,{"email": result.email, "nickname":result.nickname, "groups":result.groups});
+                            }
+                        }catch (e){
+                            debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');
+                            return callback(true,'Invalid cookie');
+                        }
                     });
             }
         ], function (err,data) {

@@ -24,7 +24,7 @@ router.route('/authenticate/:uEmail/:uPassword')
 
 router.route('/info/:uEmail')
     .get(function (req,res) {
-        accountService.accountInfo(req.params.uEmail, function (err,responseData) {
+        accountService.accountInfo(req.params.uEmail,req.header('Authorization'), function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

@@ -4,6 +4,7 @@ const rethinkdb = require('rethinkdb');
 const async     = require('async');
 const db        = require('./database.service');
 const debug     = require('./debug.service');
+const encryption = require('./encryption.service');
 
 const groupSevice = function () {
     return {
@@ -14,7 +15,7 @@ const groupSevice = function () {
 
     //TODO na ginei kati san transcation
     //Otan ginetai kapoio fail na diagrafei ola ta tables
-    function _create(details, callback) {
+    function _create(details, cookie, callback) {
         async.waterfall([
             function (callback) {
                 db.connectToDb(function (err,connection) {
@@ -24,6 +25,42 @@ const groupSevice = function () {
                     }
                     callback(null, connection);
                 });
+            },
+            /**
+             *  Stage 0 validate user and cookie
+             */
+            function (connection, callback) {
+                rethinkdb.table('accounts').get(details.uEmail)
+                    .run(connection,function (err,result) {
+                        if(err){
+                            debug.error('Group.service@create: cant get user <' + details.uEmail + '> info');
+                            connection.close();
+                            return callback(true, 'Error happens while getting user details');
+                        }
+                        if(result === null){
+                            debug.status('User <' + details.uEmail + '> do not exists');
+                            connection.close();
+                            return callback(true,'Email do not exists');
+                        }
+
+                        /**
+                         * Validate that the details that we retrieve it's valid for the user that login
+                         */
+                        try{
+                            const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                            if(cookieDetails.uEmail !== details.uEmail || cookieDetails.uPassword !== result.password){
+                                debug.error('Group.service@create:: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        }catch (e){
+                            debug.error('Group.service@create: user details and cookie isnt match');
+                            connection.close();
+                            return callback(true,'Invalid cookie');
+                        }
+                    });
             },
             /**
              * Stage 1
@@ -41,6 +78,7 @@ const groupSevice = function () {
                 }).run(connection, function (err, result) {
                     if (err) {
                         debug.error('Group.service@create: can\'t insert <' + details.gName + '> on table \'groups\'');
+                        connection.close();
                         return callback(true, 'Error happens while adding new group');
                     }
 
@@ -61,6 +99,7 @@ const groupSevice = function () {
                     .run(connection, function (err, result) {
                         if (err) {
                             debug.error('Group.service@create: cant create new table <' + responseData.gID + '>');
+                            connection.close();
                             return callback(true, 'Error happens while creating table \'' + responseData.gID +'\'');
                         }
 
@@ -78,9 +117,9 @@ const groupSevice = function () {
                     .run(connection,function (err,result) {
                         if (err) {
                             debug.error('Group.service@create: cant retrieve groups for user <' + details.uEmail + '>');
+                            connection.close();
                             return callback(true, 'Error happens while retrieving user group');
                         }
-
                         result[responseData.gID] = {id : responseData.gID, name : details.gName};
 
                         callback(null,result, responseData, connection);
@@ -96,6 +135,7 @@ const groupSevice = function () {
                 }).run(connection, function (err, result) {
                     if (err) {
                         debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
+                        connection.close();
                         return callback(true, 'Error happens while update user groups');
                     }
 
@@ -118,22 +158,22 @@ const groupSevice = function () {
                 }).run(connection,function (err,result) {
                     if (err) {
                         debug.error('Group.service@create: cant insert socket on group <' + responseData.gID + '>');
+                        connection.close();
                         return callback(true, 'Error happens while adding socket on group');
                     }
 
                     debug.status('Add socket on group <' + responseData.gID + '>');
                     debug.correct('New group <' + responseData.gID + '> added successful on user <' + details.uEmail + '>');
 
-                    callback(null, connection, responseData);
+                    callback(null, responseData);
                 });
             }
-        ], function (err,connection, data) {
-            connection.close();
+        ], function (err, data) {
             callback(err !== null, data);
         });
     }
 
-    function _retrieve(gID, callback) {
+    function _retrieve(gID, cookie, callback) {
         async.waterfall([
             function (callback) {
                 db.connectToDb(function(err,connection) {
@@ -143,6 +183,39 @@ const groupSevice = function () {
                     }
                     callback(null,connection);
                 });
+            },
+            function (connection, callback) {
+                /**
+                 * Validate that the details that we retrieve it's valid for the user that login
+                 */
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    .run(connection,function (err,result) {
+                        if(err){
+                            debug.error('Account.service@accountInfo: cant get user <' + cookieDetails.uEmail + '> info');
+                            connection.close();
+                            return callback(true, 'Error happens while getting user details');
+                        }
+                        if(result === null){
+                            debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                            connection.close();
+                            return callback(true,'Email do not exists');
+                        }
+
+                        if(cookieDetails.uPassword !== result.password || result.groups[gID] === undefined){
+                            debug.error('Account.service@accountInfo: user details and cookie isnt match');
+                            connection.close();
+                            return callback(true,'Invalid cookie');
+                        }else{
+                            callback(null,connection);
+                        }
+                    });
+                }catch (e){
+                    debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
             },
             function(connection,callback) {
                 rethinkdb.table(gID).orderBy("time")
@@ -167,7 +240,7 @@ const groupSevice = function () {
         });
     }
 
-    function _add(details, callback) {
+    function _add(details,cookie, callback) {
         async.waterfall([
             function (callback) {
                 db.connectToDb(function(err,connection) {
@@ -177,6 +250,39 @@ const groupSevice = function () {
                     }
                     callback(null,connection);
                 });
+            },
+            function (connection, callback) {
+                /**
+                 * Validate that the details that we retrieve it's valid for the user that login
+                 */
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@accountInfo: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+
+                            if(cookieDetails.uPassword !== result.password || result.groups[details.gID] === undefined){
+                                debug.error('Account.service@accountInfo: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
             },
             function(connection,callback) {
                 rethinkdb.table(details.gID).insert({

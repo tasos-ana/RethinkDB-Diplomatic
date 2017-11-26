@@ -1,11 +1,11 @@
 'use strict';
 
-const rethinkdb = require('rethinkdb');
-const db        = require('./database.service');
-const async     = require('async');
-const debug     = require('./debug.service');
+const rethinkdb  = require('rethinkdb');
+const db         = require('./database.service');
+const async      = require('async');
+const debug      = require('./debug.service');
 
-var syncService = function () {
+const syncService = function () {
     var groups = [];
 
     return{
