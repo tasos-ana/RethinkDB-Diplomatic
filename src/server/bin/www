@@ -84,19 +84,26 @@ function onError(error) {
 }
 
 const io = require('socket.io').listen(server);
-const syncService = require('../lib/services/sync.service');
+var syncService = require('../lib/services/sync.service');
 
 io.on('connection',function (socket) {
-  const sync = new syncService();
+  var sync = new syncService();
 
-  socket.on('sync', function (gID) {
+  console.log('connection fired');
+  socket.on('sync', function (gID){
      sync.feed(socket, gID);
   });
 
   socket.on('disconnect',function () {
-    console.log('disconnected');
+    console.log('disconnect fired');
      sync.disconnect();
   });
+
+  socket.on('logout', function () {
+     sync.disconnect();
+  });
+
+  socket.emit('hello');
 
 });
 

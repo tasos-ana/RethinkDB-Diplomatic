@@ -7,17 +7,20 @@
 
     socketService.$inject = [];
     function socketService() {
-        const socket = io();
+        console.log('socket connect');
+        var socket = io();
 
         return {
-            disconnect: function () {
-              socket.emit('disconnect');
+            logout: function () {
+              socket.emit('logout');
             },
-            on: function (eventName, callback) {
-                socket.on(eventName,callback);
+            on: function (gID, callback) {
+                console.log('socket listen on ' + gID);
+                socket.on(gID, callback);
             },
-            emit: function (table) {
-                socket.emit('sync', table);
+            emit: function (gID) {
+                console.log('send emit '+ gID);
+                socket.emit('sync', gID);
             }
         };
     }
