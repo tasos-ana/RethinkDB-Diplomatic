@@ -28,14 +28,14 @@
             $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata;
 
             // store user details in globals cookie that keeps user logged in for 1 week (or until they logout)
-            var cookieExp = new Date();
-            cookieExp.setDate(cookieExp.getDate() + 7);
+            const cookieExp = new Date();
+            cookieExp.setHours(cookieExp.getHours() + 1);
             $cookies.putObject('globals', $rootScope.globals, { expires: cookieExp });
         }
 
         //TODO emit disconect
         function clearCredentials() {
-            socketService.disconnect();
+            socketService.logout();
             $rootScope.globals = {};
             $cookies.remove('globals');
             $http.defaults.headers.common.Authorization = 'Basic';
