@@ -14,11 +14,9 @@
               socket.emit('logout');
             },
             on: function (gID, callback) {
-                console.log('socket listen on ' + gID);
                 socket.on(gID, callback);
             },
             emit: function (gID) {
-                console.log('send emit '+ gID);
                 socket.emit('sync', gID);
             }
         };

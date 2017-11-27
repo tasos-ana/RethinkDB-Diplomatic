@@ -1,0 +1,40 @@
+<md-dialog aria-label="Group Settings">
+    <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h3>Group Settings</h3>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <form name="groupSettings" role="form">
+                <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
+                    <div layout="column">
+                        <md-input-container>
+                            <label>Current Name</label>
+                            <input name='gName' ng-model="group.curName" type='text' ng-disabled="true">
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Type new name</label>
+                            <input name='gName' ng-model="group.newName" type='text'>
+                        </md-input-container>
+                    </div>
+                </md-content>
+            </form>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button class="md-warn" ng-click="deleteGroup()">
+                <span class="glyphicon glyphicon-trash"> Delete</span>
+            </md-button>
+            <span flex></span>
+            <md-button class="md-accent" ng-click="cancelChanges()">
+                Cancel
+            </md-button>
+            <md-button class="md-primary" ng-click="applyChanges()">
+                Apply
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
+

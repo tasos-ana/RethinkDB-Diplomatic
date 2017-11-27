@@ -5,12 +5,13 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService'];
-    function DashboardController($rootScope, $location, httpService, dashboardService) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', '$mdDialog'];
+    function DashboardController($rootScope, $location, httpService, dashboardService, $mdDialog) {
         const vm = this;
 
-        vm.uploadData = uploadData;
-        vm.groupCreate = groupCreate;
+        vm.uploadData       = uploadData;
+        vm.groupCreate      = groupCreate;
+        vm.groupSettings    = groupSettings;
 
         (function initController() {
             $rootScope.dataLoading = true;
@@ -74,6 +75,55 @@
                         vm.group.name = '';
                     }
                 });
+        }
+
+        function groupSettings(gID,ev) {
+            $rootScope.group = {
+                id      : gID,
+                curName : $rootScope.user.groups[gID].name,
+                newName : undefined
+            };
+
+            $mdDialog.show({
+                controller          :   groupSettingsController,
+                templateUrl         :   './app/components/dashboard/templates/groupSettings.tpl.html',
+                parent              :   angular.element(document.body),
+                targetEvent         :   ev,
+                clickOutsideToClose :   true,
+                fullscreen          :   false
+            }).then(function (answer) {
+                if(answer === 'delete'){
+                    console.log('delete');
+                }else{
+                    console.log('new name + ' + $rootScope.group.newName);
+                    console.log('apply');
+                }
+            },function () {
+                $rootScope.group = undefined;
+                console.log('cancel');
+            });
+        }
+
+        function groupSettingsController($scope, $mdDialog) {
+            $scope.group = $rootScope.group;
+
+            $scope.cancelChanges = cancelChanges;
+            $scope.applyChanges  = applyChanges;
+            $scope.deleteGroup   = deleteGroup;
+
+
+            function cancelChanges() {
+                $mdDialog.cancel();
+            }
+
+            function applyChanges() {
+                $rootScope.group.newName = $scope.group.newName;
+                $mdDialog.hide('changes');
+            }
+
+            function deleteGroup() {
+                $mdDialog.hide('delete');
+            }
         }
 
     }
