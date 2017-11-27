@@ -89,6 +89,8 @@ var syncService = require('../lib/services/sync.service');
 io.on('connection',function (socket) {
   var sync = new syncService();
 
+  //TODO na ftiaksw otan ginetai disconnect kai reconnect na
+    //TODO na pernei to palio socket pou eixe, afto ginetai apo mobile otan ginei lock,unlock
   console.log('connection fired');
   socket.on('sync', function (gID){
      sync.feed(socket, gID);
@@ -102,8 +104,6 @@ io.on('connection',function (socket) {
   socket.on('logout', function () {
      sync.disconnect();
   });
-
-  socket.emit('hello');
 
 });
 

@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$location', 'httpService'];
-    function RegisterController($rootScope, $location, httpService) {
+    RegisterController.$inject = ['$rootScope', '$location', 'httpService','$timeout'];
+    function RegisterController($rootScope, $location, httpService, $timeout) {
         const vm = this;
 
         vm.register = register;
@@ -16,6 +16,8 @@
         (function initController() {
             vm.dataLoading = false;
             vm.emailExists = false;
+            vm.registerComplete = false;
+            vm.user = {};
         })();
 
         function register(ev) {
@@ -32,9 +34,13 @@
                     httpService.accountCreate(vm.user)
                         .then(function (response) {
                             if (response.success) {
-                                //TODO na emfanizete minima oti egine register
                                 $rootScope.user = vm.user;
-                                $location.path('/login');
+                                vm.registerComplete = true;
+                                $timeout(function () {
+                                    if($location.path() === '/register'){
+                                        $location.path('/login');
+                                    }
+                                },2000);
                             } else {
                                 vm.dataLoading = false;
                                 $rootScope.showAlert(

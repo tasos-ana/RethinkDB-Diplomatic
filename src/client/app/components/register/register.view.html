@@ -1,4 +1,9 @@
-<div layout="column" layout-align="top center">
+<div ng-hide="!vm.registerComplete" layout="column" layout-align="top center">
+    <h3> Register complete! </h3>
+    <h4> redirecting to login page in 2 seconds...</h4>
+    <h6> press <a href="/login">here</a> if you don't redirect automatically</h6>
+</div>
+<div ng-hide="vm.registerComplete" layout="column" layout-align="top center">
     <md-content layout-padding>
         <form name="registerForm" ng-submit="vm.register($event)" role="form">
             <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>

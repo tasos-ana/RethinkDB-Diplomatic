@@ -23,7 +23,6 @@ const syncService = function () {
                     callback(null, connection);
                 });
             },
-            //TODO otan ginete disconnect tha prepei na ginetai mono apo 1 device kai oxi apo ola
             function (connection, callback) {
                 if(tryPush(gID)){
                     debug.status('Start feeding on group <' + gID + '>');
