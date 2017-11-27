@@ -1,0 +1,49 @@
+<md-tab ng-repeat="gID in user.groups">
+    <md-tab-label>
+        {{gID.name}}
+        <a class="glyphicon glyphicon-edit md-warn"
+           style="cursor:pointer;"
+           title="Edit group"
+           ng-click="vm.groupSettings(gID.id, $event)">
+        </a>
+    </md-tab-label>
+    <md-tab-body>
+        <div layout="row">
+            <div  flex="5"></div>
+            <div layout="column" flex>
+
+                <form name="pushingForm" ng-submit="vm.uploadData(gID.id)" role="form">
+                    <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
+                        <div layout="row" layout-xs="column">
+                            <md-input-container flex>
+                                <label for="data">Type something and pushUP it</label>
+                                <input type='text' id="data" name='data' ng-model="gID.upload.data">
+                            </md-input-container>
+                            <md-button type="submit" class="md-accent" ng-disabled="gID.upload.uploadData">Push
+                                <span class="glyphicon glyphicon-arrow-up"></span></md-button>
+                        </div>
+                    </md-content>
+                </form>
+
+                <div layout="column" layout-align="end center" ng-hide="!gID.dataLoading">
+                    <md-progress-circular md-diameter="80"></md-progress-circular>
+                    <div>Loading . . .</div>
+                </div>
+
+                <md-content ng-hide="gID.dataLoading">
+                    <md-list layout-padding id="dataList">
+                        <md-list-item class="md-2-line" ng-repeat="gData in gID.data | reverse">
+                            <div class="md-list-item-text">
+                                <p style="color: gray; font-size: 10px; font-style: italic;">{{gData.date}}</p>
+                                <p style="font-size: 19px; color: white;">{{gData.data}}</p>
+                            </div>
+                            <md-divider ng-if="!$last"></md-divider>
+                        </md-list-item>
+                    </md-list>
+                </md-content>
+
+            </div>
+            <div  flex="5"></div>
+        </div>
+    </md-tab-body>
+</md-tab>
