@@ -55,7 +55,12 @@
                     class="md-sidenav-left"
                     md-component-id="left"
                     md-disable-backdrop md-whiteframe="4">
-                <md-toolbar layout="row" layout-align="center center"> PushUP | Menu</md-toolbar>
+                <md-toolbar layout="column" layout-align="center center">
+                    <md-content style="background-color: transparent;">
+                        <img style="width: 165px; height: 50px;"
+                             src="./assets/img/logo_transparent.png">
+                    </md-content>
+                </md-toolbar>
                 <md-content layout-margin>
                     <md-content show-gt-md layout="column">
                         <md-button ng-hide="loginStatus" class="md-primary" ng-click="toggleLeft()" href="/home">
@@ -84,13 +89,14 @@
             </md-sidenav>
             <md-content flex layout-padding>
                 <div>
-                    <md-button ng-click="toggleLeft()" class="md-primary" layout="row" layout-align="top left">
+                    <md-button ng-click="toggleLeft()" class="md-primary">
                         <span class="glyphicon glyphicon-menu-hamburger"> {{ pageName }}</span>
                     </md-button>
                 </div>
                 <div id="popupContainer" ng-view=""></div>
             </md-content>
         </section>
+        <footer style="text-align: center;">&COPY; 2017. Designed by Tasos Anastasas</footer>
     </div>
 </body>
 </html>
