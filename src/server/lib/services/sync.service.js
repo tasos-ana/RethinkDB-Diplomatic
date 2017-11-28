@@ -55,7 +55,7 @@ const syncService = function () {
                         cursor.each(function (err, row) {
                             if(row !== undefined){
                                 if(Object.keys(row).length>0){
-                                    if(row.new_val.id !== 'socket'){
+                                    if(row.new_val.id !== 'settings'){
                                         debug.status('Broadcast new data for group <' + gID + '>');
                                         socket.emit(gID, {
                                             "data"  : row.new_val.data,
@@ -152,7 +152,7 @@ const syncService = function () {
     function removeGroup(gID){
         const index = groups.indexOf(gID);
         if (index >= 0) {
-            groups.splice( index, 1 );
+            groups.splice(index, 1);
         }
     }
 

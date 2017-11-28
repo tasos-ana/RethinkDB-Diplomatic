@@ -18,7 +18,7 @@
 
             $rootScope.globals = {
               currentUser: {
-                  email : uEmail,
+                  email     : uEmail,
                   authdata  : cookie}
             };
 

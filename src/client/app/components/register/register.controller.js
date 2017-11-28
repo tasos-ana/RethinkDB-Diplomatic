@@ -34,7 +34,6 @@
                     httpService.accountCreate(vm.user)
                         .then(function (response) {
                             if (response.success) {
-                                $rootScope.user = vm.user;
                                 vm.registerComplete = true;
                                 $timeout(function () {
                                     if($location.path() === '/register'){

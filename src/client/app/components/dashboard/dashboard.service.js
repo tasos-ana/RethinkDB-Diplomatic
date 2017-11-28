@@ -7,29 +7,38 @@
 
     dashboardService.$inject = ['$rootScope', '$location', 'httpService', 'socketService', '$timeout'];
     function dashboardService($rootScope, $location, httpService, socketService, $timeout) {
-        var service = {};
+        const service = {};
 
         service.getAccountGroups = getAccountGroups;
 
         return service;
 
         function getAccountGroups() {
-            for(const id in $rootScope.user.groups){
-                const data = $rootScope.user.groups[id].data;
-                if(data === undefined || data === null || data.length === 0){
-                    getGroup(id);
+
+            for(let i = 0; i<$rootScope.user.groupsList.length; ++i){
+                const gID  = $rootScope.user.groupsList[i];
+                if($rootScope.user.groupsData[gID] === undefined){
+                    $rootScope.user.groupsData[gID] = { };
+                    getGroup(gID);
+                }else{
+                    const data = $rootScope.user.groupsData[gID].data;
+                    if (data === undefined || data === null || data.length === 0){
+                        getGroup(gID);
+                    }
                 }
             }
         }
 
         function getGroup(id) {
-            $rootScope.user.groups[id].dataLoading = true;
+            $rootScope.user.groupsData[id].dataLoading = true;
             httpService.groupRetrieveData(id)
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.user.groups[response.data.id].data = response.data.value;
+                        $rootScope.user.groupsData[response.data.id].id = response.data.id;
+                        $rootScope.user.groupsData[response.data.id].name = response.data.name;
+                        $rootScope.user.groupsData[response.data.id].data = response.data.value;
                         prepareGroup(response.data.id);
-                        $rootScope.user.groups[response.data.id].dataLoading = false;
+                        $rootScope.user.groupsData[response.data.id].dataLoading = false;
                     }else{
                         $location.path('/login');
                     }
@@ -41,7 +50,7 @@
             configureAllDates(id);
 
             //INIT upload fields
-            $rootScope.user.groups[id].upload = {
+            $rootScope.user.groupsData[id].upload = {
                 data    : '',
                 type    : '',
                 time    : '',
@@ -56,7 +65,7 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         data.date = configureDate(new Date(), new Date(data.time));
-                        $rootScope.user.groups[id].data[$rootScope.user.groups[id].data.length] = data;
+                        $rootScope.user.groupsData[id].data[$rootScope.user.groupsData[id].data.length] = data;
                     });
                 });
             });
@@ -64,14 +73,14 @@
 
         function configureAllDates(index) {
             const now = new Date();
-            for(var i = 0; i<$rootScope.user.groups[index].data.length; ++i){
-                const date = new Date($rootScope.user.groups[index].data[i].time);
-                $rootScope.user.groups[index].data[i].date = configureDate(now,date);
+            for(let i = 0; i<$rootScope.user.groupsData[index].data.length; ++i){
+                const date = new Date($rootScope.user.groupsData[index].data[i].time);
+                $rootScope.user.groupsData[index].data[i].date = configureDate(now,date);
             }
         }
 
         function configureDate(now,date) {
-            var dateAsString = 'Today';
+            let dateAsString = 'Today';
             const _dd = now.getDate(),
                 _mm = now.getMonth() + 1,
                 _yyyy = now.getYear();

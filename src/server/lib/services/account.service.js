@@ -51,7 +51,7 @@ const accountService = function () {
                     'nickname'  : details.uNickname,
                     'email'     : details.uEmail,
                     'password'  : details.uPassword,
-                    'groups'    : {}
+                    'groups'    : []
                 }).run(connection,function(err,result){
                     connection.close();
                     if(err){
@@ -121,7 +121,8 @@ const accountService = function () {
                                     response    : {
                                         email       : result.email,
                                         nickname    : result.nickname,
-                                        groups      : result.groups
+                                        groupsList  : result.groups,
+                                        groupsData  : { }
                                 }});
                             }
                         }
@@ -179,7 +180,12 @@ const accountService = function () {
                                 return callback(true,'Invalid cookie');
                             }else{
                                 debug.correct('Account info for <' + uEmail + '> retrieved');
-                                callback(null,{"email": result.email, "nickname":result.nickname, "groups":result.groups});
+                                callback(null,{
+                                    "email"         : result.email,
+                                    "nickname"      : result.nickname,
+                                    "groupsList"    : result.groups,
+                                    "groupsData"    : { }
+                                });
                             }
                         }catch (e){
                             debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');

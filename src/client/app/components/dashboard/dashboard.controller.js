@@ -33,30 +33,30 @@
         })();
 
         function uploadData(gID) {
-            $rootScope.user.groups[gID].upload.uploadData = true;
+            $rootScope.user.groupsData[gID].upload.uploadData = true;
 
-            if($rootScope.user.groups[gID].upload.data.length>0){
+            if($rootScope.user.groupsData[gID].upload.data.length>0){
 
-                $rootScope.user.groups[gID].upload.gID = $rootScope.user.groups[gID].id;
-                $rootScope.user.groups[gID].upload.type = 'text';
-                $rootScope.user.groups[gID].upload.time = Date.now();
+                $rootScope.user.groupsData[gID].upload.gID = $rootScope.user.groupsData[gID].id;
+                $rootScope.user.groupsData[gID].upload.type = 'text';
+                $rootScope.user.groupsData[gID].upload.time = Date.now();
 
-                httpService.groupAddData($rootScope.user.groups[gID].upload)
+                httpService.groupAddData($rootScope.user.groupsData[gID].upload)
                     .then(function (response) {
                         if(response.success){
-                            $rootScope.user.groups[gID].upload = {
+                            $rootScope.user.groupsData[gID].upload = {
                                 data    : '',
                                 type    : '',
                                 time    : '',
                                 table   : ''
                             };
-                            $rootScope.user.groups[gID].upload.uploadData = false;
+                            $rootScope.user.groupsData[gID].upload.uploadData = false;
                         } else{
                             $location.path('/login');
                         }
                 });
             }else{
-                $rootScope.user.groups[gID].upload.uploadData = false;
+                $rootScope.user.groupsData[gID].upload.uploadData = false;
             }
         }
 
@@ -69,7 +69,8 @@
             httpService.groupCreate({uEmail : curUser.email, gName : vm.group.name})
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.user.groups[response.data.gID] = {id: response.data.gID, name: response.data.gName};
+                        $rootScope.user.groupsList.push(response.data.gID);
+                        $rootScope.user.groupsData[response.data.gID] = {id: response.data.gID, name: response.data.gName};
                         dashboardService.getAccountGroups();
                         vm.group.creating = false;
                         vm.group.name = '';
@@ -80,7 +81,7 @@
         function groupSettings(gID,ev) {
             $rootScope.group = {
                 id      : gID,
-                curName : $rootScope.user.groups[gID].name,
+                curName : $rootScope.user.groupsData[gID].name,
                 newName : undefined
             };
 
@@ -96,8 +97,9 @@
                     httpService.groupDelete(gID)
                         .then(function (response) {
                            if(response.success){
-                                delete $rootScope.user.groups[gID];
-                                delete $rootScope.group;
+                               removeGroup(gID);
+                               delete $rootScope.user.groupsData[gID];
+                               delete $rootScope.group;
                            }else{
                                $location.path('/login');
                            }
@@ -131,6 +133,13 @@
 
             function deleteGroup() {
                 $mdDialog.hide('delete');
+            }
+        }
+
+        function removeGroup(gID){
+            const index = $rootScope.user.groupsList.indexOf(gID);
+            if (index >= 0) {
+                $rootScope.user.groupsList.splice(index, 1);
             }
         }
 
