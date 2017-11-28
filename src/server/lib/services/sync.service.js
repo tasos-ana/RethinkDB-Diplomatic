@@ -1,10 +1,15 @@
 'use strict';
 
 const rethinkdb  = require('rethinkdb');
-const db         = require('./database.service');
 const async      = require('async');
+
+const db         = require('./database.service');
 const debug      = require('./debug.service');
 
+/**
+ * API for sync data between devices
+ * @returns {{feed: _feed, disconnect: _disconnect}}
+ */
 const syncService = function () {
     var groups = [];
 
@@ -12,9 +17,19 @@ const syncService = function () {
       feed          : _feed,
       disconnect    : _disconnect  
     };
-    
+
+    /**
+     * Live feed changes on table and emit it on user
+     * @param socket    communication socket between server,client
+     * @param gID       group id that we feed
+     * @private
+     */
     function _feed(socket, gID) {
         async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
             function (callback) {
                 db.connectToDb(function (err, connection) {
                     if (err){
@@ -23,6 +38,11 @@ const syncService = function () {
                     callback(null, connection);
                 });
             },
+            /**
+             * Start live feeding on group
+             * @param connection
+             * @param callback
+             */
             function (connection, callback) {
                 if(tryPush(gID)){
                     debug.status('Start feeding on group <' + gID + '>');
@@ -43,8 +63,8 @@ const syncService = function () {
                                             "time"  : row.new_val.time,
                                             "type"  : row.new_val.type
                                         });
-                                        // socket.emit(listenOn);
                                     }else{
+                                        removeGroup(gID);
                                         cursor.close(function (err) {
                                             if(err){
                                                 debug.error('Sync.service@feed: cant close cursor');
@@ -69,7 +89,11 @@ const syncService = function () {
             }
         });
     }
-    
+
+    /**
+     * if user disconnect or logout we must stop live feed
+     * @private
+     */
     function _disconnect() {
         while(groups.length > 0){
             const gID = groups.pop();
@@ -77,26 +101,17 @@ const syncService = function () {
         }
     }
 
-    function removeGroup(gID){
-        const index = groups.indexOf(gID);
-        if (index >= 0) {
-            groups.splice( index, 1 );
-        }
-    }
-
-    function tryPush(gID) {
-        const index = groups.indexOf(gID);
-        var status = false;
-        if(index < 0){
-            groups.push(gID);
-            status = true;
-        }
-
-        return status;
-    }
-
+    /**
+     * Make change on group so we cant close live feed
+     * @param gID
+     * @private
+     */
     function closeGroupFeed(gID){
         async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
             function (callback) {
                 db.connectToDb(function (err, connection) {
                     if(err){
@@ -106,6 +121,11 @@ const syncService = function () {
                     callback(null,connection);
                 });
             },
+            /**
+             * Update lastlogin field on group
+             * @param connection
+             * @param callback
+             */
             function (connection, callback) {
                 rethinkdb.table(gID).get('socket').update({lastLogin : Date.now()})
                     .run(connection, function (err, result) {
@@ -122,6 +142,35 @@ const syncService = function () {
                 debug.error(msg);
             }
         });
+    }
+
+    /**
+     * Remove gID from group list
+     * @param gID
+     * @private
+     */
+    function removeGroup(gID){
+        const index = groups.indexOf(gID);
+        if (index >= 0) {
+            groups.splice( index, 1 );
+        }
+    }
+
+    /**
+     * If gID do not exists on list push them else return false
+     * @param gID
+     * @returns {boolean}
+     * @private
+     */
+    function tryPush(gID) {
+        const index = groups.indexOf(gID);
+        var status = false;
+        if(index < 0){
+            groups.push(gID);
+            status = true;
+        }
+
+        return status;
     }
 
 };

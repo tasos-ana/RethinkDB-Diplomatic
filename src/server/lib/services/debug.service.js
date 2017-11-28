@@ -1,6 +1,10 @@
 "use strict";
 const dbg = require('debug')('pushup:server');
 
+/**
+ * API for handle debug message with color depends on state
+ * @type {{error, status, correct}}
+ */
 const debug = function(){
 
     const r_clr = '\x1b[31m'; // red color

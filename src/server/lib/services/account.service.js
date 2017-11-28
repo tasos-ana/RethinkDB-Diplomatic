@@ -2,29 +2,50 @@
 
 const rethinkdb  = require('rethinkdb');
 const async      = require('async');
+
 const db         = require('./database.service');
 const debug      = require('./debug.service');
 const encryption = require('./encryption.service');
 
-
+/**
+ * API for managing user account
+ * @type {{create, authenticate, accountInfo}}
+ */
 const accountService = function () {
+
+
     return {
         create          : _create,
         authenticate    : _authenticate,
-        accountInfo     : _accountInfo
+        info            : _info
     };
 
+    /**
+     * Create new account for user
+     * @param details   contains uNickname, uEmail, uPassword
+     * @param callback
+     * @private
+     */
     function _create(details, callback){
         async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
             function (callback) {
                 db.connectToDb(function(err,connection) {
                     if(err){
-                        debug.error('Account.service: create error: connecting on database');
+                        debug.error('Account.service@create: connecting on database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null,connection);
                 });
             },
+            /**
+             * Insert new user at accounts table on database
+             * @param connection
+             * @param callback
+             */
             function(connection,callback) {
                 rethinkdb.table('accounts').insert({
                     'nickname'  : details.uNickname,
@@ -34,7 +55,7 @@ const accountService = function () {
                 }).run(connection,function(err,result){
                     connection.close();
                     if(err){
-                        debug.error('Account.service: create error: cant create user <' + details.uEmail + '> account')
+                        debug.error('Account.service@create: cant create user <' + details.uEmail + '> account')
                         return callback(true, 'Error happens while creating new account');
                     }
                     debug.correct('New user <' + details.uEmail + '> added successfully');
@@ -46,8 +67,19 @@ const accountService = function () {
         });
     }
 
+    /**
+     * Authenticate user details providing with database user details
+     * @param uEmail     user email
+     * @param uPassword  user password
+     * @param callback
+     * @private
+     */
     function _authenticate(uEmail, uPassword, callback) {
         async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
             function (callback) {
                 db.connectToDb(function (err,connection) {
                     if(err){
@@ -57,6 +89,11 @@ const accountService = function () {
                     callback(null, connection);
                 });
             },
+            /**
+             * Retrieve details for user based on uEmail
+             * @param connection
+             * @param callback
+             */
             function (connection, callback) {
                 rethinkdb.table('accounts').get(uEmail)
                     .run(connection,function (err,result) {
@@ -75,6 +112,9 @@ const accountService = function () {
                                 return callback(true, 'Email or password its wrong');
                             }else{
                                 debug.correct('User <' + uEmail + '> authenticated');
+                                /**
+                                 * Initialize cookie for user and encrypt it
+                                 */
                                 const cookie = encryption.encrypt(JSON.stringify({uEmail: uEmail, uPassword:uPassword}));
                                 callback(null, {
                                     cookie      : cookie ,
@@ -92,8 +132,19 @@ const accountService = function () {
         });
     }
 
-    function _accountInfo(uEmail,cookie, callback) {
+    /**
+     * Retrieve account info based on uEmail
+     * @param uEmail    user email
+     * @param cookie    Authorization field from request, required for validation
+     * @param callback
+     * @private
+     */
+    function _info(uEmail,cookie, callback) {
         async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
             function (callback) {
                 db.connectToDb(function (err,connection) {
                     if(err){
@@ -103,6 +154,11 @@ const accountService = function () {
                     callback(null, connection);
                 });
             },
+            /**
+             * Get details for uEmail and perform validation check
+             * @param connection
+             * @param callback
+             */
             function (connection, callback) {
                 rethinkdb.table('accounts').get(uEmail)
                     .run(connection,function (err,result) {
@@ -116,13 +172,10 @@ const accountService = function () {
                             return callback(true,'Email do not exists');
                         }
 
-                        /**
-                         * Validate that the details that we retrieve it's valid for the user that login
-                         */
                         try{
                             const cookieDetails = JSON.parse(encryption.decrypt(cookie));
                             if(cookieDetails.uEmail !== uEmail || cookieDetails.uPassword !== result.password){
-                                debug.error('Account.service@accountInfo: user details and cookie isnt match');
+                                debug.error('Account.service@accountInfo: user details and cookie do not matched');
                                 return callback(true,'Invalid cookie');
                             }else{
                                 debug.correct('Account info for <' + uEmail + '> retrieved');
