@@ -51,7 +51,7 @@
 
         function _groupCreate(data) {
             return $http.post('/group/create',data)
-                .then(handleSuccess,handleError('Cant create group \'' + data.gName + '\' for user ' + data.uEamil));
+                .then(handleSuccess,handleError('Cant create group \'' + data.gName + '\' for user ' + data.uEmail));
         }
 
         function _groupDelete(gID) {
