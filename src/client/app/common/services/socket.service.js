@@ -7,7 +7,7 @@
 
     socketService.$inject = [];
     function socketService() {
-        var socket = io();
+        const socket = io();
 
         return {
             logout: function () {

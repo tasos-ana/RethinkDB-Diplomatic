@@ -9,48 +9,54 @@
     function httpService($http, md5) {
         var service = {};
 
-        service.accountGetUserByEmail = accountGetUserByEmail;
+        service.accountGetUserByEmail   = _accountGetUserByEmail;
 
-        service.accountCreate = accountCreate;
+        service.accountCreate           = _accountCreate;
 
-        service.accountAuthenticate = accountAuthenticate;
+        service.accountAuthenticate     = _accountAuthenticate;
 
-        service.groupAddData = groupAddData;
-        service.groupRetrieveData = groupRetrieveData;
-        service.groupCreate = groupCreate;
+        service.groupAddData            = _groupAddData;
+        service.groupRetrieveData       = _groupRetrieveData;
+        service.groupCreate             = _groupCreate;
+        service.groupDelete             = _groupDelete;
 
         return service;
 
         // private functions
-        function accountGetUserByEmail(uEmail) {
+        function _accountGetUserByEmail(uEmail) {
             return $http.get('/account/info/' + uEmail)
                 .then(handleSuccess, handleError('User do not exist'));
         }
 
-        function accountCreate(user) {
+        function _accountCreate(user) {
             user.uPassword = md5.createHash(user.uPassword || '');
             return $http.post('/account/create', user)
                 .then(handleSuccess, handleError('Error creating user'));
         }
 
-        function accountAuthenticate(user) {
+        function _accountAuthenticate(user) {
             return $http.get('/account/authenticate/' + user.uEmail + '/' + md5.createHash(user.uPassword))
                 .then(handleSuccess,handleError('Error at user login'));
         }
 
-        function groupAddData(data) {
+        function _groupAddData(data) {
             return $http.post('/group/add', data)
                 .then(handleSuccess,handleError('Cant push data'));
         }
 
-        function groupRetrieveData(gID) {
+        function _groupRetrieveData(gID) {
             return $http.get('/group/retrieve/' + gID)
                 .then(handleSuccess,handleError('Cant retrieve data from table:' + gID));
         }
 
-        function groupCreate(data) {
+        function _groupCreate(data) {
             return $http.post('/group/create',data)
                 .then(handleSuccess,handleError('Cant create group \'' + data.gName + '\' for user ' + data.uEamil));
+        }
+
+        function _groupDelete(gID) {
+            return $http.get('/group/delete/' + gID)
+                .then(handleSuccess,handleSuccess('Cant delete group \'' + gID + '\''));
         }
 
         function handleSuccess(res) {

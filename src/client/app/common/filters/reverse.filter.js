@@ -3,8 +3,11 @@
 
     angular
         .module('starterApp')
-        .filter('reverse',reverse)
+        .filter('reverse',reverse);
 
+    /**
+     * Filter for reverse item on ng-repeat
+     */
     reverse.$inject =[];
     function reverse() {
         return function(items) {
