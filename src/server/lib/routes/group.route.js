@@ -4,7 +4,7 @@ const groupService = require('../services/group.service');
 
 router.route('/create')
     .post(function (req,res) {
-        groupService.create(req.body, req.header('Authorization'), function (err,responseData) {
+        groupService.createGroup(req.body, req.header('Authorization'), function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -14,7 +14,7 @@ router.route('/create')
 
 router.route('/retrieve/:gID')
     .get(function (req,res) {
-        groupService.retrieve(req.params.gID, req.header('Authorization'), function (err,responseData) {
+        groupService.retrieveGroup(req.params.gID, req.header('Authorization'), function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -24,7 +24,27 @@ router.route('/retrieve/:gID')
 
 router.route('/add')
     .post(function (req,res) {
-        groupService.add(req.body, req.header('Authorization'), function (err,responseData) {
+        groupService.addData(req.body, req.header('Authorization'), function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/update/name')
+    .post(function (req,res) {
+        groupService.updateGroupName(req.body, req.header('Authorization'), function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/delete/:gID')
+    .get(function (req,res) {
+        groupService.deleteGroup(req.params.gID, req.header('Authorization'), function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

@@ -93,7 +93,15 @@
                 fullscreen          :   false
             }).then(function (answer) {
                 if(answer === 'delete'){
-                    console.log('delete');
+                    httpService.groupDelete(gID)
+                        .then(function (response) {
+                           if(response.success){
+                                delete $rootScope.user.groups[gID];
+                                delete $rootScope.group;
+                           }else{
+                               $location.path('/login');
+                           }
+                        });
                 }else{
                     console.log('new name + ' + $rootScope.group.newName);
                     console.log('apply');

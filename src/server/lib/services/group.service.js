@@ -462,14 +462,14 @@ const groupService = function () {
              * @param callback
              */
             function (connection, uEmail, callback) {
-                rethinkdb.table('accounts').get(uEmail)
+                rethinkdb.table('accounts').get(uEmail).getField('groups')
                     .run(connection,function (err, results) {
                         if(err){
                             debug.error('Group.service@delete: cant get user <' + uEmail + '> details');
                             connection.close();
                             return callback(true, 'Cant retrieve user details');
                         }
-                        callback(null, connection, results.groups, uEmail);
+                        callback(null, connection, results, uEmail);
                     });
             },
             /**
@@ -493,18 +493,36 @@ const groupService = function () {
                     });
             },
             /**
+             * Delete the group(gID) from groups table
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                const _gID = gID.replace(/_/g, '-');
+                rethinkdb.table('groups').get(_gID).delete()
+                    .run(connection, function (err, result) {
+                        if(err){
+                            debug.error('Group.service@delete: cant delete group <' + gID + '> from groups table');
+                            connection.close();
+                            return callback(true, 'Error happens while deleting group from groups table');
+                        }
+                        callback(null, connection);
+                    });
+            },
+            /**
              * Delete the group table from database
              * @param connection
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table(gID).delete()
+                rethinkdb.tableDrop(gID)
                     .run(connection,function (err, results) {
                         connection.close();
                         if(err){
                             debug.error('Group.service@delete: cant delete group <' + gID + '> ');
                             return callback(true, 'Error happens while deleting group');
                         }
+                        debug.correct('Table <' + gID + '> dropped successful');
                         callback(null, results);
                     });
             }

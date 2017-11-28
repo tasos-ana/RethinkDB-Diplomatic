@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const accountService = require('../services/account.service');
 
 router.route('/create')
@@ -12,6 +13,7 @@ router.route('/create')
         });
     });
 
+
 router.route('/authenticate/:uEmail/:uPassword')
     .get(function (req,res) {
         accountService.authenticate(req.params.uEmail, req.params.uPassword, function (err,responseData) {
@@ -22,9 +24,10 @@ router.route('/authenticate/:uEmail/:uPassword')
         });
     });
 
+
 router.route('/info/:uEmail')
     .get(function (req,res) {
-        accountService.accountInfo(req.params.uEmail,req.header('Authorization'), function (err,responseData) {
+        accountService.info(req.params.uEmail,req.header('Authorization'), function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
