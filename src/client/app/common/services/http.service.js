@@ -19,6 +19,7 @@
         service.groupRetrieveData       = _groupRetrieveData;
         service.groupCreate             = _groupCreate;
         service.groupDelete             = _groupDelete;
+        service.groupUpdateName         = _groupUpdateName;
 
         return service;
 
@@ -57,6 +58,11 @@
         function _groupDelete(gID) {
             return $http.get('/group/delete/' + gID)
                 .then(handleSuccess,handleSuccess('Cant delete group \'' + gID + '\''));
+        }
+
+        function _groupUpdateName(data) {
+            return $http.post('/group/update/name', data)
+                .then(handleSuccess, handleError('Cant update group name'));
         }
 
         function handleSuccess(res) {

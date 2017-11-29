@@ -157,9 +157,9 @@ const groupService = function () {
                     lastLogin       : Date.now(),
                     time            : Date.now()
                 }).run(connection,function (err,result) {
+                    connection.close();
                     if (err) {
                         debug.error('Group.service@create: cant insert settings on group <' + gID + '>');
-                        connection.close();
                         return callback(true, 'Error happens while adding settings on group');
                     }
                     debug.correct('New group <' + gID + '> added successful on user <' + details.uEmail + '>');
@@ -366,11 +366,79 @@ const groupService = function () {
      * @param cookie    Authorization field from request, required for validation
      * @param callback
      * @private
-     * @todo implement
      */
     function _updateGroupName(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function(err,connection) {
+                    if(err){
+                        debug.error('Group.service@UpdateName: cant connect on database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null,connection);
+                });
+            },
+            /**
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@UpdateName: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details that required for validation');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
 
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                                debug.error('Account.service@UpdateName: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@UpdateName (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Delete the group(gID) from groups table
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('groups').get(convertGroupID(details.gID,'-')).update({
+                    name : details.gName
+                }).run(connection, function (err, result) {
+                        connection.close();
+                        if(err){
+                            debug.error('Group.service@UpdateName: cant update group <' + gID + '> name');
+                            return callback(true, 'Error happens while updating group name');
+                        }
+                        callback(null, result);
+                    });
+            }
+        ],function (err,data) {
+            callback(err !== null, data);
+        });
     }
+
 
     /**
      * Delete the group table from database

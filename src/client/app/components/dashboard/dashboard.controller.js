@@ -99,18 +99,28 @@
                            if(response.success){
                                removeGroup(gID);
                                delete $rootScope.user.groupsData[gID];
-                               delete $rootScope.group;
                            }else{
                                $location.path('/login');
                            }
+                            delete $rootScope.group;
                         });
                 }else{
-                    console.log('new name + ' + $rootScope.group.newName);
-                    console.log('apply');
+                    if($rootScope.group.curName !== $rootScope.group.newName || $rootScope.group.newName.length > 0){
+                        httpService.groupUpdateName({gID : gID, gName : $rootScope.group.newName})
+                            .then(function (response) {
+                                if(response.success){
+                                    $rootScope.user.groupsData[gID].name = $rootScope.group.newName;
+                                }else{
+                                    $location.path('/login');
+                                }
+                                delete $rootScope.group;
+                            });
+                    }else{
+                        delete $rootScope.group;
+                    }
                 }
             },function () {
-                $rootScope.group = undefined;
-                console.log('cancel');
+                delete $rootScope.group;
             });
         }
 
