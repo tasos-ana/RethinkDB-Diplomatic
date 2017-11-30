@@ -33,7 +33,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/account', require('./lib/routes/account.route'));
 app.use('/group', require('./lib/routes/group.route'));
 
-
 require('./lib/routes/appFile.route').addRoutes(app, config);
 
 // catch 404 and forward to error handler

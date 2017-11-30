@@ -155,10 +155,16 @@ const accountService = function () {
              */
             function (connection, callback) {
                 try{
-                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    if (uEmail === null){
+                    let validate = true;
+                    let cookieDetails;
+
+                    if(uEmail === null){
+                        cookieDetails = JSON.parse(encryption.decrypt(cookie));
                         uEmail = cookieDetails.uEmail;
+                    }else{
+                        validate = false;
                     }
+
                     rethinkdb.table('accounts').get(uEmail)
                         .run(connection,function (err,result) {
                             connection.close();
@@ -170,7 +176,7 @@ const accountService = function () {
                                 debug.status('User <' + uEmail + '> do not exists');
                                 return callback(true,'Email do not exists');
                             }
-                            if(cookieDetails.uPassword !== result.password){
+                            if(validate && cookieDetails.uPassword !== result.password){
                                 debug.error('Account.service@accountInfo: user details and cookie do not matched');
                                 return callback(true,'Invalid cookie');
                             }else{
