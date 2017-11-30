@@ -17,7 +17,7 @@
             socketService.connect();
             $rootScope.dataLoading = true;
             if($rootScope.user === undefined || $rootScope.user ===null){
-                httpService.accountGetUserInfo(null)
+                httpService.accountGetUserInfo(undefined)
                     .then(function (response) {
                         $rootScope.dataLoading = false;
                         if(response.success){

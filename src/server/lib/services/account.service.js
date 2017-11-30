@@ -158,7 +158,7 @@ const accountService = function () {
                     let validate = true;
                     let cookieDetails;
 
-                    if(uEmail === null){
+                    if(uEmail === undefined){
                         cookieDetails = JSON.parse(encryption.decrypt(cookie));
                         uEmail = cookieDetails.uEmail;
                     }else{

@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('httpService', httpService);
 
-    httpService.$inject = ['$http', 'md5', '$cookies'];
-    function httpService($http, md5, $cookies) {
+    httpService.$inject = ['$http', 'md5'];
+    function httpService($http, md5) {
         const service = {};
 
         service.accountGetUserInfo      = _accountGetUserInfo;
