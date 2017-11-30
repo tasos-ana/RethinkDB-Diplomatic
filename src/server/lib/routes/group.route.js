@@ -4,7 +4,7 @@ const groupService = require('../services/group.service');
 
 router.route('/create')
     .post(function (req,res) {
-        groupService.createGroup(req.body, req.header('Authorization'), function (err, responseData) {
+        groupService.createGroup(req.body.gName , req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -12,9 +12,9 @@ router.route('/create')
         });
     });
 
-router.route('/retrieve/:gID')
+router.route('/retrieve')
     .get(function (req,res) {
-        groupService.retrieveGroup(req.params.gID, req.header('Authorization'), function (err, responseData) {
+        groupService.retrieveGroup(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -24,7 +24,7 @@ router.route('/retrieve/:gID')
 
 router.route('/add')
     .post(function (req,res) {
-        groupService.addData(req.body, req.header('Authorization'), function (err, responseData) {
+        groupService.addData(req.body, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -34,7 +34,7 @@ router.route('/add')
 
 router.route('/update/name')
     .post(function (req,res) {
-        groupService.updateGroupName(req.body, req.header('Authorization'), function (err, responseData) {
+        groupService.updateGroupName(req.body, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -42,9 +42,9 @@ router.route('/update/name')
         });
     });
 
-router.route('/delete/:gID')
+router.route('/delete')
     .get(function (req,res) {
-        groupService.deleteGroup(req.params.gID, req.header('Authorization'), function (err, responseData) {
+        groupService.deleteGroup(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
