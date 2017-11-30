@@ -8,8 +8,8 @@ module.exports = {
         host            : 'localhost',
         defaultName     : 'pushUP',
         defaultTables   : [
-                            {table : 'accounts', key : 'email'},
-                            {table : 'groups'  , key : 'id'   }
+                            {name : 'accounts', key : 'email'},
+                            {name : 'groups'  , key : 'id'   }
         ],
         lastTable       : 'groups'
     },
