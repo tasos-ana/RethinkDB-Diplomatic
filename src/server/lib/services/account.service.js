@@ -5,14 +5,13 @@ const async      = require('async');
 
 const db         = require('./database.service');
 const debug      = require('./debug.service');
-const encryption = require('./encryption.service');
+const encryption = require('./security/encryption.security');
 
 /**
  * API for managing user account
  * @type {{create, authenticate, accountInfo}}
  */
 const accountService = function () {
-
 
     return {
         create          : _create,
@@ -112,18 +111,12 @@ const accountService = function () {
                                 return callback(true, 'Email or password its wrong');
                             }else{
                                 debug.correct('User <' + uEmail + '> authenticated');
-                                /**
-                                 * Initialize cookie for user and encrypt it
-                                 */
-                                const cookie = encryption.encrypt(JSON.stringify({uEmail: uEmail, uPassword:uPassword}));
                                 callback(null, {
-                                    cookie      : cookie ,
-                                    response    : {
                                         email       : result.email,
                                         nickname    : result.nickname,
                                         groupsList  : result.groups,
                                         groupsData  : { }
-                                }});
+                                });
                             }
                         }
                     });
@@ -140,7 +133,7 @@ const accountService = function () {
      * @param callback
      * @private
      */
-    function _info(uEmail,cookie, callback) {
+    function _info(uEmail, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -161,21 +154,23 @@ const accountService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('accounts').get(uEmail)
-                    .run(connection,function (err,result) {
-                        connection.close();
-                        if(err){
-                            debug.error('Account.service@accountInfo: cant get user <' + uEmail + '> info');
-                            return callback(true, 'Error happens while getting user details');
-                        }
-                        if(result === null){
-                            debug.status('User <' + uEmail + '> do not exists');
-                            return callback(true,'Email do not exists');
-                        }
-
-                        try{
-                            const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                            if(cookieDetails.uEmail !== uEmail || cookieDetails.uPassword !== result.password){
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    if (uEmail === null){
+                        uEmail = cookieDetails.uEmail;
+                    }
+                    rethinkdb.table('accounts').get(uEmail)
+                        .run(connection,function (err,result) {
+                            connection.close();
+                            if(err){
+                                debug.error('Account.service@accountInfo: cant get user <' + uEmail + '> info');
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + uEmail + '> do not exists');
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password){
                                 debug.error('Account.service@accountInfo: user details and cookie do not matched');
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -187,11 +182,11 @@ const accountService = function () {
                                     "groupsData"    : { }
                                 });
                             }
-                        }catch (e){
-                            debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');
-                            return callback(true,'Invalid cookie');
-                        }
-                    });
+                        });
+                }catch (e){
+                    debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');
+                    return callback(true,'Invalid cookie');
+                }
             }
         ], function (err,data) {
             callback(err !== null, data);
