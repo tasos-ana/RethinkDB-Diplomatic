@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService', 'md5'];
-    function LoginController($rootScope, $location, loginService, httpService, md5) {
+    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService'];
+    function LoginController($rootScope, $location, loginService, httpService) {
         const vm = this;
 
         vm.login = login;
@@ -26,8 +26,7 @@
             httpService.accountAuthenticate(vm.user)
                 .then(function (response) {
                     if (response.success) {
-                        loginService.setCredentials(vm.user.uEmail, response.data.cookie);
-                        $rootScope.user = response.data.value;
+                        $rootScope.user = response.data;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
                         $location.path('/dashboard');

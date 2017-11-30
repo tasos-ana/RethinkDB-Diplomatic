@@ -31,8 +31,7 @@
             }else{
                 if(vm.user.uPassword === vm.user.uConfirmPassword){
                     vm.dataLoading = true;
-                    httpService.accountCreate(vm.user)
-                        .then(function (response) {
+                    httpService.accountCreate(vm.user).then(function (response) {
                             if (response.success) {
                                 vm.registerComplete = true;
                                 $timeout(function () {
@@ -56,7 +55,7 @@
      
         function accountEmailExists(isValid) {
             if(isValid){
-                httpService.accountGetUserByEmail(vm.user.uEmail)
+                httpService.accountGetUserInfo(vm.user.uEmail)
                     .then(function (response) {
                        vm.emailExists = response.success;
                     });
