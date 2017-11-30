@@ -92,7 +92,7 @@ io.on('connection',function (socket) {
     syncService.connect(socket);
 
     socket.on('sync', function (gID){
-        syncService.feed(socket, gID);
+        syncService.feedGroupData(socket, gID);
     });
 
     socket.on('disconnect',function () {

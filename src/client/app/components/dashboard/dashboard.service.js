@@ -69,6 +69,15 @@
                     });
                 });
             });
+
+            //on listen change the group name
+            socketService.on(convertGroupID(id, '-'), function (newName) {
+               $timeout(function () {
+                 $rootScope.$apply(function () {
+                   $rootScope.user.groupsData[id].name = newName;
+                 });
+               });
+            });
         }
 
         function configureAllDates(index) {
@@ -99,6 +108,16 @@
             dateAsString += " @ " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
             return dateAsString;
+        }
+
+        function convertGroupID(id, to){
+            let retID;
+            if(to === '-'){
+                retID = id.replace(/_/g, '-');
+            }else{
+                retID = id.replace(/-/g, '_');
+            }
+            return retID;
         }
     }
 })();
