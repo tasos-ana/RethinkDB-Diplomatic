@@ -93,6 +93,7 @@ io.on('connection',function (socket) {
 
     socket.on('sync', function (gID){
         syncService.feedGroupData(socket, gID);
+        syncService.feedGroupName(socket, gID);
     });
 
     socket.on('disconnect',function () {
@@ -101,6 +102,10 @@ io.on('connection',function (socket) {
 
     socket.on('logout', function () {
         syncService.disconnect(socket);
+    });
+
+    socket.on('deleteGroup',function (gID) {
+        syncService.disconnectGroup(socket, gID);
     });
 
 });

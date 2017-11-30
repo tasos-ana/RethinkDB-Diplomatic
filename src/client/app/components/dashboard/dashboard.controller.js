@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', '$mdDialog', 'socketService'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, $mdDialog, socketService) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', '$mdDialog', 'socketService', '$timeout'];
+    function DashboardController($rootScope, $location, httpService, dashboardService, $mdDialog, socketService, $timeout) {
         const vm = this;
 
         vm.uploadData       = uploadData;
@@ -26,6 +26,25 @@
                         }else{
                             $location.path('/login');
                         }
+
+                        //on listen add or delete group
+                        socketService.on($rootScope.user.email, function (data) {
+                            $timeout(function () {
+                                $rootScope.$apply(function () {
+                                    if(data.action === 'deleteGroup'){
+                                        removeGroup(data.gID);
+                                        delete $rootScope.user.groupsData[data.gID];
+                                    }else{
+                                        if(!groupExists(data.gID)){
+                                            $rootScope.user.groupsList.push(data.gID);
+                                            dashboardService.getAccountGroups();
+                                        }
+                                    }
+                                });
+                            });
+                        });
+
+
                     });
             }else{
                 $rootScope.dataLoading = false;
@@ -66,9 +85,10 @@
             httpService.groupCreate(vm.group.name)
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.user.groupsList.push(response.data.gID);
-                        $rootScope.user.groupsData[response.data.gID] = {id: response.data.gID, name: response.data.gName};
-                        dashboardService.getAccountGroups();
+                        if(!groupExists(response.data.gID)){
+                            $rootScope.user.groupsList.push(response.data.gID);
+                            dashboardService.getAccountGroups();
+                        }
                         vm.group.creating = false;
                         vm.group.name = '';
                     }
@@ -90,7 +110,9 @@
                 clickOutsideToClose :   true,
                 fullscreen          :   false
             }).then(function (answer) {
+                //todo na bgazei pop up gia epibebaiwsi
                 if(answer === 'delete'){
+                    socketService.deleteGroup(gID);
                     httpService.groupDelete(gID)
                         .then(function (response) {
                            if(response.success){
@@ -150,5 +172,9 @@
             }
         }
 
+        function groupExists(gID) {
+            const index = $rootScope.user.groupsList.indexOf(gID);
+            return index !== -1;
+        }
     }
 })();

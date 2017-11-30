@@ -12,6 +12,7 @@
         return {
             connect     : _connect,
             logout      : _logout,
+            deleteGroup : _deleteGroup,
             on          : _on,
             emit        : _emit
         };
@@ -25,6 +26,13 @@
             if(socket !== null){
                 socket.emit('logout');
             }
+        }
+
+        function _deleteGroup(gID) {
+            if(socket === null){
+                _connect();
+            }
+            socket.emit('deleteGroup',gID);
         }
 
         function _on(gID, callback) {

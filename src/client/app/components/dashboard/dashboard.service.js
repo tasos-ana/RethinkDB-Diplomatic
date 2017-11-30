@@ -65,7 +65,9 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         data.date = configureDate(new Date(), new Date(data.time));
-                        $rootScope.user.groupsData[id].data[$rootScope.user.groupsData[id].data.length] = data;
+                        if($rootScope.user.groupsData[id] !== undefined){
+                            $rootScope.user.groupsData[id].data[$rootScope.user.groupsData[id].data.length] = data;
+                        }
                     });
                 });
             });
