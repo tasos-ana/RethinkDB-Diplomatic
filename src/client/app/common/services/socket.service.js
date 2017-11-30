@@ -7,18 +7,38 @@
 
     socketService.$inject = [];
     function socketService() {
-        const socket = io();
+        let socket = null;
 
         return {
-            logout: function () {
-              socket.emit('logout');
-            },
-            on: function (gID, callback) {
-                socket.on(gID, callback);
-            },
-            emit: function (gID) {
-                socket.emit('sync', gID);
-            }
+            connect     : _connect,
+            logout      : _logout,
+            on          : _on,
+            emit        : _emit
         };
+
+
+        function _connect() {
+            socket = io();
+        }
+
+        function _logout() {
+            if(socket !== null){
+                socket.emit('logout');
+            }
+        }
+
+        function _on(gID, callback) {
+            if(socket === null){
+                _connect();
+            }
+            socket.on(gID, callback);
+        }
+
+        function _emit(gID) {
+            if(socket === null){
+                _connect();
+            }
+            socket.emit('sync', gID);
+        }
     }
 })();
