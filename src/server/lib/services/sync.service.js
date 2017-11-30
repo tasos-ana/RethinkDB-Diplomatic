@@ -1,21 +1,22 @@
 'use strict';
 
-const rethinkdb  = require('rethinkdb');
-const async      = require('async');
+const rethinkdb         = require('rethinkdb');
+const async             = require('async');
 
-const db         = require('./database.service');
-const debug      = require('./debug.service');
+const db                = require('./database.service');
+const debug             = require('./debug.service');
+const accountService    = require('./account.service');
 
 /**
  * API for sync data between devices
  * @returns {{feed: _feed, disconnect: _disconnect}}
  */
 const syncService = function () {
-    var groups = [];
 
     return{
-      feed          : _feed,
-      disconnect    : _disconnect  
+        feed        : _feed,
+        connect     : _connect,
+        disconnect  : _disconnect
     };
 
     /**
@@ -44,11 +45,11 @@ const syncService = function () {
              * @param callback
              */
             function (connection, callback) {
-                if(tryPush(gID)){
+                if(tryPush(gID, socket)){
                     debug.status('Start feeding on group <' + gID + '>');
                     rethinkdb.table(gID).changes().run(connection,function (err, cursor) {
                         if(err){
-                            removeGroup(gID);
+                            removeGroup(gID, socket);
                             connection.close();
                             return callback(true,'Sync.service@feed: something goes wrong with changes on group <' + gID + '>');
                         }
@@ -64,15 +65,16 @@ const syncService = function () {
                                             "type"  : row.new_val.type
                                         });
                                     }else{
-                                        removeGroup(gID);
-                                        cursor.close(function (err) {
-                                            if(err){
-                                                debug.error('Sync.service@feed: cant close cursor');
-                                            }
-                                        });
-                                        debug.correct('Feed for group <' + gID + '> closed successful');
-                                        connection.close();
-                                        return callback(null, '');
+                                        if(!exists(gID,socket)){
+                                            cursor.close(function (err) {
+                                                if(err){
+                                                    debug.error('Sync.service@feed: cant close cursor');
+                                                }
+                                            });
+                                            debug.correct('Feed for group <' + gID + '> closed successful');
+                                            connection.close();
+                                            return callback(null, '');
+                                        }
                                     }
                                 }
                             }
@@ -90,14 +92,30 @@ const syncService = function () {
         });
     }
 
+
+    function _connect(socket) {
+        accountService.info(null, socket.request.cookies['userCredentials'], function (err,responseData) {
+            if(!err){
+                const groupsList = responseData.groupsList;
+                while (groupsList.length > 0){
+                    const gID = groupsList.pop();
+                    _feed(socket, gID);
+                }
+            }
+        });
+    }
+
     /**
-     * if user disconnect or logout we must stop live feed
+     * If user disconnect or logout we must stop live feed
+     * @param socket
      * @private
      */
-    function _disconnect() {
-        while(groups.length > 0){
-            const gID = groups.pop();
-            closeGroupFeed(gID);
+    function _disconnect(socket) {
+        if(socket.groupsList !== undefined) {
+            while (socket.groupsList.length > 0) {
+                const gID = socket.groupsList.pop();
+                closeGroupFeed(gID);
+            }
         }
     }
 
@@ -127,7 +145,7 @@ const syncService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table(gID).get('socket').update({lastLogin : Date.now()})
+                rethinkdb.table(gID).get('settings').update({lastLogin : Date.now()})
                     .run(connection, function (err, result) {
                         connection.close();
                         if(err){
@@ -145,34 +163,53 @@ const syncService = function () {
     }
 
     /**
-     * Remove gID from group list
-     * @param gID
+     * Remove gID from socket.groupsList
+     * @param gID       the id of table
+     * @param socket
      * @private
      */
-    function removeGroup(gID){
-        const index = groups.indexOf(gID);
-        if (index >= 0) {
-            groups.splice(index, 1);
+    function removeGroup(gID, socket){
+        if(socket.groupsList !== undefined){
+            const index = socket.groupsList.indexOf(gID);
+            if (index >= 0) {
+                socket.groupsList.splice(index, 1);
+            }
         }
     }
 
     /**
      * If gID do not exists on list push them else return false
-     * @param gID
+     * @param gID           the id of table
+     * @param socket
      * @returns {boolean}
      * @private
      */
-    function tryPush(gID) {
-        const index = groups.indexOf(gID);
-        var status = false;
+    function tryPush(gID, socket) {
+        if(socket.groupsList === undefined){
+            socket.groupsList = [];
+        }
+        const index = socket.groupsList.indexOf(gID);
+        let status = false;
         if(index < 0){
-            groups.push(gID);
+            socket.groupsList.push(gID);
             status = true;
         }
 
         return status;
     }
 
-};
+    /**
+     * Check if gid exists on list
+     * @param gID
+     * @param socket
+     * @returns {boolean}
+     */
+    function exists(gID, socket) {
+        if(socket.groupsList !== undefined){
+            return socket.groupsList.indexOf(gID) >= 0;
+        }
+    }
+
+}();
 
 module.exports = syncService;
