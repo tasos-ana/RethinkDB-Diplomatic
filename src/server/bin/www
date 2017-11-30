@@ -5,7 +5,7 @@
  */
 
 const app           = require('../server');
-const debug         = require('debug')('pushup :server');
+const debug         = require('../lib/services/debug.service');
 const http          = require('http');
 const cookieParser  = require('socket.io-cookie-parser');
 
@@ -25,7 +25,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-const server = http.createServer(app);
+const server    = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -115,5 +115,5 @@ function onListening() {
         ? 'pipe ' + addr
         : 'port ' + addr.port;
     db.initDB();
-    debug('Listening on address ' + defaultAddress + " at " + bind);
+    debug.correct('Listening on address ' + defaultAddress + " at " + bind);
 }
