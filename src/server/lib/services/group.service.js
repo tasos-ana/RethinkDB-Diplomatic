@@ -131,26 +131,6 @@ const groupService = function () {
             },
             /**
              * Stage 3:
-             * Update the groups list with the new gID
-             * @param details       contains gID, uEmail, uNickname
-             * @param connection
-             * @param callback
-             */
-            function(details, connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail).update({
-                    groups: rethinkdb.row('groups').append(details.gID)
-                }).run(connection, function (err, result) {
-                    if (err) {
-                        debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
-                        connection.close();
-                        return callback(true, 'Error happens while update user groups');
-                    }
-                    debug.status('New group <' + gName + '> inserted on user <' + details.uEmail + '> groups successful');
-                    callback(null, details, connection);
-                });
-            },
-            /**
-             * Stage 4:
              * Add created field on group table
              * @param details       contains gID, uEmail, uNickname
              * @param connection
@@ -167,6 +147,25 @@ const groupService = function () {
                     if (err) {
                         debug.error('Group.service@create: cant insert created data on group <' + details.gID + '>');
                         return callback(true, 'Error happens while adding created field on group');
+                    }
+                    callback(null, details, connection);
+                });
+            },
+            /**
+             * Stage 4:
+             * Update the groups list with the new gID
+             * @param details       contains gID, uEmail, uNickname
+             * @param connection
+             * @param callback
+             */
+            function(details, connection, callback) {
+                rethinkdb.table('accounts').get(details.uEmail).update({
+                    groups: rethinkdb.row('groups').append(details.gID)
+                }).run(connection, function (err, result) {
+                    if (err) {
+                        debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
+                        connection.close();
+                        return callback(true, 'Error happens while update user groups');
                     }
                     debug.correct('New group <' + details.gID + '> added successful on user <' + details.uEmail + '>');
                     callback(null, {gID : details.gID, gName : gName});
