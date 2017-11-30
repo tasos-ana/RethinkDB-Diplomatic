@@ -4,16 +4,16 @@
  * Module dependencies.
  */
 
-const app = require('../server');
-const debug = require('debug')('pushup :server');
-const http = require('http');
+const app           = require('../server');
+const debug         = require('debug')('pushup :server');
+const http          = require('http');
+const cookieParser  = require('socket.io-cookie-parser');
 
-const config = require('../config');
-const db = require('../lib/services/database.service');
+const config    = require('../config');
+const db        = require('../lib/services/database.service');
 
-
-const defaultPort = config.server.listenPort;
-const defaultAddress = config.server.listenAddress;
+const defaultPort       = config.server.listenPort;
+const defaultAddress    = config.server.listenAddress;
 
 /**
  * Get port from environment and store in Express.
@@ -84,26 +84,24 @@ function onError(error) {
 }
 
 const io = require('socket.io').listen(server);
-var syncService = require('../lib/services/sync.service');
+const syncService = require('../lib/services/sync.service');
+
+io.use(cookieParser());
 
 io.on('connection',function (socket) {
-  var sync = new syncService();
+    syncService.connect(socket);
 
-  //TODO na ftiaksw otan ginetai disconnect kai reconnect na
-    //TODO na pernei to palio socket pou eixe, afto ginetai apo mobile otan ginei lock,unlock
-  console.log('connection fired');
-  socket.on('sync', function (gID){
-     sync.feed(socket, gID);
-  });
+    socket.on('sync', function (gID){
+        syncService.feed(socket, gID);
+    });
 
-  socket.on('disconnect',function () {
-    console.log('disconnect fired');
-     sync.disconnect();
-  });
+    socket.on('disconnect',function () {
+        syncService.disconnect(socket);
+    });
 
-  socket.on('logout', function () {
-     sync.disconnect();
-  });
+    socket.on('logout', function () {
+        syncService.disconnect(socket);
+    });
 
 });
 

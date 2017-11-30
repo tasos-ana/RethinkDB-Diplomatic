@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', '$mdDialog'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, $mdDialog) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', '$mdDialog', 'socketService'];
+    function DashboardController($rootScope, $location, httpService, dashboardService, $mdDialog, socketService) {
         const vm = this;
 
         vm.uploadData       = uploadData;
@@ -14,9 +14,10 @@
         vm.groupSettings    = groupSettings;
 
         (function initController() {
+            socketService.connect();
             $rootScope.dataLoading = true;
             if($rootScope.user === undefined || $rootScope.user ===null){
-                httpService.accountGetUserByEmail($rootScope.globals.currentUser.email)
+                httpService.accountGetUserInfo(null)
                     .then(function (response) {
                         $rootScope.dataLoading = false;
                         if(response.success){
@@ -61,12 +62,8 @@
         }
 
         function groupCreate() {
-            const curUser = $rootScope.globals.currentUser;
-            if(curUser === undefined){
-                $location.path('/login');
-            }
             vm.group.creating = true;
-            httpService.groupCreate({uEmail : curUser.email, gName : vm.group.name})
+            httpService.groupCreate(vm.group.name)
                 .then(function (response) {
                     if(response.success){
                         $rootScope.user.groupsList.push(response.data.gID);

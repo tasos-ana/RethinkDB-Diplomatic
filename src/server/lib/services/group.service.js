@@ -5,7 +5,7 @@ const async     = require('async');
 
 const db        = require('./database.service');
 const debug     = require('./debug.service');
-const encryption = require('./encryption.service');
+const encryption = require('./security/encryption.security');
 
 /**
  * API for managing groups on database
@@ -24,13 +24,13 @@ const groupService = function () {
     /**
      * Create new group on database
      *
-     * @param details   contains gName and uEmail
+     * @param gName     the group name
      * @param cookie    Authorization field from request, required for validation
      * @param callback
      * @private
      * @todo prepei otan ginetai kapoio fail na uparxei kati san transaction kai na anerei ola ta prohgoumena
      */
-    function _createGroup(details, cookie, callback) {
+    function _createGroup(gName, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -52,63 +52,66 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail)
-                    .run(connection,function (err,result) {
-                        if(err){
-                            debug.error('Group.service@create: cant get user <' + details.uEmail + '> info');
-                            connection.close();
-                            return callback(true, 'Error happens while getting user details');
-                        }
-                        if(result === null){
-                            debug.status('User <' + details.uEmail + '> do not exists');
-                            connection.close();
-                            return callback(true,'Email do not exists');
-                        }
-                        try{
-                            const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                            if(cookieDetails.uEmail !== details.uEmail || cookieDetails.uPassword !== result.password){
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Group.service@create: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password){
                                 debug.error('Group.service@create:: user details and cookie isnt match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
-                                callback(null,connection);
+                                callback(null, cookieDetails.uEmail, connection);
                             }
-                        }catch (e){
-                            debug.error('Group.service@create: user details and cookie isnt match');
-                            connection.close();
-                            return callback(true,'Invalid cookie');
-                        }
-                    });
+                        });
+
+                }catch (e){
+                    debug.error('Group.service@create: user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
             },
             /**
              * Stage 1:
              * Add gID on groups tables and get the generated ID
              * @param connection
+             * @param uEmail
              * @param callback
              */
-            function (connection, callback) {
+            function (uEmail, connection, callback) {
                 rethinkdb.table('groups').insert({
-                    'name': details.gName,
-                    'user': details.uEmail
+                    'name': gName,
+                    'user': uEmail
                 }).run(connection, function (err, result) {
                     if (err) {
-                        debug.error('Group.service@create: can\'t insert <' + details.gName + '> on table \'groups\'');
+                        debug.error('Group.service@create: can\'t insert <' + gName + '> on table \'groups\'');
                         connection.close();
                         return callback(true, 'Error happens while adding new group');
                     }
-                    debug.status('New group <' + details.gName + '> added successful');
+                    debug.status('New group <' + gName + '> added successful');
 
-                    callback(null, convertGroupID(result.generated_keys[0] , '_'), connection);
+                    callback(null, convertGroupID(result.generated_keys[0] , '_'), uEmail, connection);
                 });
             },
             /**
              * Stage 2:
              * Initialize new table with the generated ID from stage 1
              * @param gID           group ID generated on stage 1
+             * @param uEmail        user email
              * @param connection
              * @param callback
              */
-            function(gID, connection, callback) {
+            function(gID, uEmail, connection, callback) {
                 rethinkdb.tableCreate(gID)
                     .run(connection, function (err, result) {
                         if (err) {
@@ -119,40 +122,42 @@ const groupService = function () {
 
                         debug.status('Created new table <' + gID + '> with primary key \'id\' ');
 
-                        callback(null, gID, connection);
+                        callback(null, gID, uEmail, connection);
                     });
             },
             /**
              * Stage 3:
              * Update the groups list with the new gID
              * @param gID           group ID generated on stage 1
+             * @param uEmail        user email
              * @param connection
              * @param callback
              */
-            function(gID, connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail).update({
+            function(gID, uEmail, connection, callback) {
+                rethinkdb.table('accounts').get(uEmail).update({
                     groups: rethinkdb.row('groups').append(gID)
                 }).run(connection, function (err, result) {
                     if (err) {
-                        debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
+                        debug.error('Group.service@create: cant update user <' + uEmail + '> groups');
                         connection.close();
                         return callback(true, 'Error happens while update user groups');
                     }
-                    debug.status('New group <' + details.gName + '> inserted on user <' + details.uEmail + '> groups successful');
-                    callback(null, gID, connection);
+                    debug.status('New group <' + gName + '> inserted on user <' + uEmail + '> groups successful');
+                    callback(null, gID, uEmail, connection);
                 });
             },
             /**
              * Stage 4:
              * Add settings field on group table
              * @param gID           group ID generated on stage 1
+             * @param uEmail        user email
              * @param connection
              * @param callback
              */
-            function (gID, connection, callback) {
+            function (gID, uEmail, connection, callback) {
                 rethinkdb.table(gID).insert({
                     id              : 'settings',
-                    data            : 'Group created by ' + details.uEmail,
+                    data            : 'Group created by ' + uEmail,
                     type            : 'text',
                     lastLogin       : Date.now(),
                     time            : Date.now()
@@ -162,8 +167,8 @@ const groupService = function () {
                         debug.error('Group.service@create: cant insert settings on group <' + gID + '>');
                         return callback(true, 'Error happens while adding settings on group');
                     }
-                    debug.correct('New group <' + gID + '> added successful on user <' + details.uEmail + '>');
-                    callback(null, {gID : gID, gName : details.gName});
+                    debug.correct('New group <' + gID + '> added successful on user <' + uEmail + '>');
+                    callback(null, {gID : gID, gName : gName});
                 });
             }
         ], function (err, data) {
@@ -362,7 +367,7 @@ const groupService = function () {
     /**
      * Update the group name
      *
-     * @param details
+     * @param details   contains gID,gName
      * @param cookie    Authorization field from request, required for validation
      * @param callback
      * @private
