@@ -44,24 +44,19 @@
 
     run.$inject = ['$rootScope', '$location', "$cookies", "$http",'$mdSidenav','$mdDialog'];
     function run($rootScope, $location, $cookies, $http, $mdSidenav, $mdDialog) {
-        // keep user logged in after page refresh
-        $rootScope.globals = $cookies.getObject('LOGIN INFO') || {};
-        if ($rootScope.globals.currentUser) {
-            $http.defaults.headers.common['Authorization'] = $rootScope.globals.currentUser.authdata;
-        }
 
         $rootScope.$on('$locationChangeStart', function (event, next, current) {
             $rootScope.pageName = $location.path().split('/')[1];
-            var loggedIn = $rootScope.globals.currentUser;
-            if(loggedIn){
+            const loggedIn = $cookies.get('userCredentials');
+            if(loggedIn !== undefined){
                 $rootScope.loginStatus = true;
-                var restrictedPage = $.inArray($location.path(), ['/home','/register']) !==  -1;
+                let restrictedPage = $.inArray($location.path(), ['/home','/register']) !==  -1;
                 if(restrictedPage) {
                     $location.path('/dashboard');
                 }
             }else{
                 // redirect to login page if not logged in and trying to access a restricted page
-                var restrictedPage = $.inArray($location.path(), ['/dashboard']) !==  -1;
+                let restrictedPage = $.inArray($location.path(), ['/dashboard']) !==  -1;
                 if(restrictedPage) {
                     $location.path('/login');
                 }
