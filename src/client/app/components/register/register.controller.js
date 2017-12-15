@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$location', 'httpService','$timeout'];
-    function RegisterController($rootScope, $location, httpService, $timeout) {
+    RegisterController.$inject = ['$rootScope', '$location', 'httpService'];
+    function RegisterController($rootScope, $location, httpService) {
         const vm = this;
 
         vm.register = register;
@@ -18,35 +18,29 @@
             vm.emailExists = false;
             vm.registerComplete = false;
             vm.user = {};
+            vm.alert = {};
+            vm.alert.enabled = false;
+
         })();
 
-        function register(ev) {
+        function register() {
             if(vm.emailExists){
-                $rootScope.showAlert(
-                    ev,
-                    'Register status',
-                    'Your email already exists.',
-                    'Register fail',
-                    'Got it');
+                vm.alert.title  = "Form invalid";
+                vm.alert.msg    = " Your email address already exists";
+                vm.alert.enabled = true;
             }else{
                 if(vm.user.uPassword === vm.user.uConfirmPassword){
                     vm.dataLoading = true;
+                    vm.alert.enabled = false;
                     httpService.accountCreate(vm.user).then(function (response) {
                             if (response.success) {
-                                vm.registerComplete = true;
-                                $timeout(function () {
-                                    if($location.path() === '/register'){
-                                        $location.path('/login');
-                                    }
-                                },2000);
+                                $rootScope.registerComplete = true;
+                                $location.path('/login');
                             } else {
                                 vm.dataLoading = false;
-                                $rootScope.showAlert(
-                                    ev,
-                                    'Register status',
-                                    'Something goes wrong with registration, try again later',
-                                    'Register fail',
-                                    'Got it');
+                                vm.alert.title  = "Form invalid!";
+                                vm.alert.msg    = " Something goes wrong with registration, try again later";
+                                vm.alert.enabled = true;
                             }
                         });
                 }
