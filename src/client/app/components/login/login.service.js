@@ -9,7 +9,7 @@
     function loginService( $cookies, socketService) {
         const service = {};
 
-        service.clearCredentials = clearCredentials;
+        service.clearCredentials    = clearCredentials;
 
         return service;
 
@@ -17,5 +17,6 @@
             socketService.logout();
             $cookies.remove('userCredentials');
         }
+
     }
 })();
