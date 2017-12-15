@@ -14,7 +14,7 @@ module.exports = {
         lastTable       : 'groups'
     },
     server: {
-        listenPort      : 3000,                                 // The port on which the server is to listen (means that the app is at http://localhost:3000 for instance)
+        listenPort      : 80,                                 // The port on which the server is to listen (means that the app is at http://localhost:3000 for instance)
         listenAddress   : '192.168.1.68',
         listenAddressVPN: '147.52.151.51',
         //securePort      : 8433,                                 // The HTTPS port on which the server is to listen (means that the app is at https://localhost:8433 for instance)
