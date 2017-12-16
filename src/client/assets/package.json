@@ -1,0 +1,15 @@
+{
+  "name": "pushup",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "angular": "^1.6.7",
+    "angular-cookies": "^1.6.7",
+    "angular-md5": "^0.1.10",
+    "angular-route": "^1.6.7",
+    "bootstrap": "^4.0.0-beta.2",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.2.1",
+    "popper.js": "^1.12.9"
+  }
+}

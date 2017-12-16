@@ -4,8 +4,7 @@ body{
     height: 100%;
     display: block;
     z-index: -1;
-    background: url(../img/bg.jpeg);
-    background-size: cover;
+    background: #2d3035;
     position: absolute;
     top: 0;
     right: 0;
