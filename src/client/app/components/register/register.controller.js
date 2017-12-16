@@ -10,7 +10,6 @@
         const vm = this;
 
         vm.register             = register;
-        vm.accountEmailExists   = accountEmailExists;
 
         (function initController() {
             vm.dataLoading = false;
@@ -36,15 +35,6 @@
                             }
                         });
                 }
-            }
-        }
-     
-        function accountEmailExists(isValid) {
-            if(isValid){
-                httpService.accountGetUserInfo(vm.user.uEmail)
-                    .then(function (response) {
-                       vm.emailExists = response.success;
-                    });
             }
         }
         

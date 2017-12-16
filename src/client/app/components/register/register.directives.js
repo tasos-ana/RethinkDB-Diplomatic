@@ -26,13 +26,27 @@
         };
     }
 
-    emailExists.$inject = [];
-    function emailExists() {
-        // if(isValid){
-        //     httpService.accountGetUserInfo(vm.user.uEmail)
-        //         .then(function (response) {
-        //             vm.emailExists = response.success;
-        //         });
-        // }
+    emailExists.$inject = ['httpService', '$timeout'];
+    function emailExists(httpService, $timeout) {
+        return{
+          restrict  : 'AE',
+          require   : 'ngModel',
+          link      : function (scope, element, attributes, ngModel) {
+
+              ngModel.$asyncValidators.emailExists = function (isValid) {
+                  if(isValid){
+                      return httpService.accountGetUserInfo(element.val())
+                          .then(function (response) {
+                              $timeout(function () {
+                                  ngModel.$setValidity('emailExists', !response.success);
+                                  scope.emailAlreadyExist = response.success;
+                              },600);
+                          });
+                  }
+              }
+
+
+          }
+        };
     }
 })();

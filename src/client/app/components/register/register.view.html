@@ -43,9 +43,11 @@
                                             required ng-model="vm.user.uEmail" ng-pattern="/^.+@.+\..+$/"
                                             ng-class="{ 'border-danger' : registerForm.uEmail.$invalid && registerForm.uEmail.$touched ,
                                                         'border-success': !registerForm.uEmail.$invalid}"
+                                            email-exists="!$registerForm.uEmail.$invalid"
                                             title="Type your email address">
                                     <label for="register-email" class="label-material"> Email *</label>
-                                    <p ng-show="!registerForm.uEmail.$error.pattern && registerForm.uEmail.$invalid && registerForm.uEmail.$touched"
+                                    <p ng-show="!registerForm.uEmail.$error.emailExists && !registerForm.uEmail.$error.pattern &&
+                                            registerForm.uEmail.$invalid && registerForm.uEmail.$touched"
                                         class="text-danger">Email is required.</p>
                                     <p ng-show="registerForm.uEmail.$error.pattern"
                                         class="text-danger">Email is invalid.</p>
