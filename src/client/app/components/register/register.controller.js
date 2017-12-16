@@ -23,7 +23,7 @@
             if(valid){
                 if(vm.user.uPassword === vm.user.uRepeatPassword){
                     vm.dataLoading = true;
-                    vm.user.alert.form.enabled = false;
+                    vm.alert.form.enabled = false;
                     httpService.accountCreate(vm.user).then(function (response) {
                             if (response.success) {
                                 $rootScope.registerComplete = true;

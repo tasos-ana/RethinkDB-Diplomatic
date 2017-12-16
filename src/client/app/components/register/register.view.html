@@ -20,17 +20,17 @@
                 <div class="col-lg-6 bg-white">
                     <div class="form d-flex align-items-center">
                         <div class="content">
-                            <form id="registerForm" name="registerForm" ng-submit="vm.register(registerForm.$valid)" role="form" novalidate>
+                            <form id="registerForm" name="registerForm" ng-submit="vm.register(registerForm.$valid)" novalidate>
 
                                 <div class="form-group">
                                     <input id="register-nickname" class="input-material" type="text" name="uNickname"
-                                            ng-class="{ 'border-danger' : registerForm.uNickname.$invalid && !registerForm.uNickname.$pristine ,
-                                                        'border-success': !registerForm.uEmail.$invalid && registerForm.uEmail.$touched}"
+                                            ng-class="{ 'border-danger' : registerForm.uNickname.$invalid && registerForm.uNickname.$touched ,
+                                                        'border-success': !registerForm.uNickname.$invalid}"
                                             required ng-model="vm.user.uNickname" ng-minlength="3" ng-maxlength="15"
                                             title="Must be between 3 and 15 characters">
                                     <label for="register-nickname" class="label-material"> Nickname *</label>
                                     <p ng-show="!registerForm.uNickname.$error.minlength && !registerForm.uNickname.$error.maxlength &&
-                                                registerForm.uNickname.$invalid && !registerForm.uNickname.$pristine"
+                                                registerForm.uNickname.$invalid && registerForm.uNickname.$touched"
                                         class="text-danger">Nickname is required.</p>
                                     <p ng-show="registerForm.uNickname.$error.minlength"
                                         class="text-danger">Nickname is too short.</p>
@@ -41,12 +41,11 @@
                                 <div class="form-group">
                                     <input id="register-email" class="input-material" type="email" name="uEmail"
                                             required ng-model="vm.user.uEmail" ng-pattern="/^.+@.+\..+$/"
-                                            ng-class="{ 'border-danger' : registerForm.uEmail.$invalid && !registerForm.uEmail.$pristine ,
-                                                        'border-success': !registerForm.uEmail.$invalid && registerForm.uEmail.$touched}"
-                                            email-exists = 'vm.user.uEmail'
+                                            ng-class="{ 'border-danger' : registerForm.uEmail.$invalid && registerForm.uEmail.$touched ,
+                                                        'border-success': !registerForm.uEmail.$invalid}"
                                             title="Type your email address">
                                     <label for="register-email" class="label-material"> Email *</label>
-                                    <p ng-show="!registerForm.uEmail.$error.pattern && registerForm.uEmail.$invalid && !registerForm.uEmail.$pristine"
+                                    <p ng-show="!registerForm.uEmail.$error.pattern && registerForm.uEmail.$invalid && registerForm.uEmail.$touched"
                                         class="text-danger">Email is required.</p>
                                     <p ng-show="registerForm.uEmail.$error.pattern"
                                         class="text-danger">Email is invalid.</p>
@@ -58,13 +57,12 @@
                                     <input id="register-password" class="input-material" type="password" name="uPassword"
                                             required ng-model="vm.user.uPassword"
                                             ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/"
-                                            ng-class="{ 'border-danger' : registerForm.uPassword.$invalid && !registerForm.uPassword.$pristine,
-                                            'border-success': !registerForm.uPassword.$invalid && registerForm.uPassword.$touched}"
-                                            title="Must contain one lower &amp; uppercase letter, and at least one number or symbol.
-                                                    Password must contain at least 8 characters">
+                                            ng-class="{ 'border-danger' : registerForm.uPassword.$invalid && registerForm.uPassword.$touched,
+                                                        'border-success': !registerForm.uPassword.$invalid}"
+                                            title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Password must contain at least 8 characters">
                                     <label for="register-password" class="label-material"> Password *</label>
                                     <p ng-show="!registerForm.uPassword.$error.minlength && !registerForm.uPassword.$error.pattern &&
-                                                  registerForm.uPassword.$invalid && !registerForm.uPassword.$pristine"
+                                                  registerForm.uPassword.$invalid && registerForm.uPassword.$touched"
                                         class="text-danger">Password is required.</p>
                                     <p ng-show="registerForm.uPassword.$error.minlength"
                                        class="text-danger">Password is too short.</p>
@@ -72,14 +70,12 @@
 
                                 <div class="form-group">
                                     <input id="register-repeatPassword" class="input-material" type="password" name="uRepeatPassword"
-                                           required ng-model="vm.user.uRepeatPassword"
-                                           ng-class="{ 'border-danger' : registerForm.uRepeatPassword.$invalid && !registerForm.uRepeatPassword.$pristine,
-                                                       'border-success': !registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched}">
+                                           required ng-model="vm.user.uRepeatPassword" compare-to="vm.user.uPassword"
+                                           ng-class="{ 'border-danger' : registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched,
+                                                       'border-success': !registerForm.uRepeatPassword.$invalid}"
+                                            title="Retype your password.">
                                     <label for="register-repeatPassword" class="label-material"> Repeat Password *</label>
-                                    <p ng-show="!registerForm.uRepeatPassword.$error.match &&
-                                                registerForm.uRepeatPassword.$invalid && !registerForm.uRepeatPassword.$pristine"
-                                       class="text-danger">Repeat password is required.</p>
-                                    <p ng-show="registerForm.uRepeatPassword.$error.match"
+                                    <p ng-show="registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched"
                                         class="text-danger">Passwords don't matched.</p>
                                 </div>
 
@@ -87,7 +83,7 @@
                                     <strong>{{vm.alert.form.title}}</strong>{{vm.alert.form.msg}}
                                 </div>
 
-                                <button ng-disabled="vm.dataLoading" id="register" type="submit" class="btn btn-primary"> Register </button>
+                                <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary"> Register </button>
                             </form>
                             <small>Already have an account? </small><a href="/login" class="signup">Login</a>
                         </div>
