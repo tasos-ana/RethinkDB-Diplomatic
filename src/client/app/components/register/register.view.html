@@ -81,8 +81,8 @@
                                         class="text-danger">Passwords don't matched.</p>
                                 </div>
 
-                                <div ng-hide="!vm.alert.form.enabled" class="alert alert-danger">
-                                    <strong>{{vm.alert.form.title}}</strong>{{vm.alert.form.msg}}
+                                <div ng-hide="!vm.alert.enabled" class="alert alert-danger">
+                                    <strong>{{vm.alert.title}}</strong>{{vm.alert.msg}}
                                 </div>
 
                                 <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary"> Register </button>
