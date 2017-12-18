@@ -10,7 +10,7 @@
         const vm = this;
 
         vm.uploadData       = uploadData;
-        // vm.groupCreate      = groupCreate;
+        vm.groupCreate      = groupCreate;
         // vm.groupSettings    = groupSettings;
 
         (function initController() {
@@ -80,20 +80,22 @@
             }
         }
 
-        // function groupCreate() {
-        //     vm.group.creating = true;
-        //     httpService.groupCreate(vm.group.name)
-        //         .then(function (response) {
-        //             if(response.success){
-        //                 if(!groupExists(response.data.gID)){
-        //                     $rootScope.user.groupsList.push(response.data.gID);
-        //                     homeService.getAccountGroups();
-        //                 }
-        //                 vm.group.creating = false;
-        //                 vm.group.name = '';
-        //             }
-        //         });
-        // }
+        function groupCreate(isValid) {
+            if(isValid){
+                vm.group.creating = true;
+                httpService.groupCreate(vm.group.name)
+                    .then(function (response) {
+                        if(response.success){
+                            if(!groupExists(response.data.gID)){
+                                $rootScope.user.groupsList.push(response.data.gID);
+                                homeService.getAccountGroups();
+                            }
+                            vm.group.creating = false;
+                            vm.group.name = '';
+                        }
+                    });
+            }
+        }
         //
         // function groupSettings(gID,ev) {
         //     $rootScope.group = {

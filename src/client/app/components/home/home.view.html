@@ -1,6 +1,26 @@
 <!-- HEADER SECTION BEGIN -->
 <header class="header">
     <nav class="navbar navbar-expand-lg">
+
+        <!-- CREATE GROUP PANEL BEGIN -->
+        <div class="search-panel">
+            <div class="search-inner d-flex align-items-center justify-content-center">
+                <div class="close-btn">Close <i class="fa fa-close"></i></div>
+                <form id="searchForm" name="createForm" ng-submit="vm.groupCreate(!createForm.$invalid)" role="form" novalidate>
+                    <div class="form-group">
+                        <input type="search" name="create" placeholder="Group name is..." ng-model="vm.group.name"
+                            required ng-minlength="3" title="Group name should have more than 3 characters">
+                        <button type="submit" class="submit" ng-hide="createForm.$invalid">Create</button>
+                    </div>
+                    <p ng-show="!createForm.create.$error.minlength && createForm.create.$invalid && createForm.create.$touched"
+                       class="text-danger">Group name is required.</p>
+                    <p ng-show="createForm.create.$error.minlength"
+                       class="text-danger">Group name is too short.</p>
+                </form>
+            </div>
+        </div>
+        <!-- CREATE GROUP PANEL END -->
+
         <div class="container-fluid d-flex align-items-center justify-content-between">
             <div class="navbar-header"><a href="/home" class="navbar-brand">
                 <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Push</strong><strong>Up</strong></div>
@@ -58,7 +78,7 @@
                 <a href="/home"><i class="icon-home"></i>Home</a>
             </li>
             <li>
-                <a> <i class="icon-new-file"></i>Create Group</a>
+                <a class="create-group" href=""><i class="icon-new-file"></i>Create Group</a>
             </li>
             <li>
                 <a href="#dashvariants" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>My Groups</a>
@@ -130,20 +150,19 @@
                             <!-- Nav tabs -->
                             <ul class="nav nav-tabs ">
                                 <li class="nav-item" ng-repeat="gID in user.groupsList">
-                                    <a class="nav-link active" data-toggle="tab" ng-href={{gID}} >
+                                    <a class="nav-link" ng-class="{'active' : $first}" data-toggle="tab" ng-href="#{{gID}}">
                                         <button class="close closeTab" type="button" >×</button>{{user.groupsData[gID].name}}
                                     </a>
                                 </li>
-
                             </ul>
                             <!-- Tab panes -->
                             <div class="tab-content">
-                                <div class="tab-pane tab-pane-scrollable active container" ng-repeat="gID in user.groupsList" id={{gID}}>
+                                <div class="tab-pane fade tab-pane-scrollable container" ng-repeat="gID in user.groupsList" ng-class="{'active show' : $first}"  id={{gID}}>
                                     <div class="messages-block block">
                                         <div class="messages">
                                             <a class="message d-flex align-items-center" ng-repeat="gData in user.groupsData[gID].data | reverse">
                                                 <div class="content">
-                                                    <strong class="d-block">{{user.email}}</strong>
+                                                    <strong class="d-block">{{user.nickname}}</strong>
                                                     <span class="d-block">{{gData.data}}</span>
                                                     <small class="date d-block">{{gData.date}}</small>
                                                 </div>
