@@ -19,6 +19,11 @@
                 const gID  = $rootScope.user.groupsList[i];
                 if($rootScope.user.groupsData[gID] === undefined){
                     $rootScope.user.groupsData[gID] = { };
+                    $rootScope.user.groupsActive[gID] = true;
+                    $rootScope.user.prevActiveGroup.push(gID);
+                    if($rootScope.user.activeGroup === undefined){
+                        $rootScope.user.activeGroup = gID;
+                    }
                     getGroup(gID);
                 }else{
                     const data = $rootScope.user.groupsData[gID].data;

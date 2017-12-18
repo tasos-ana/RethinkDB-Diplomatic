@@ -12,6 +12,9 @@
         vm.uploadData       = uploadData;
         vm.groupCreate      = groupCreate;
         // vm.groupSettings    = groupSettings;
+        vm.groupOpen        = groupOpen;
+        vm.groupClose       = groupClose;
+        vm.groupSetActive   = groupSetActive;
 
         (function initController() {
             socketService.connect();
@@ -22,6 +25,9 @@
                         $rootScope.dataLoading = false;
                         if(response.success){
                             $rootScope.user = response.data;
+                            $rootScope.user.groupsActive = {};
+                            $rootScope.user.prevActiveGroup = [];
+                            $rootScope.user.activeGroup = undefined;
                             homeService.getAccountGroups();
                         }else{
                             $location.path('/login');
@@ -89,6 +95,9 @@
                             if(!groupExists(response.data.gID)){
                                 $rootScope.user.groupsList.push(response.data.gID);
                                 homeService.getAccountGroups();
+                                if($rootScope.user.activeGroup === undefined){
+                                    $rootScope.user.activeGroup = response.data.gID;
+                                }
                             }
                             vm.group.creating = false;
                             vm.group.name = '';
@@ -96,6 +105,46 @@
                     });
             }
         }
+
+        function groupOpen(gID) {
+            $timeout(function () {
+                $rootScope.$apply(function () {
+                    $rootScope.user.groupsActive[gID] = true;
+                    $rootScope.user.activeGroup = gID;
+                });
+            });
+        }
+        
+        function groupClose(gID) {
+            $timeout(function () {
+                $rootScope.$apply(function () {
+                    console.log($rootScope.user.prevActiveGroup);
+                    while($rootScope.user.prevActiveGroup.length > 0 ){
+                        const x = $rootScope.user.prevActiveGroup.pop();
+                        if($rootScope.user.groupsActive[x]){
+                            $rootScope.user.activeGroup = x;
+                            $rootScope.user.groupsActive[gID] = false;
+                            return;
+                        }
+                    }
+                    $rootScope.user.activeGroup = undefined;
+                });
+            });
+        }
+
+        function groupSetActive(gID) {
+            const prevID = $rootScope.user.activeGroup;
+            if(prevID !== gID){
+                const index = $rootScope.user.prevActiveGroup.indexOf(prevID);
+                if (index >= 0) {
+                    $rootScope.user.prevActiveGroup.splice(index, 1);
+                }
+                $rootScope.user.prevActiveGroup.push(prevID);
+                $rootScope.user.activeGroup = gID;
+                console.log('prev: ' + $rootScope.user.groupsData[prevID].name + ' ---- next: ' + $rootScope.user.groupsData[gID].name);
+            }
+        }
+
         //
         // function groupSettings(gID,ev) {
         //     $rootScope.group = {
