@@ -107,7 +107,7 @@
         <section class="no-padding-top no-padding-bottom">
             <div class="container-fluid">
                 <div class="col-lg-12">
-                    <div ng-hide="user.groupsList.length!==0 || user.activeGroup !== undefined">
+                    <div ng-show="user.groupsOpened.length === 0 ">
                         <div class="content">
                             <div class="login-page no-padding-top no-padding-bottom">
                                 <div class="container-fluid d-flex align-items-center">
@@ -140,20 +140,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="block" ng-hide="user.groupsList.length === 0 || user.activeGroup === undefined">
+                    <div class="block" ng-show="user.groupsOpened.show() !== 0">
                         <div class="container">
                             <!-- Nav tabs -->
                             <ul class="nav nav-tabs">
-                                <li class="nav-item" ng-repeat="gID in user.groupsList" ng-click="vm.groupSetActive(gID)">
-                                    <a class="nav-link" ng-class="{'active' : user.activeGroup === gID}" data-toggle="tab" ng-href="#{{gID}}" ng-hide="!user.groupsActive[gID]">
+                                <li class="nav-item" ng-repeat="gID in user.groupsOpened" ng-click="vm.groupSetActive(gID)">
+                                    <a class="nav-link" ng-class="{'active' : user.activeGroup === gID}" data-toggle="tab" ng-href="#{{gID}}">
                                         <button class="close closeTab" type="button" ng-click="vm.groupClose(gID)">×</button>{{user.groupsData[gID].name}}
                                     </a>
                                 </li>
                             </ul>
                             <!-- Tab panes -->
                             <div class="tab-content">
-                                <div class="tab-pane fade tab-pane-scrollable container" ng-repeat="gID in user.groupsList"
-                                     ng-class="{'active show' : user.activeGroup === gID}"  id={{gID}} ng-hide="!user.groupsActive[gID]">
+                                <div class="tab-pane fade tab-pane-scrollable container" ng-repeat="gID in user.groupsOpened"
+                                     ng-class="{'active show' : user.activeGroup === gID}"  id={{gID}}>
                                     <div class="messages-block block">
                                         <div class="messages">
                                             <a class="message d-flex align-items-center" ng-repeat="gData in user.groupsData[gID].data | reverse">

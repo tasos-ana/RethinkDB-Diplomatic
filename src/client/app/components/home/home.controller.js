@@ -25,9 +25,9 @@
                         $rootScope.dataLoading = false;
                         if(response.success){
                             $rootScope.user = response.data;
-                            $rootScope.user.groupsActive = {};
-                            $rootScope.user.prevActiveGroup = [];
+                            $rootScope.user.groupsOpened = [];
                             $rootScope.user.activeGroup = undefined;
+
                             homeService.getAccountGroups();
                         }else{
                             $location.path('/login');
@@ -49,8 +49,6 @@
                                 });
                             });
                         });
-
-
                     });
             }else{
                 $rootScope.dataLoading = false;
@@ -95,9 +93,6 @@
                             if(!groupExists(response.data.gID)){
                                 $rootScope.user.groupsList.push(response.data.gID);
                                 homeService.getAccountGroups();
-                                if($rootScope.user.activeGroup === undefined){
-                                    $rootScope.user.activeGroup = response.data.gID;
-                                }
                             }
                             vm.group.creating = false;
                             vm.group.name = '';
@@ -109,8 +104,11 @@
         function groupOpen(gID) {
             $timeout(function () {
                 $rootScope.$apply(function () {
-                    $rootScope.user.groupsActive[gID] = true;
-                    $rootScope.user.activeGroup = gID;
+                    const index = $rootScope.user.groupsOpened.indexOf(gID);
+                    if (index < 0) {
+                        $rootScope.user.groupsOpened.push(gID);
+                        $rootScope.user.activeGroup = gID;
+                    }
                 });
             });
         }
@@ -118,32 +116,25 @@
         function groupClose(gID) {
             $timeout(function () {
                 $rootScope.$apply(function () {
-                    console.log($rootScope.user.prevActiveGroup);
-                    while($rootScope.user.prevActiveGroup.length > 0 ){
-                        const x = $rootScope.user.prevActiveGroup.pop();
-                        if($rootScope.user.groupsActive[x]){
-                            $rootScope.user.activeGroup = x;
-                            $rootScope.user.groupsActive[gID] = false;
-                            return;
+                    const index = $rootScope.user.groupsOpened.indexOf(gID);
+                    if (index >= 0) {
+                        $rootScope.user.groupsOpened.splice(index, 1);
+                    }
+                    if(gID === $rootScope.user.activeGroup){
+                        if(index >= $rootScope.user.groupsOpened.length){
+                            $rootScope.user.activeGroup = $rootScope.user.groupsOpened[index-1];
+                        }else{
+                            $rootScope.user.activeGroup = $rootScope.user.groupsOpened[index];
                         }
                     }
-                    $rootScope.user.activeGroup = undefined;
                 });
             });
         }
-
+        
         function groupSetActive(gID) {
-            const prevID = $rootScope.user.activeGroup;
-            if(prevID !== gID){
-                const index = $rootScope.user.prevActiveGroup.indexOf(prevID);
-                if (index >= 0) {
-                    $rootScope.user.prevActiveGroup.splice(index, 1);
-                }
-                $rootScope.user.prevActiveGroup.push(prevID);
-                $rootScope.user.activeGroup = gID;
-                console.log('prev: ' + $rootScope.user.groupsData[prevID].name + ' ---- next: ' + $rootScope.user.groupsData[gID].name);
-            }
+            $rootScope.user.activeGroup = gID;
         }
+
 
         //
         // function groupSettings(gID,ev) {
