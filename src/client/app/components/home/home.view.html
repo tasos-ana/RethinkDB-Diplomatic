@@ -1,80 +1,13 @@
 <!-- HEADER SECTION BEGIN -->
-<header class="header">
-<!--<header class="header" ng-include="'./app/components/home/common/header.html'">-->
-    <nav class="navbar navbar-expand-lg">
-        <!-- CREATE GROUP PANEL BEGIN -->
-        <div ng-show="createGroupFadeIn">
-            <div class="search-inner d-flex align-items-center justify-content-center">
-                <div class="close-btn" ng-click="createGroupFadeIn=false">Close <i class="fa fa-close"></i></div>
-                <form id="searchForm" name="createForm" ng-submit="vm.groupCreate(!createForm.$invalid)" role="form" novalidate>
-                    <div class="form-group">
-                        <input type="search" name="create" placeholder="Group name is..." ng-model="vm.group.name"
-                               required ng-minlength="3" title="Group name should have more than 3 characters">
-                        <button type="submit" class="submit" ng-hide="createForm.$invalid"
-                                ng-click="createGroupFadeIn=false">Create</button>
-                    </div>
-                    <p ng-show="createForm.create.$error.minlength"
-                       class="text-danger">Group name is too short.</p>
-                </form>
-            </div>
-        </div>
-        <!-- CREATE GROUP PANEL END -->
-        <div class="container-fluid d-flex align-items-center justify-content-between">
-            <div class="navbar-header"><a href="/home" class="navbar-brand">
-                <div class="brand-text brand-big visible text-uppercase" ng-class="{'visible' : !sidebarToggled}"><strong class="text-primary">Push</strong><strong>Up</strong></div>
-                <div class="brand-text brand-sm" ng-class="{'visible' : sidebarToggled}"><strong class="text-primary">P</strong><strong>UP</strong></div></a>
-                <button class="sidebar-toggle" ng-class="{'active' : sidebarToggled}" ng-click="sidebarToggled=!sidebarToggled">
-                    <i class="fa" ng-class="{'fa-long-arrow-left' : !sidebarToggled ,'fa-long-arrow-right' : sidebarToggled}"></i></button>
-            </div>
-            <ul class="right-menu list-inline no-margin-bottom">
-                <li class="list-inline-item logout">
-                    <a id="logout" href="/login" class="nav-link">Logout <i class="icon-logout"></i></a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-</header>
+<header class="header" ng-include="'./app/components/home/common/header.html'"></header>
 <!-- HEADER SECTION END-->
+
 <div class="d-flex align-items-stretch">
     <!-- SIDEBAR BEGIN-->
-    <nav class="nav-content" ng-class="{'shrinked' : sidebarToggled}" id="sidebar">
-        <!--<nav class="nav-content" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'">-->
-        <div class="sidebar-header d-flex align-items-center">
-            <div class="avatar bg-primary">
-                <img src="./assets/img/account.svg" alt="..." class="img-fluid rounded-circle">
-            </div>
-            <div class="title">
-                <h1 class="h5">{{user.nickname}}</h1>
-                <a class="small">{{user.email}}</a>
-            </div>
-        </div><span class="heading">Main</span>
-        <ul class="list-unstyled">
-            <li class="active">
-                <a href="/home"><i class="icon-home"></i>Home</a>
-            </li>
-            <li>
-                <a class="create-group" href="" ng-click="createGroupFadeIn=true"><i class="icon-new-file"></i>Create Group</a>
-            </li>
-            <li>
-                <a href="#dashvariants" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>My Groups</a>
-                <ul id="dashvariants" class="collapse list-unstyled">
-                    <li ng-repeat="gID in user.groupsList"><a href="" ng-click="vm.groupOpen(gID)">{{user.groupsData[gID].name}}</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href=""> <i class="icon-padnote"></i>Groups Settings </a>
-            </li>
-        </ul>
-        <span class="heading">Extras</span>
-        <ul class="list-unstyled">
-            <li> <a href=""> <i class="icon-settings"></i>Account Settings </a></li>
-        </ul>
-        <ul class="list-unstyled">
-            <li> <a href=""> <i class="icon-info"></i>About </a></li>
-        </ul>
-    </nav>
+    <nav class="nav-content" ng-class="{'shrinked' : vm.sidebarToggled}" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'"></nav>
     <!-- SIDEBAR END-->
-    <div class="page-content" ng-class="{'active' : sidebarToggled}">
+
+    <div class="page-content" ng-class="{'active' : vm.sidebarToggled}">
         <div class="page-header">
             <div class="container-fluid">
                 <h2 class="h5 no-margin-bottom">Dashboard</h2>
@@ -162,14 +95,7 @@
         <!-- GROUP SECTION END -->
 
         <!-- FOOTER BEGIN -->
-        <footer class="footer">
-            <!--<footer class="footer" ng-include="'./app/components/home/common/footer.html'">-->
-            <div class="footer__block block no-margin-bottom">
-                <div class="container-fluid text-center">
-                    <p class="no-margin-bottom">2017 &copy; Push UP.</p>
-                </div>
-            </div>
-        </footer>
+        <footer class="footer" ng-include="'./app/components/home/common/footer.html'"></footer>
         <!-- FOOTER END -->
     </div>
 </div>
