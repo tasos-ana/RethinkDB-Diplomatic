@@ -129,8 +129,8 @@
                                             <div class="col-lg-6 bg-white">
                                                 <div class="form d-flex align-items-center">
                                                     <div class="content">
-                                                        <h2 class="h5 no-margin-bottom text-center text-primary text-bold">Welcome on pushUP <span class="dashtext-1">{{user.nickname}}</span></h2><br>
-                                                        <p class="text-center text-primary">Create new group or open one of groups<br> and share you thinks!</p>
+                                                        <h2 class="h5 no-margin-bottom text-center text-primary text-bold">Welcome <span class="dashtext-1">{{user.nickname}}</span> on pushUP</h2><br>
+                                                        <p class="text-center text-primary">Create new group or open one of groups<br> and share you data!</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -140,7 +140,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="block" ng-show="user.groupsOpened.show() !== 0">
+                    <div class="block" ng-show="user.groupsOpened.length !== 0">
                         <div class="container">
                             <!-- Nav tabs -->
                             <ul class="nav nav-tabs">

@@ -27,7 +27,6 @@
                             $rootScope.user = response.data;
                             $rootScope.user.groupsOpened = [];
                             $rootScope.user.activeGroup = undefined;
-
                             homeService.getAccountGroups();
                         }else{
                             $location.path('/login');
@@ -107,8 +106,8 @@
                     const index = $rootScope.user.groupsOpened.indexOf(gID);
                     if (index < 0) {
                         $rootScope.user.groupsOpened.push(gID);
-                        $rootScope.user.activeGroup = gID;
                     }
+                    $rootScope.user.activeGroup = gID;
                 });
             });
         }

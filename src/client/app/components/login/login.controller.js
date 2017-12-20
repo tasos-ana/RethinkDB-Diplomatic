@@ -35,6 +35,8 @@
                 .then(function (response) {
                     if (response.success) {
                         $rootScope.user = response.data;
+                        $rootScope.user.groupsOpened = [];
+                        $rootScope.user.activeGroup = undefined;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
                         vm.loginError = false;
