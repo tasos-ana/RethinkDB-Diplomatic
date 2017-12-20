@@ -16,7 +16,9 @@
             link: function(scope, element, attributes, ngModel) {
 
                 ngModel.$validators.compareTo = function(modelValue) {
-                    return modelValue === scope.otherModelValue;
+                    const eq = modelValue === scope.otherModelValue;
+                    ngModel.$setValidity('compareto', eq);
+                    return eq;
                 };
 
                 scope.$watch("otherModelValue", function() {

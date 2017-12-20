@@ -27,20 +27,26 @@
                                 </div>
                                 <div class="form-group">
                                     <input id="login-userEmail" class="input-material" type="text"
-                                           name="loginUserEmail" required ng-model="vm.user.uEmail">
-                                    <label for="login-userEmail" class="label-material">Email</label>
+                                            name="loginUserEmail" required ng-model="vm.user.uEmail"
+                                            ng-focus="loginForm.loginUserEmail.focus=true"
+                                            ng-blur="loginForm.loginUserEmail.focus=vm.user.uEmail.length>0">
+                                    <label for="login-userEmail" class="label-material"
+                                           ng-class="{'active' : loginForm.loginUserEmail.focus}">Email</label>
                                 </div>
                                 <div class="form-group">
                                     <input id="login-password" class="input-material" type="password"
-                                           name="loginPassword" required ng-model="vm.user.uPassword">
-                                    <label for="login-password" class="label-material">Password</label>
+                                           name="loginPassword" required ng-model="vm.user.uPassword"
+                                           ng-focus="loginForm.loginPassword.focus=true"
+                                           ng-blur="loginForm.loginPassword.focus=vm.user.uPassword.length>0">
+                                    <label for="login-password" class="label-material"
+                                           ng-class="{'active' : loginForm.loginPassword.focus}">Password</label>
                                 </div>
                                 <div class="alert alert-danger" ng-hide="!vm.loginError">
                                     <strong>Login fail!</strong> Email or password do not matched.
                                 </div>
                                 <button id="login" type="submit" class="btn btn-primary"
                                         ng-disabled="vm.dataLoading">Login</button>
-                            </form><!--<a href="#" class="forgot-pass">Forgot Password?</a><br>-->
+                            </form>
                             <small>Do not have an account? </small><a href="/register" class="signup">Sign up</a>
                         </div>
                     </div>

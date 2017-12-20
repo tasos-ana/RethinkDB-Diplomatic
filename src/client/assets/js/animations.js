@@ -1,21 +1,21 @@
 $(function () {
 
-    // ------------------------------------------------------- //
-    // Transition Placeholders
-    // ------------------------------------------------------ //
-    $('input.input-material').on('focus', function () {
-        $(this).siblings('.label-material').addClass('active');
-    });
-
-    $('input.input-material').on('blur', function () {
-        $(this).siblings('.label-material').removeClass('active');
-
-        if ($(this).val() !== '') {
-            $(this).siblings('.label-material').addClass('active');
-        } else {
-            $(this).siblings('.label-material').removeClass('active');
-        }
-    });
+    // // ------------------------------------------------------- //
+    // // Transition Placeholders
+    // // ------------------------------------------------------ //
+    // $('input.input-material').on('focus', function () {
+    //     $(this).siblings('.label-material').addClass('active');
+    // });
+    //
+    // $('input.input-material').on('blur', function () {
+    //     $(this).siblings('.label-material').removeClass('active');
+    //
+    //     if ($(this).val() !== '') {
+    //         $(this).siblings('.label-material').addClass('active');
+    //     } else {
+    //         $(this).siblings('.label-material').removeClass('active');
+    //     }
+    // });
 
     // ------------------------------------------------------- //
     // Adding fade effect to dropdowns
@@ -29,7 +29,7 @@ $(function () {
 
 
     // ------------------------------------------------------- //
-    // Search Popup
+    // Create group Popup
     // ------------------------------------------------------ //
     $('.create-group').on('click', function (e) {
         e.preventDefault();

@@ -22,63 +22,93 @@
                         <div class="content">
                             <form id="registerForm" name="registerForm" ng-submit="vm.register(registerForm.$valid)" novalidate>
 
+                                <!---->
                                 <div class="form-group">
                                     <input id="register-nickname" class="input-material" type="text" name="uNickname"
-                                            ng-class="{ 'border-danger' : registerForm.uNickname.$invalid && registerForm.uNickname.$touched ,
-                                                        'border-success': !registerForm.uNickname.$invalid}"
-                                            required ng-model="vm.user.uNickname" ng-minlength="3" ng-maxlength="15"
-                                            title="Must be between 3 and 15 characters">
-                                    <label for="register-nickname" class="label-material"> Nickname *</label>
+                                           required ng-model="vm.user.uNickname" ng-minlength="3" ng-maxlength="15"
+                                           title="Must be between 3 and 15 characters"
+                                           ng-class="{'border-danger' : registerForm.uNickname.$invalid && registerForm.uNickname.$touched ,
+                                                      'border-success': !registerForm.uNickname.$invalid}"
+                                           ng-focus="registerForm.uNickname.focus=true"
+                                           ng-blur="registerForm.uNickname.focus=vm.user.uNickname > 0 ||
+                                                    registerForm.uNickname.$error.minlength || registerForm.uNickname.$error.maxlength">
+                                    <label for="register-nickname" class="label-material"
+                                           ng-class="{'active' : registerForm.uNickname.focus}"> Nickname *</label>
+
                                     <p ng-show="!registerForm.uNickname.$error.minlength && !registerForm.uNickname.$error.maxlength &&
                                                 registerForm.uNickname.$invalid && registerForm.uNickname.$touched"
                                         class="text-danger">Nickname is required.</p>
                                     <p ng-show="registerForm.uNickname.$error.minlength"
-                                        class="text-danger">Nickname is too short.</p>
+                                        class="text-danger">Nickname is too short. Minimum length is 3 characters!</p>
                                     <p ng-show="registerForm.uNickname.$error.maxlength"
-                                        class="text-danger">Nickname is too long.</p>
+                                        class="text-danger">Nickname is too long. Maximum length is 15 characters!</p>
                                 </div>
 
+                                <!---->
                                 <div class="form-group">
                                     <input id="register-email" class="input-material" type="email" name="uEmail"
-                                            required ng-model="vm.user.uEmail" ng-pattern="/^.+@.+\..+$/"
-                                            ng-class="{ 'border-danger' : registerForm.uEmail.$invalid && registerForm.uEmail.$touched ,
-                                                        'border-success': !registerForm.uEmail.$invalid}"
-                                            email-exists="!$registerForm.uEmail.$invalid"
-                                            title="Type your email address">
-                                    <label for="register-email" class="label-material"> Email *</label>
+                                           required ng-model="vm.user.uEmail" ng-pattern="/^.+@.+\..+$/"
+                                           email-exists="!$registerForm.uEmail.$invalid"
+                                           title="Type your email address"
+                                           ng-class="{'border-danger' : registerForm.uEmail.$invalid && registerForm.uEmail.$touched ,
+                                                      'border-success': !registerForm.uEmail.$invalid}"
+                                           ng-focus="registerForm.uEmail.focus=true"
+                                           ng-blur="registerForm.uEmail.focus=vm.user.uEmail.length>0 || registerForm.uEmail.$valid ||
+                                                    registerForm.uEmail.$error.pattern || registerForm.uEmail.$error.emailExists">
+                                    <label for="register-email" class="label-material"
+                                           ng-class="{'active' : registerForm.uEmail.focus}"> Email *</label>
+
                                     <p ng-show="!registerForm.uEmail.$error.emailExists && !registerForm.uEmail.$error.pattern &&
                                             registerForm.uEmail.$invalid && registerForm.uEmail.$touched"
                                         class="text-danger">Email is required.</p>
                                     <p ng-show="registerForm.uEmail.$error.pattern"
-                                        class="text-danger">Email is invalid.</p>
+                                        class="text-danger">Email is invalid. Example csd3166@csd.gr</p>
                                     <p ng-show="registerForm.uEmail.$error.emailExists"
                                         class="text-danger">Email already exists.</p>
                                 </div>
 
+                                <!---->
                                 <div class="form-group">
                                     <input id="register-password" class="input-material" type="password" name="uPassword"
-                                            required ng-model="vm.user.uPassword"
-                                            ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/"
-                                            ng-class="{ 'border-danger' : registerForm.uPassword.$invalid && registerForm.uPassword.$touched,
-                                                        'border-success': !registerForm.uPassword.$invalid}"
-                                            title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Password must contain at least 8 characters">
-                                    <label for="register-password" class="label-material"> Password *</label>
+                                           required ng-model="vm.user.uPassword"
+                                           ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/"
+                                           title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Password must contain at least 8 characters"
+                                           ng-class="{'border-danger' : registerForm.uPassword.$invalid && registerForm.uPassword.$touched,
+                                                       'border-success': !registerForm.uPassword.$invalid}"
+                                           ng-focus="registerForm.uPassword.focus=true"
+                                           ng-blur="registerForm.uPassword.focus=vm.user.uPassword.length>0 ||
+                                                    registerForm.uPassword.$error.minlength || registerForm.uPassword.$error.pattern">
+                                    <label for="register-password" class="label-material"
+                                           ng-class="{'active' : registerForm.uPassword.focus}"> Password *</label>
+
                                     <p ng-show="!registerForm.uPassword.$error.minlength && !registerForm.uPassword.$error.pattern &&
-                                                  registerForm.uPassword.$invalid && registerForm.uPassword.$touched"
+                                                 registerForm.uPassword.$invalid && registerForm.uPassword.$touched"
                                         class="text-danger">Password is required.</p>
                                     <p ng-show="registerForm.uPassword.$error.minlength"
-                                       class="text-danger">Password is too short.</p>
+                                       class="text-danger">Password is too short. Minimum length is 8 characters!</p>
+                                    <p ng-show="registerForm.uPassword.$error.pattern && !registerForm.uPassword.$error.minlength"
+                                       class="text-danger">Password must contain one lower &amp; uppercase letter, and at least one number or symbol</p>
                                 </div>
 
                                 <div class="form-group">
                                     <input id="register-repeatPassword" class="input-material" type="password" name="uRepeatPassword"
                                            required ng-model="vm.user.uRepeatPassword" compare-to="vm.user.uPassword"
+                                           title="Retype your password."
                                            ng-class="{ 'border-danger' : registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched,
                                                        'border-success': !registerForm.uRepeatPassword.$invalid}"
-                                            title="Retype your password.">
-                                    <label for="register-repeatPassword" class="label-material"> Repeat Password *</label>
-                                    <p ng-show="registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched"
+                                           ng-focus="registerForm.uRepeatPassword.focus=true"
+                                           ng-blur="registerForm.uRepeatPassword.focus=vm.user.uRepeatPassword.length>0 ||
+                                                    registerForm.uRepeatPassword.$error.compareto">
+                                    <label for="register-repeatPassword" class="label-material"
+                                           ng-class="{'active' : registerForm.uRepeatPassword.focus}"> Confirm Password *</label>
+
+                                    <p ng-show="!registerForm.uRepeatPassword.$error.compareto &&
+                                                 registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched"
+                                       class="text-danger">Confirm password is required.</p>
+                                    <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$valid"
                                         class="text-danger">Passwords don't matched.</p>
+                                    <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$invalid"
+                                       class="text-danger">Confirm password is invalid.</p>
                                 </div>
 
                                 <div ng-hide="!vm.alert.enabled" class="alert alert-danger">
