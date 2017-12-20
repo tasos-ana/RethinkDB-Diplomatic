@@ -20,6 +20,7 @@
             socketService.connect();
             $rootScope.dataLoading = true;
             $rootScope.createGroupFadeIn = false;
+            $rootScope.sidebarToggled = false;
             if($rootScope.user === undefined || $rootScope.user ===null){
                 httpService.accountGetUserInfo(undefined)
                     .then(function (response) {

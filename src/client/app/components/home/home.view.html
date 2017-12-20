@@ -21,9 +21,10 @@
         <!-- CREATE GROUP PANEL END -->
         <div class="container-fluid d-flex align-items-center justify-content-between">
             <div class="navbar-header"><a href="/home" class="navbar-brand">
-                <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Push</strong><strong>Up</strong></div>
-                <div class="brand-text brand-sm"><strong class="text-primary">P</strong><strong>UP</strong></div></a>
-                <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
+                <div class="brand-text brand-big visible text-uppercase" ng-class="{'visible' : !sidebarToggled}"><strong class="text-primary">Push</strong><strong>Up</strong></div>
+                <div class="brand-text brand-sm" ng-class="{'visible' : sidebarToggled}"><strong class="text-primary">P</strong><strong>UP</strong></div></a>
+                <button class="sidebar-toggle" ng-class="{'active' : sidebarToggled}" ng-click="sidebarToggled=!sidebarToggled">
+                    <i class="fa" ng-class="{'fa-long-arrow-left' : !sidebarToggled ,'fa-long-arrow-right' : sidebarToggled}"></i></button>
             </div>
             <ul class="right-menu list-inline no-margin-bottom">
                 <li class="list-inline-item logout">
@@ -36,7 +37,7 @@
 <!-- HEADER SECTION END-->
 <div class="d-flex align-items-stretch">
     <!-- SIDEBAR BEGIN-->
-    <nav class="nav-content" id="sidebar">
+    <nav class="nav-content" ng-class="{'shrinked' : sidebarToggled}" id="sidebar">
         <!--<nav class="nav-content" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'">-->
         <div class="sidebar-header d-flex align-items-center">
             <div class="avatar bg-primary">
@@ -73,7 +74,7 @@
         </ul>
     </nav>
     <!-- SIDEBAR END-->
-    <div class="page-content">
+    <div class="page-content" ng-class="{'active' : sidebarToggled}">
         <div class="page-header">
             <div class="container-fluid">
                 <h2 class="h5 no-margin-bottom">Dashboard</h2>
