@@ -19,6 +19,7 @@
         (function initController() {
             socketService.connect();
             $rootScope.dataLoading = true;
+            $rootScope.createGroupFadeIn = false;
             if($rootScope.user === undefined || $rootScope.user ===null){
                 httpService.accountGetUserInfo(undefined)
                     .then(function (response) {
