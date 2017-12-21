@@ -10,7 +10,7 @@
         $locationProvider.html5Mode(true);
         $routeProvider
             .when('/about',{
-                templateUrl: './app/components/about/about.view.html'
+                templateUrl: './app/components/home/templates/about.html'
             })
             .when('/home',{
                 controller: 'HomeController',
