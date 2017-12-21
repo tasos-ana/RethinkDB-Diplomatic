@@ -53,7 +53,7 @@
                                            ng-class="{'border-danger' : registerForm.uEmail.$invalid && registerForm.uEmail.$touched ,
                                                       'border-success': !registerForm.uEmail.$invalid}"
                                            ng-focus="registerForm.uEmail.focus=true"
-                                           ng-blur="registerForm.uEmail.focus=vm.user.uEmail.length>0 || registerForm.uEmail.$valid ||
+                                           ng-blur="registerForm.uEmail.focus=vm.user.uEmail.length>0 || !registerForm.uEmail.$invalid ||
                                                     registerForm.uEmail.$error.pattern || registerForm.uEmail.$error.emailExists">
                                     <label for="register-email" class="label-material"
                                            ng-class="{'active' : registerForm.uEmail.focus}"> Email *</label>
