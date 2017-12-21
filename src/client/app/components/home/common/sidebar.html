@@ -1,0 +1,39 @@
+<div class="sidebar-header d-flex align-items-center">
+    <div class="avatar bg-primary">
+        <img src="./assets/img/account.svg" alt="..." class="img-fluid rounded-circle">
+    </div>
+    <div class="title">
+        <h1 class="h5">{{user.nickname}}</h1>
+        <a class="small">{{user.email}}</a>
+    </div>
+</div><span class="heading">Main</span>
+<ul class="list-unstyled">
+    <li ng-class="{'active' : vm.templateURL==='dashboard'}">
+        <a href="" ng-click="vm.templateURL='dashboard'; vm.templateName='Dashboard';">
+            <i class="icon-home"></i>Home</a>
+    </li>
+    <li>
+        <a class="create-group" href="" ng-click="vm.createGroupFadeIn=true"><i class="icon-new-file"></i>Create Group</a>
+    </li>
+    <li>
+        <a href="" data-toggle="collapse" data-target="#groupsList"> <i class="icon-windows"></i>My Groups</a>
+        <ul id="groupsList" class="collapse list-unstyled">
+            <li ng-repeat="gID in user.groupsList"><a href="" ng-click="vm.groupOpen(gID)">{{user.groupsData[gID].name}}</a></li>
+        </ul>
+    </li>
+    <li ng-class="{'active' : vm.templateURL==='groupsSettings'}">
+        <a href="" ng-click="vm.templateURL='groupsSettings'; vm.templateName='Groups Settings';">
+            <i class="icon-padnote"></i>Groups Settings </a>
+    </li>
+</ul>
+<span class="heading">Extras</span>
+<ul class="list-unstyled">
+    <li ng-class="{'active' : vm.templateURL==='accountSettings'}">
+        <a href="" ng-click="vm.templateURL='accountSettings'; vm.templateName='Account Settings';">
+            <i class="icon-settings"></i>Account Settings </a></li>
+</ul>
+<ul class="list-unstyled">
+    <li ng-class="{'active' : vm.templateURL==='about'}">
+        <a href="" ng-click="vm.templateURL='about'; vm.templateName='About'">
+            <i class="icon-info"></i>About </a></li>
+</ul>

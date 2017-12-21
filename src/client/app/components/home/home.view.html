@@ -1,7 +1,27 @@
-<div layout="column" layout-align="bottom center">
-    <h2>Welcome on </h2>
-    <div layout="column" layout-align="top center">
-        <img src="../../../assets/img/logo_transparent.png">
+<!-- HEADER SECTION BEGIN -->
+<header class="header" ng-include="'./app/components/home/common/header.html'"></header>
+<!-- HEADER SECTION END-->
+
+<div class="d-flex align-items-stretch">
+    <!-- SIDEBAR BEGIN-->
+    <nav class="nav-content" ng-class="{'shrinked' : vm.sidebarToggled}" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'"></nav>
+    <!-- SIDEBAR END-->
+
+    <div class="page-content" ng-class="{'active' : vm.sidebarToggled}">
+        <div class="page-header">
+            <div class="container-fluid">
+                <h2 class="h5 no-margin-bottom">{{vm.templateName}}</h2>
+            </div>
+        </div>
+
+        <section class="no-padding-top no-padding-bottom">
+            <div class="container-fluid">
+                <div class="col-lg-12" ng-include="'./app/components/home/templates/' + vm.templateURL + '.html'"></div>
+            </div>
+        </section>
+
+        <!-- FOOTER BEGIN -->
+        <footer class="footer" ng-include="'./app/components/home/common/footer.html'"></footer>
+        <!-- FOOTER END -->
     </div>
-    <h4><a href="/register">Register now</a> free and start sharing data on your device</h4>
 </div>

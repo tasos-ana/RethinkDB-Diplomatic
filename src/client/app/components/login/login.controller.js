@@ -13,6 +13,14 @@
 
         (function initController() {
             vm.dataLoading = false;
+            vm.loginError = false;
+
+            if($rootScope.registerComplete){
+                vm.registerComplete = true;
+                $rootScope.registerComplete = false;
+            }else{
+                vm.registerComplete = false;
+            }
 
             // reset login status
             $rootScope.loginStatus = false;
@@ -21,23 +29,21 @@
             loginService.clearCredentials();
         })();
 
-        function login(ev) {
+        function login() {
             vm.dataLoading = true;
             httpService.accountAuthenticate(vm.user)
                 .then(function (response) {
                     if (response.success) {
                         $rootScope.user = response.data;
+                        $rootScope.user.groupsOpened = [];
+                        $rootScope.user.activeGroup = undefined;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
-                        $location.path('/dashboard');
+                        vm.loginError = false;
+                        $location.path('/home');
                     } else {
                         vm.dataLoading = false;
-                        $rootScope.showAlert(
-                            ev,
-                            'Login status',
-                            'Email or password do not matched.',
-                            'Login fail',
-                            'Got it');
+                        vm.loginError = true;
                     }
                 });
         }

@@ -1,33 +1,20 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngMaterial','ngRoute','ngCookies','ngMessages','validation.match','angular-md5'])
+        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5'])
         .config(config)
         .run(run);
 
-    config.$inject = ['$mdThemingProvider','$routeProvider', '$locationProvider'];
-    function config($mdThemingProvider,$routeProvider, $locationProvider) {
-        // Configure a dark theme with primary foreground lime
-        $mdThemingProvider.theme('docs-dark', 'default')
-            .primaryPalette('lime')
-            .accentPalette('cyan')
-            .dark();
-
-        $mdThemingProvider.theme('default')
-            .primaryPalette('lime')
-            .accentPalette('cyan')
-            .dark();
+    config.$inject = ['$routeProvider', '$locationProvider'];
+    function config($routeProvider, $locationProvider) {
         $locationProvider.html5Mode(true);
         $routeProvider
-            .when('/home',{
-                templateUrl: './app/components/home/home.view.html'
-            })
             .when('/about',{
-                templateUrl: './app/components/about/about.view.html'
+                templateUrl: './app/components/home/templates/about.html'
             })
-            .when('/dashboard',{
-                controller: 'DashboardController',
-                templateUrl: './app/components/dashboard/dashboard.view.html',
+            .when('/home',{
+                controller: 'HomeController',
+                templateUrl: './app/components/home/home.view.html',
                 controllerAs: 'vm'
             })
             .when('/login',{
@@ -39,60 +26,28 @@
                 controller: 'RegisterController',
                 templateUrl: './app/components/register/register.view.html',
                 controllerAs: 'vm'
-            }).otherwise({redirectTo: '/home'});
+            }).otherwise({redirectTo: '/login'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies", "$http",'$mdSidenav','$mdDialog'];
-    function run($rootScope, $location, $cookies, $http, $mdSidenav, $mdDialog) {
+    run.$inject = ['$rootScope', '$location', "$cookies"];
+    function run($rootScope, $location, $cookies) {
 
         $rootScope.$on('$locationChangeStart', function (event, next, current) {
             $rootScope.pageName = $location.path().split('/')[1];
             const loggedIn = $cookies.get('userCredentials');
             if(loggedIn !== undefined){
                 $rootScope.loginStatus = true;
-                let restrictedPage = $.inArray($location.path(), ['/home','/register']) !==  -1;
+                let restrictedPage = $.inArray($location.path(), ['/register']) !==  -1;
                 if(restrictedPage) {
-                    $location.path('/dashboard');
+                    $location.path('/home');
                 }
             }else{
                 // redirect to login page if not logged in and trying to access a restricted page
-                let restrictedPage = $.inArray($location.path(), ['/dashboard']) !==  -1;
+                let restrictedPage = $.inArray($location.path(), ['/home']) !==  -1;
                 if(restrictedPage) {
                     $location.path('/login');
                 }
             }
         });
-
-
-        /*
-         * Side bar
-         */
-        $rootScope.toggleLeft = buildToggler('left');
-        $rootScope.toggleRight = buildToggler('right');
-
-        function buildToggler(componentId) {
-            return function () {
-                $mdSidenav(componentId).toggle();
-            };
-        }
-
-        /*
-            Show dialog function
-         */
-        $rootScope.showAlert = function(ev,title,content,aria,ok) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            // Modal dialogs should fully cover application
-            // to prevent interaction outside of dialog
-            $mdDialog.show(
-                $mdDialog.alert()
-                    .parent(angular.element(document.querySelector('#popupContainer')))
-                    .clickOutsideToClose(true)
-                    .title(title)
-                    .textContent(content)
-                    .ariaLabel(aria)
-                    .ok(ok)
-                    .targetEvent(ev)
-            );
-        };
     }
 })();

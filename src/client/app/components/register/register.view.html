@@ -1,71 +1,133 @@
-<div ng-hide="!vm.registerComplete" layout="column" layout-align="top center">
-    <h3> Register complete! </h3>
-    <h4> redirecting to login page in 2 seconds...</h4>
-    <h6> press <a href="/login">here</a> if you don't redirect automatically</h6>
-</div>
-<div ng-hide="vm.registerComplete" layout="column" layout-align="top center">
-    <h3>Register form</h3>
-    <md-content layout-padding>
-        <form name="registerForm" ng-submit="vm.register($event)" role="form">
-            <md-content md-theme="docs-dark" layout-gt-sm="column" layout-padding>
-                <div layout="column">
-
-                    <md-input-container>
-                        <label for="nickname">Nickname</label>
-                        <input type='text' id="nickname" name='nickname' ng-model="vm.user.uNickname" ng-disabled="vm.dataLoading"
-                               required minlength="3" maxlength="15">
-                        <div ng-messages ="registerForm.nickname.$error" role="alert">
-                            <div ng-message-exp="['required', 'minlength', 'maxlength']">
-                                Your Nickname must be between 3 and 15 characters.
-                            </div>
+<div class="login-page">
+    <div class="container d-flex align-items-center">
+        <div class="form-holder has-shadow">
+            <div class="row">
+                <!-- Logo & Information Panel-->
+                <div class="col-lg-6">
+                    <div class="info d-flex align-items-center">
+                        <div class="content">
+                            <div class="logo row">
+                                <div class="col-sm-2"></div>
+                                <img class="col-sm-8" src="./assets/img/logo.png" alt="">
+                                <div class="col-sm-2"></div>
+                            </div><br>
+                            <p class="text-center">Welcome on pushUP</p>
+                            <p>Login or Sign up now and start sharing data between your devices.</p>
                         </div>
-                    </md-input-container>
-
-                    <md-input-container>
-                        <label for="email">Email</label>
-                        <input type='email' id="email" name='email' ng-model="vm.user.uEmail" ng-disabled="vm.dataLoading"
-                               ng-blur="vm.accountEmailExists(registerForm.email.$valid)"
-                               required ng-pattern="/^.+@.+\..+$/">
-                        <div ng-messages="registerForm.email.$error" role="alert">
-                            <div ng-message="required">This is required.</div>
-                            <div ng-message="pattern">Invalid email.</div>
-                            <div ng-hide="!vm.emailExists">Email already exists.</div>
-                        </div>
-                    </md-input-container>
-
-                    <md-input-container>
-                        <label for="password">Password</label>
-                        <input type='password' id="password" name="password" ng-model="vm.user.uPassword" ng-disabled="vm.dataLoading"
-                               required ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/">
-                        <div ng-messages="registerForm.password.$error">
-                            <div ng-message-exp="['required', 'minlength', 'maxlength']">
-                                You password must be between 8 and 20 characters.
-                            </div>
-                            <div ng-message="pattern">
-                                Must contain one lower &amp; uppercase letter, and<br>
-                                one non-alpha character (a number or a symbol)
-                            </div>
-                        </div>
-                    </md-input-container>
-
-                    <md-input-container>
-                        <label for="confirmPassword">Confirm password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword"
-                               ng-model="vm.user.uConfirmPassword" ng-disabled="vm.dataLoading"
-                               required data-match="vm.user.uPassword">
-                        <div ng-messages="registerForm.confirmPassword.$error">
-                            <div ng-message="required">Please confirm your password.</div>
-                            <div ng-message="match">Passwords do not match.</div>
-                        </div>
-                    </md-input-container>
-
-                    <div layout="row">
-                        <md-button ng-disabled="vm.dataLoading" type="submit" class="md-accent">Register</md-button>
-                        <md-button ng-disabled="vm.dataLoading" type="reset" class="md-warn">Clear</md-button>
-                        <md-progress-circular ng-hide="!vm.dataLoading" class="md-primary" md-diameter="30px"></md-progress-circular>
                     </div>
                 </div>
-            </md-content>
-        </form>
-    </md-content>
+                <!-- Form Panel    -->
+                <div class="col-lg-6 bg-white">
+                    <div class="form d-flex align-items-center">
+                        <div class="content">
+                            <form id="registerForm" name="registerForm" ng-submit="vm.register(registerForm.$valid)" novalidate>
+
+                                <!---->
+                                <div class="form-group">
+                                    <input id="register-nickname" class="input-material" type="text" name="uNickname"
+                                           required ng-model="vm.user.uNickname" ng-minlength="3" ng-maxlength="15"
+                                           title="Must be between 3 and 15 characters"
+                                           ng-class="{'border-danger' : registerForm.uNickname.$invalid && registerForm.uNickname.$touched ,
+                                                      'border-success': !registerForm.uNickname.$invalid}"
+                                           ng-focus="registerForm.uNickname.focus=true"
+                                           ng-blur="registerForm.uNickname.focus=vm.user.uNickname > 0 ||
+                                                    registerForm.uNickname.$error.minlength || registerForm.uNickname.$error.maxlength">
+                                    <label for="register-nickname" class="label-material"
+                                           ng-class="{'active' : registerForm.uNickname.focus}"> Nickname *</label>
+
+                                    <p ng-show="!registerForm.uNickname.$error.minlength && !registerForm.uNickname.$error.maxlength &&
+                                                registerForm.uNickname.$invalid && registerForm.uNickname.$touched"
+                                        class="text-danger">Nickname is required.</p>
+                                    <p ng-show="registerForm.uNickname.$error.minlength"
+                                        class="text-danger">Nickname is too short. Minimum length is 3 characters!</p>
+                                    <p ng-show="registerForm.uNickname.$error.maxlength"
+                                        class="text-danger">Nickname is too long. Maximum length is 15 characters!</p>
+                                </div>
+
+                                <!---->
+                                <div class="form-group">
+                                    <input id="register-email" class="input-material" type="email" name="uEmail"
+                                           required ng-model="vm.user.uEmail" ng-pattern="/^.+@.+\..+$/"
+                                           email-exists="!$registerForm.uEmail.$invalid"
+                                           title="Type your email address"
+                                           ng-class="{'border-danger' : registerForm.uEmail.$invalid && registerForm.uEmail.$touched ,
+                                                      'border-success': !registerForm.uEmail.$invalid}"
+                                           ng-focus="registerForm.uEmail.focus=true"
+                                           ng-blur="registerForm.uEmail.focus=vm.user.uEmail.length>0 || registerForm.uEmail.$valid ||
+                                                    registerForm.uEmail.$error.pattern || registerForm.uEmail.$error.emailExists">
+                                    <label for="register-email" class="label-material"
+                                           ng-class="{'active' : registerForm.uEmail.focus}"> Email *</label>
+
+                                    <p ng-show="!registerForm.uEmail.$error.emailExists && !registerForm.uEmail.$error.pattern &&
+                                            registerForm.uEmail.$invalid && registerForm.uEmail.$touched"
+                                        class="text-danger">Email is required.</p>
+                                    <p ng-show="registerForm.uEmail.$error.pattern"
+                                        class="text-danger">Email is invalid. Example csd3166@csd.gr</p>
+                                    <p ng-show="registerForm.uEmail.$error.emailExists"
+                                        class="text-danger">Email already exists.</p>
+                                </div>
+
+                                <!---->
+                                <div class="form-group">
+                                    <input id="register-password" class="input-material" type="password" name="uPassword"
+                                           required ng-model="vm.user.uPassword"
+                                           ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/"
+                                           title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Password must contain at least 8 characters"
+                                           ng-class="{'border-danger' : registerForm.uPassword.$invalid && registerForm.uPassword.$touched,
+                                                       'border-success': !registerForm.uPassword.$invalid}"
+                                           ng-focus="registerForm.uPassword.focus=true"
+                                           ng-blur="registerForm.uPassword.focus=vm.user.uPassword.length>0 ||
+                                                    registerForm.uPassword.$error.minlength || registerForm.uPassword.$error.pattern">
+                                    <label for="register-password" class="label-material"
+                                           ng-class="{'active' : registerForm.uPassword.focus}"> Password *</label>
+
+                                    <p ng-show="!registerForm.uPassword.$error.minlength && !registerForm.uPassword.$error.pattern &&
+                                                 registerForm.uPassword.$invalid && registerForm.uPassword.$touched"
+                                        class="text-danger">Password is required.</p>
+                                    <p ng-show="registerForm.uPassword.$error.minlength"
+                                       class="text-danger">Password is too short. Minimum length is 8 characters!</p>
+                                    <p ng-show="registerForm.uPassword.$error.pattern && !registerForm.uPassword.$error.minlength"
+                                       class="text-danger">Password must contain one lower &amp; uppercase letter, and at least one number or symbol</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <input id="register-repeatPassword" class="input-material" type="password" name="uRepeatPassword"
+                                           required ng-model="vm.user.uRepeatPassword" compare-to="vm.user.uPassword"
+                                           title="Retype your password."
+                                           ng-class="{ 'border-danger' : registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched,
+                                                       'border-success': !registerForm.uRepeatPassword.$invalid}"
+                                           ng-focus="registerForm.uRepeatPassword.focus=true"
+                                           ng-blur="registerForm.uRepeatPassword.focus=vm.user.uRepeatPassword.length>0 ||
+                                                    registerForm.uRepeatPassword.$error.compareto">
+                                    <label for="register-repeatPassword" class="label-material"
+                                           ng-class="{'active' : registerForm.uRepeatPassword.focus}"> Confirm Password *</label>
+
+                                    <p ng-show="!registerForm.uRepeatPassword.$error.compareto &&
+                                                 registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched"
+                                       class="text-danger">Confirm password is required.</p>
+                                    <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$valid"
+                                        class="text-danger">Passwords don't matched.</p>
+                                    <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$invalid"
+                                       class="text-danger">Confirm password is invalid.</p>
+                                </div>
+
+                                <div ng-hide="!vm.alert.enabled" class="alert alert-danger">
+                                    <strong>{{vm.alert.title}}</strong>{{vm.alert.msg}}
+                                </div>
+
+                                <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary"> Register </button>
+                            </form>
+                            <small>Already have an account? </small><a href="/login" class="signup">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="copyrights text-center">
+        <span><a href="/login" class="external"> Login </a> | </span>
+        <span><a href="/register" class="external"> Sign up </a> | </span>
+        <a href="/about" class="external"> About </a>
+        <p>2017 &copy; <a href="/home" class="external">Push UP.</a></p>
+    </div>
 </div>
