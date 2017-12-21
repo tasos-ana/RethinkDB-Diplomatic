@@ -10,13 +10,44 @@
     <div class="page-content" ng-class="{'active' : vm.sidebarToggled}">
         <div class="page-header">
             <div class="container-fluid">
-                <h2 class="h5 no-margin-bottom">{{vm.templateName}}</h2>
+                <h2 class="h5 no-margin-bottom">Home</h2>
             </div>
         </div>
-
         <section class="no-padding-top no-padding-bottom">
             <div class="container-fluid">
-                <div class="col-lg-12" ng-include="'./app/components/home/templates/' + vm.templateURL + '.html'"></div>
+                <div class="col-lg-12">
+                    <div class="content">
+                        <div class="login-page no-padding-top no-padding-bottom">
+                            <div class="container-fluid d-flex align-items-center">
+                                <div class="form-holder has-shadow">
+                                    <div class="row">
+                                        <!-- Logo & Information Panel-->
+                                        <div class="col-lg-6">
+                                            <div class="info d-flex align-items-center">
+                                                <div class="content">
+                                                    <div class="logo row">
+                                                        <div class="col-sm-2"></div>
+                                                        <img class="col-sm-8" src="./assets/img/logo.png" alt="">
+                                                        <div class="col-sm-2"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6 bg-white">
+                                            <div class="form d-flex align-items-center">
+                                                <div class="content">
+                                                    <h2 class="h5 no-margin-bottom text-center text-primary text-bold">Welcome <span class="dashtext-1">{{user.nickname}}</span> on pushUP</h2><br>
+                                                    <p class="text-center text-primary">Create new group or open one of groups<br> and share you data!</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

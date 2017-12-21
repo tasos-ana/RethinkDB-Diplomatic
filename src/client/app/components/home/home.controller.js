@@ -21,8 +21,7 @@
             $rootScope.dataLoading = true;
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
-            vm.templateURL = 'dashboard';
-            vm.templateName = 'Dashboard';
+            vm.templateURL = $location.path();
             vm.myGroupsExpand = false;
             if($rootScope.user === undefined || $rootScope.user ===null){
                 httpService.accountGetUserInfo(undefined)
