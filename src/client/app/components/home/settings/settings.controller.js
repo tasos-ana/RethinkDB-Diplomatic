@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('SettingsController', SettingsController);
 
-    SettingsController.$inject = ['$rootScope', '$location', 'httpService','homeService', 'socketService', '$timeout'];
-    function SettingsController($rootScope, $location, httpService, homeService, socketService, $timeout) {
+    SettingsController.$inject = ['$rootScope', '$location', 'httpService', 'socketService', '$timeout'];
+    function SettingsController($rootScope, $location, httpService, socketService, $timeout) {
         const vm = this;
 
         (function initController() {
