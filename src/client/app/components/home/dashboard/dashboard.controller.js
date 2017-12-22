@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'socketService', '$timeout'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, socketService, $timeout) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout'];
+    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout) {
         const vm = this;
 
         vm.uploadData       = uploadData;
@@ -18,72 +18,41 @@
 
         (function initController() {
             socketService.connect();
-            $rootScope.dataLoading = true;
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
             vm.myGroupsExpand = false;
             if($rootScope.user === undefined || $rootScope.user ===null){
-                httpService.accountGetUserInfo(undefined)
-                    .then(function (response) {
-                        $rootScope.dataLoading = false;
-                        if(response.success){
-                            $rootScope.user = response.data;
-                            $rootScope.user.groupsOpened = [];
-                            $rootScope.user.activeGroup = undefined;
-                            dashboardService.getAccountGroups();
-                        }else{
-                            $location.path('/login');
-                        }
-
-                        //on listen add or delete group
-                        socketService.on($rootScope.user.email, function (data) {
-                            $timeout(function () {
-                                $rootScope.$apply(function () {
-                                    if(data.action === 'deleteGroup'){
-                                        removeGroup(data.gID);
-                                        delete $rootScope.user.groupsData[data.gID];
-                                    }else{
-                                        if(!groupExists(data.gID)){
-                                            $rootScope.user.groupsList.push(data.gID);
-                                            dashboardService.getAccountGroups();
-                                        }
-                                    }
-                                });
-                            });
-                        });
-                    });
+                homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
-                $rootScope.dataLoading = false;
-                dashboardService.getAccountGroups();
+                dashboardService.retrieveGroupsData();
             }
         })();
 
-        function uploadData(gID) {
-            $rootScope.user.groupsData[gID].upload.uploadData = true;
+        function uploadData(group) {
+            group.upload.uploadData = true;
 
-            if($rootScope.user.groupsData[gID].upload.data.length>0){
+            if(group.upload.data.length>0){
+                group.upload.gID = group.id;
+                group.upload.type = 'text';
+                group.upload.time = Date.now();
 
-                $rootScope.user.groupsData[gID].upload.gID = $rootScope.user.groupsData[gID].id;
-                $rootScope.user.groupsData[gID].upload.type = 'text';
-                $rootScope.user.groupsData[gID].upload.time = Date.now();
-
-                httpService.groupAddData($rootScope.user.groupsData[gID].upload)
+                httpService.groupAddData(group.upload)
                     .then(function (response) {
                         if(response.success){
-                            $rootScope.user.groupsData[gID].upload = {
+                            group.upload = {
                                 data    : '',
                                 type    : '',
                                 time    : '',
                                 table   : ''
                             };
-                            $rootScope.user.groupsData[gID].upload.uploadData = false;
+                            group.upload.uploadData = false;
                         } else{
                             $location.path('/login');
                         }
                     });
             }else{
-                $rootScope.user.groupsData[gID].upload.uploadData = false;
+                group.upload.uploadData = false;
             }
         }
 
@@ -95,7 +64,7 @@
                         if(response.success){
                             if(!groupExists(response.data.gID)){
                                 $rootScope.user.groupsList.push(response.data.gID);
-                                dashboardService.getAccountGroups();
+                                dashboardService.retrieveGroupsData();
                             }
                             vm.group.creating = false;
                             vm.group.name = '';
@@ -107,9 +76,9 @@
         function groupOpen(gID) {
             $timeout(function () {
                 $rootScope.$apply(function () {
-                    const index = $rootScope.user.groupsOpened.indexOf(gID);
+                    const index = $rootScope.user.openedGroupsList.indexOf(gID);
                     if (index < 0) {
-                        $rootScope.user.groupsOpened.push(gID);
+                        $rootScope.user.openedGroupsList.push(gID);
                     }
                     $rootScope.user.activeGroup = gID;
                 });
@@ -119,15 +88,15 @@
         function groupClose(gID) {
             $timeout(function () {
                 $rootScope.$apply(function () {
-                    const index = $rootScope.user.groupsOpened.indexOf(gID);
+                    const index = $rootScope.user.openedGroupsList.indexOf(gID);
                     if (index >= 0) {
-                        $rootScope.user.groupsOpened.splice(index, 1);
+                        $rootScope.user.openedGroupsList.splice(index, 1);
                     }
                     if(gID === $rootScope.user.activeGroup){
-                        if(index >= $rootScope.user.groupsOpened.length){
-                            $rootScope.user.activeGroup = $rootScope.user.groupsOpened[index-1];
+                        if(index >= $rootScope.user.openedGroupsList.length){
+                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index-1];
                         }else{
-                            $rootScope.user.activeGroup = $rootScope.user.groupsOpened[index];
+                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
                         }
                     }
                 });
@@ -143,7 +112,7 @@
         // function groupSettings(gID,ev) {
         //     $rootScope.group = {
         //         id      : gID,
-        //         curName : $rootScope.user.groupsData[gID].name,
+        //         curName : $rootScope.user.openedGroupsData[gID].name,
         //         newName : undefined
         //     };
         //
@@ -162,7 +131,7 @@
         //                 .then(function (response) {
         //                     if(response.success){
         //                         removeGroup(gID);
-        //                         delete $rootScope.user.groupsData[gID];
+        //                         delete $rootScope.user.openedGroupsData[gID];
         //                     }else{
         //                         $location.path('/login');
         //                     }
@@ -173,7 +142,7 @@
         //                 httpService.groupUpdateName({gID : gID, gName : $rootScope.group.newName})
         //                     .then(function (response) {
         //                         if(response.success){
-        //                             $rootScope.user.groupsData[gID].name = $rootScope.group.newName;
+        //                             $rootScope.user.openedGroupsData[gID].name = $rootScope.group.newName;
         //                         }else{
         //                             $location.path('/login');
         //                         }

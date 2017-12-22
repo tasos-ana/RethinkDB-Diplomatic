@@ -115,7 +115,7 @@ const accountService = function () {
                                         email       : result.email,
                                         nickname    : result.nickname,
                                         groupsList  : result.groups,
-                                        groupsData  : { }
+                                        openedGroupsData  : { }
                                 });
                             }
                         }
@@ -185,7 +185,7 @@ const accountService = function () {
                                     "email"         : result.email,
                                     "nickname"      : result.nickname,
                                     "groupsList"    : result.groups,
-                                    "groupsData"    : { }
+                                    "openedGroupsData"    : { }
                                 });
                             }
                         });

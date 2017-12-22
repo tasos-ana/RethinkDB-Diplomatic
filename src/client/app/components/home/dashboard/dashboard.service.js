@@ -9,40 +9,40 @@
     function dashboardService($rootScope, $location, httpService, socketService, $timeout) {
         const service = {};
 
-        service.getAccountGroups = getAccountGroups;
+        service.retrieveGroupsData = retrieveGroupsData;
 
         return service;
 
-        function getAccountGroups() {
+        function retrieveGroupsData() {
 
             for(let i = 0; i<$rootScope.user.groupsList.length; ++i){
                 const gID  = $rootScope.user.groupsList[i];
-                if($rootScope.user.groupsData[gID] === undefined){
-                    $rootScope.user.groupsData[gID] = { };
-                    $rootScope.user.groupsOpened.push(gID);
+                if($rootScope.user.openedGroupsData[gID] === undefined){
+                    $rootScope.user.openedGroupsData[gID] = { };
+                    $rootScope.user.openedGroupsList.push(gID);
                     if($rootScope.user.activeGroup === undefined){
                         $rootScope.user.activeGroup = gID;
                     }
-                    getGroup(gID);
+                    retrieveSingleGroupData(gID);
                 }else{
-                    const data = $rootScope.user.groupsData[gID].data;
+                    const data = $rootScope.user.openedGroupsData[gID].data;
                     if (data === undefined || data === null || data.length === 0){
-                        getGroup(gID);
+                        retrieveSingleGroupData(gID);
                     }
                 }
             }
         }
 
-        function getGroup(id) {
-            $rootScope.user.groupsData[id].dataLoading = true;
+        function retrieveSingleGroupData(id) {
+            $rootScope.user.openedGroupsData[id].dataLoading = true;
             httpService.groupRetrieveData(id)
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.user.groupsData[response.data.id].id = response.data.id;
-                        $rootScope.user.groupsData[response.data.id].name = response.data.name;
-                        $rootScope.user.groupsData[response.data.id].data = response.data.value;
+                        $rootScope.user.openedGroupsData[response.data.id].id = response.data.id;
+                        $rootScope.user.openedGroupsData[response.data.id].name = response.data.name;
+                        $rootScope.user.openedGroupsData[response.data.id].data = response.data.value;
                         prepareGroup(response.data.id);
-                        $rootScope.user.groupsData[response.data.id].dataLoading = false;
+                        $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
                     }else{
                         $location.path('/login');
                     }
@@ -54,7 +54,7 @@
             configureAllDates(id);
 
             //INIT upload fields
-            $rootScope.user.groupsData[id].upload = {
+            $rootScope.user.openedGroupsData[id].upload = {
                 data    : '',
                 type    : '',
                 time    : '',
@@ -69,8 +69,8 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         data.date = configureDate(new Date(), new Date(data.time));
-                        if($rootScope.user.groupsData[id] !== undefined){
-                            $rootScope.user.groupsData[id].data[$rootScope.user.groupsData[id].data.length] = data;
+                        if($rootScope.user.openedGroupsData[id] !== undefined){
+                            $rootScope.user.openedGroupsData[id].data[$rootScope.user.openedGroupsData[id].data.length] = data;
                         }
                     });
                 });
@@ -80,7 +80,7 @@
             socketService.on(convertGroupID(id, '-'), function (newName) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        $rootScope.user.groupsData[id].name = newName;
+                        $rootScope.user.openedGroupsData[id].name = newName;
                     });
                 });
             });
@@ -88,9 +88,9 @@
 
         function configureAllDates(index) {
             const now = new Date();
-            for(let i = 0; i<$rootScope.user.groupsData[index].data.length; ++i){
-                const date = new Date($rootScope.user.groupsData[index].data[i].time);
-                $rootScope.user.groupsData[index].data[i].date = configureDate(now,date);
+            for(let i = 0; i<$rootScope.user.openedGroupsData[index].data.length; ++i){
+                const date = new Date($rootScope.user.openedGroupsData[index].data[i].time);
+                $rootScope.user.openedGroupsData[index].data[i].date = configureDate(now,date);
             }
         }
 
