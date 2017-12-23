@@ -9,17 +9,20 @@
     function httpService($http, md5) {
         const service = {};
 
-        service.accountGetUserInfo      = _accountGetUserInfo;
+        service.accountGetUserInfo          = _accountGetUserInfo;
 
-        service.accountCreate           = _accountCreate;
+        service.accountCreate               = _accountCreate;
 
-        service.accountAuthenticate     = _accountAuthenticate;
+        service.accountAuthenticate         = _accountAuthenticate;
 
-        service.groupAddData            = _groupAddData;
-        service.groupRetrieveData       = _groupRetrieveData;
-        service.groupCreate             = _groupCreate;
-        service.groupDelete             = _groupDelete;
-        service.groupUpdateName         = _groupUpdateName;
+        service.groupAddData                = _groupAddData;
+        service.groupRetrieveData           = _groupRetrieveData;
+        service.groupRetrieveName           = _groupRetrieveName;
+        service.groupCreate                 = _groupCreate;
+        service.groupDelete                 = _groupDelete;
+        service.groupUpdateName             = _groupUpdateName;
+        service.groupInsertToOpenedList     = _groupInsertToOpenedList;
+        service.groupRemoveFromOpenedList   = _groupRemoveFromOpenedList;
 
         return service;
 
@@ -79,13 +82,25 @@
         function _groupRetrieveData(gID) {
             return $http({
                 method          : 'GET',
-                url             : '/group/retrieve',
+                url             : '/group/retrieve/data',
                 params          : {
                                     gID : gID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant retrieve data from table:' + gID));
+        }
+
+        function _groupRetrieveName(gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/retrieve/name',
+                params          : {
+                    gID : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant retrieve name from table:' + gID));
         }
 
         function _groupCreate(gName) {
@@ -123,6 +138,30 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Cant update group name'));
+        }
+
+        function _groupInsertToOpenedList(gID) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/openedList/insert',
+                data            : {
+                                    gID : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant insert on opened group list'));
+        }
+
+        function _groupRemoveFromOpenedList(gID) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/openedList/remove',
+                data            : {
+                                    gID : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant remove on opened group list'));
         }
 
         function handleSuccess(res) {

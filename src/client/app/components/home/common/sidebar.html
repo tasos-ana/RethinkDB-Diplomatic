@@ -22,7 +22,7 @@
             <li>
                 <a href="" data-toggle="collapse" data-target="#groupsList"> <i class="icon-windows"></i>My Groups</a>
                 <ul id="groupsList" class="collapse list-unstyled">
-                    <li ng-repeat="gID in user.groupsList"><a href="" ng-click="vm.groupOpen(gID)">{{user.groupsData[gID].name}}</a></li>
+                    <li ng-repeat="gID in user.groupsList"><a href="" ng-click="vm.groupOpen(gID)">{{user.groupsNames[gID]}}</a></li>
                 </ul>
             </li>
         </ul>

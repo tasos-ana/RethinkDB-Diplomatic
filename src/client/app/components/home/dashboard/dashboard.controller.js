@@ -63,8 +63,8 @@
                     .then(function (response) {
                         if(response.success){
                             if(!groupExists(response.data.gID)){
-                                $rootScope.user.groupsList.push(response.data.gID);
-                                dashboardService.retrieveGroupsData();
+                                $rootScope.user.groupsList.push(response.data.gID);;
+                                groupOpen(response.data.gID);
                             }
                             vm.group.creating = false;
                             vm.group.name = '';
@@ -78,7 +78,15 @@
                 $rootScope.$apply(function () {
                     const index = $rootScope.user.openedGroupsList.indexOf(gID);
                     if (index < 0) {
-                        $rootScope.user.openedGroupsList.push(gID);
+                        httpService.groupInsertToOpenedList(gID)
+                            .then(function (response) {
+                                if(response.success){
+                                    $rootScope.user.openedGroupsList.push(gID);
+                                    dashboardService.retrieveSingleGroupData(gID);
+                                } else{
+                                    $location.path('/login');
+                                }
+                            });
                     }
                     $rootScope.user.activeGroup = gID;
                 });
@@ -88,17 +96,24 @@
         function groupClose(gID) {
             $timeout(function () {
                 $rootScope.$apply(function () {
-                    const index = $rootScope.user.openedGroupsList.indexOf(gID);
-                    if (index >= 0) {
-                        $rootScope.user.openedGroupsList.splice(index, 1);
-                    }
-                    if(gID === $rootScope.user.activeGroup){
-                        if(index >= $rootScope.user.openedGroupsList.length){
-                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index-1];
-                        }else{
-                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
-                        }
-                    }
+                    httpService.groupRemoveFromOpenedList(gID)
+                        .then(function (response) {
+                            if(response.success){
+                                const index = $rootScope.user.openedGroupsList.indexOf(gID);
+                                if (index >= 0) {
+                                    $rootScope.user.openedGroupsList.splice(index, 1);
+                                }
+                                if(gID === $rootScope.user.activeGroup){
+                                    if(index >= $rootScope.user.openedGroupsList.length){
+                                        $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index-1];
+                                    }else{
+                                        $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
+                                    }
+                                }
+                            } else{
+                                $location.path('/login');
+                            }
+                        });
                 });
             });
         }

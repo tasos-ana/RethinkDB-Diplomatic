@@ -19,7 +19,6 @@
                     .then(function (response) {
                         if(response.success){
                             $rootScope.user = response.data;
-                            $rootScope.user.openedGroupsList = [];
                             $rootScope.user.activeGroup = undefined;
                             cb();
                         }else{

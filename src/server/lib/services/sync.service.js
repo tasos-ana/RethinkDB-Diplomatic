@@ -181,22 +181,26 @@ const syncService = function () {
                         cursor.each(function (err, row) {
                             if(row !== undefined){
                                 if(Object.keys(row).length>0){
+                                    let ignore = false;
                                     const oldGroupsList = row.old_val.groups;
                                     const newGroupsList = row.new_val.groups;
                                     let action,gID;
                                     if(oldGroupsList.length > newGroupsList.length){
                                         action = 'deleteGroup' ;
                                         gID = row.old_val.groups.diff(row.new_val.groups);
-                                    }else{
+                                    }else if (oldGroupsList.length < newGroupsList.length){
                                         action = 'createGroup';
                                         gID = row.new_val.groups.diff(row.old_val.groups);
+                                    }else{
+                                        ignore = true;
                                     }
-
-                                    debug.status('Broadcast ' + action +' for user <' + uEmail + '>');
-                                    socket.emit(uEmail, {
-                                        "action"    : action,
-                                        "gID"       : convertGroupID(gID[0], '_')
-                                    });
+                                    if(!ignore) {
+                                        debug.status('Broadcast ' + action + ' for user <' + uEmail + '>');
+                                        socket.emit(uEmail, {
+                                            "action": action,
+                                            "gID": convertGroupID(gID[0], '_')
+                                        });
+                                    }
                                 }
                             }
                         });
