@@ -47,10 +47,11 @@ const accountService = function () {
              */
             function(connection,callback) {
                 rethinkdb.table('accounts').insert({
-                    'nickname'  : details.uNickname,
-                    'email'     : details.uEmail,
-                    'password'  : details.uPassword,
-                    'groups'    : []
+                    'nickname'      : details.uNickname,
+                    'email'         : details.uEmail,
+                    'password'      : details.uPassword,
+                    'groups'        : [],
+                    'openedGroups'  : []
                 }).run(connection,function(err,result){
                     connection.close();
                     if(err){
@@ -115,7 +116,7 @@ const accountService = function () {
                                         email       : result.email,
                                         nickname    : result.nickname,
                                         groupsList  : result.groups,
-                                        groupsData  : { }
+                                        openedGroupsData  : { }
                                 });
                             }
                         }
@@ -182,10 +183,11 @@ const accountService = function () {
                             }else{
                                 debug.correct('Account info for <' + uEmail + '> retrieved');
                                 callback(null,{
-                                    "email"         : result.email,
-                                    "nickname"      : result.nickname,
-                                    "groupsList"    : result.groups,
-                                    "groupsData"    : { }
+                                    "email"             : result.email,
+                                    "nickname"          : result.nickname,
+                                    "groupsList"        : result.groups,
+                                    "openedGroupsData"  : { },
+                                    "openedGroupsList"  : result.openedGroups
                                 });
                             }
                         });

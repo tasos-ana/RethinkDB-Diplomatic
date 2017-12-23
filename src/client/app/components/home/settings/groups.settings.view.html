@@ -1,0 +1,44 @@
+<!-- HEADER SECTION  -->
+<header class="header" ng-include="'./app/components/home/common/header.html'"></header>
+<div class="d-flex align-items-stretch">
+    <!-- SIDEBAR -->
+    <nav class="nav-content" ng-class="{'shrinked' : vm.sidebarToggled}" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'"></nav>
+    <div class="page-content" ng-class="{'active' : vm.sidebarToggled}">
+        <div class="page-header no-margin-bottom">
+            <div class="container-fluid">
+                <ol class="breadcrumb no-margin no-padding">
+                    <li class="breadcrumb-item h5"><a href="/home">Home</a></li>
+                    <li class="breadcrumb-item active text-secondary h5">Group settings</li>
+                </ol>
+            </div>
+        </div><br><br>
+        <section class="no-padding-top no-padding-bottom">
+            <div class="container-fluid">
+                <!--GROUP SETTINGS CONTENT-->
+                <div class="block">
+                    <div class="title"><strong>Edit/Delete your groups</strong></div>
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="gID in user.groupsList">
+                            <th scope="row">{{$index+1}}</th>
+                            <td>{{user.groupsNames[gID]}}</td>
+                            <td><i class="fa fa-edit"></i></td>
+                            <td><i class="fa fa-trash"></i></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <!-- FOOTER -->
+        <footer class="footer" ng-include="'./app/components/home/common/footer.html'"></footer>
+    </div>
+</div>

@@ -10,12 +10,30 @@
         $locationProvider.html5Mode(true);
         $routeProvider
             .when('/about',{
-                templateUrl: './app/components/home/templates/about.html'
+                templateUrl: './app/components/about/about.view.html'
             })
             .when('/home',{
                 controller: 'HomeController',
                 templateUrl: './app/components/home/home.view.html',
                 controllerAs: 'vm'
+            })
+            .when('/home/dashboard',{
+                controller: 'DashboardController',
+                templateUrl: './app/components/home/dashboard/dashboard.view.html',
+                controllerAs: 'vm'
+            })
+            .when('/home/account/settings',{
+                controller: 'SettingsController',
+                templateUrl: './app/components/home/settings/account.settings.view.html',
+                controllerAs: 'vm'
+            })
+            .when('/home/groups/settings',{
+                controller: 'SettingsController',
+                templateUrl: './app/components/home/settings/groups.settings.view.html',
+                controllerAs: 'vm'
+            })
+            .when('/home/about',{
+                templateUrl: './app/components/home/templates/about.view.html'
             })
             .when('/login',{
                 controller: 'LoginController',
@@ -26,7 +44,7 @@
                 controller: 'RegisterController',
                 templateUrl: './app/components/register/register.view.html',
                 controllerAs: 'vm'
-            }).otherwise({redirectTo: '/login'});
+            }).otherwise({redirectTo: '/home'});
     }
 
     run.$inject = ['$rootScope', '$location', "$cookies"];
@@ -43,8 +61,8 @@
                 }
             }else{
                 // redirect to login page if not logged in and trying to access a restricted page
-                let restrictedPage = $.inArray($location.path(), ['/home']) !==  -1;
-                if(restrictedPage) {
+                const path = $location.path();
+                if(path.indexOf('/home') !== -1){
                     $location.path('/login');
                 }
             }

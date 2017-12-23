@@ -14,11 +14,14 @@ const encryption = require('./security/encryption.security');
 const groupService = function () {
 
     return {
-        createGroup     : _createGroup,
-        retrieveGroup   : _retrieveGroup,
-        addData         : _addData,
-        deleteGroup     : _deleteGroup,
-        updateGroupName : _updateGroupName
+        createGroup         : _createGroup,
+        retrieveGroupData   : _retrieveGroupData,
+        retrieveGroupName   : _retrieveGroupName,
+        addData             : _addData,
+        deleteGroup         : _deleteGroup,
+        updateGroupName     : _updateGroupName,
+        insertOpenedGroup   : _insertOpenedGroup,
+        removeOpenedGroup   : _removeOpenedGroup
     };
 
     /**
@@ -185,7 +188,7 @@ const groupService = function () {
      * @param callback
      * @private
      */
-    function _retrieveGroup(gID, cookie, callback) {
+    function _retrieveGroupData(gID, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -194,7 +197,7 @@ const groupService = function () {
             function (callback) {
                 db.connectToDb(function(err,connection) {
                     if(err){
-                        debug.error('Group.service@retrieve: cant connect on database');
+                        debug.error('Group.service@_retrieveGroupData: cant connect on database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null,connection);
@@ -211,7 +214,7 @@ const groupService = function () {
                     rethinkdb.table('accounts').get(cookieDetails.uEmail)
                         .run(connection,function (err,result) {
                             if(err){
-                                debug.error('Account.service@retrieve: cant get user <' + cookieDetails.uEmail + '> info');
+                                debug.error('Account.service@_retrieveGroupData: cant get user <' + cookieDetails.uEmail + '> info');
                                 connection.close();
                                 return callback(true, 'Error happens while getting user details');
                             }
@@ -221,7 +224,7 @@ const groupService = function () {
                                 return callback(true,'Email do not exists');
                             }
                             if(cookieDetails.uPassword !== result.password || result.groups.indexOf(gID) === -1){
-                                debug.error('Account.service@retrieve: user details and cookie isn\'t match');
+                                debug.error('Account.service@_retrieveGroupData: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -229,7 +232,7 @@ const groupService = function () {
                             }
                         });
                 }catch (e){
-                    debug.error('Account.service@retrieve (catch): user details and cookie isnt match');
+                    debug.error('Account.service@_retrieveGroupData (catch): user details and cookie isnt match');
                     connection.close();
                     return callback(true,'Invalid cookie');
                 }
@@ -243,7 +246,7 @@ const groupService = function () {
                 rethinkdb.table('groups').get(convertGroupID(gID, '-'))('name')
                     .run(connection, function (err, gName) {
                         if(err){
-                            debug.error('Account.service@retrieve: cant retrieve group <' + gID + '> name');
+                            debug.error('Account.service@_retrieveGroupData: cant retrieve group <' + gID + '> name');
                             connection.close();
                             return callback(true, 'Error happens while retrieving group name');
                         }
@@ -261,12 +264,12 @@ const groupService = function () {
                     .run(connection,function (err,cursor) {
                         connection.close();
                         if(err){
-                            debug.error('Group.service@retrieve: cant retrieve group <' + gID + '> data');
+                            debug.error('Group.service@_retrieveGroupData: cant retrieve group <' + gID + '> data');
                             return callback(true, 'Error happens while getting group data');
                         }
                         cursor.toArray(function(err, results) {
                             if (err){
-                                debug.error('Group.service@retrieve: cant convert group <' + gID + '> data to array');
+                                debug.error('Group.service@_retrieveGroupData: cant convert group <' + gID + '> data to array');
                                 return callback(true, 'Error happens while converting data to array');
                             }
                             debug.correct('Retrieve data from group <' + gID + '> successful');
@@ -279,6 +282,82 @@ const groupService = function () {
         });
     }
 
+    /**
+     * Retrieve group name from database
+     * @param gID
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _retrieveGroupName(gID, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function(err,connection) {
+                    if(err){
+                        debug.error('Group.service@_retrieveGroupName: cant connect on database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null,connection);
+                });
+            },
+            /**
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@_retrieveGroupName: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(gID) === -1){
+                                debug.error('Account.service@_retrieveGroupName: user details and cookie isn\'t match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@_retrieveGroupName (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Retrieve group name from table groups
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('groups').get(convertGroupID(gID, '-'))('name')
+                    .run(connection, function (err, gName) {
+                        connection.close();
+                        if(err){
+                            debug.error('Account.service@_retrieveGroupName: cant retrieve group <' + gID + '> name');
+                            return callback(true, 'Error happens while retrieving group name');
+                        }
+                        callback(null,{id : gID, name : gName});
+                    });
+            }
+        ],function (err,data) {
+            callback(err !== null, data);
+        });
+    }
 
     /**
      * Add new data on group
@@ -571,6 +650,175 @@ const groupService = function () {
                     });
             }
         ],function (err,data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Insert a group at opened group
+     * @param details   contains the id of the group
+     * @param cookie    Authorization field from request, required for validation
+     * @param callback
+     * @private
+     */
+    function _insertOpenedGroup(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err,connection) {
+                    if(err){
+                        debug.error('Group.service@insertOpenedGroup: can\'t connect to database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Stage 0:
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Group.service@insertOpenedGroup: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password){
+                                debug.error('Group.service@insertOpenedGroup:: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                details.uEmail    = cookieDetails.uEmail;
+                                details.uNickname = result.nickname;
+
+                                callback(null, details, connection);
+                            }
+                        });
+
+                }catch (e){
+                    debug.error('Group.service@insertOpenedGroup: user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Update the opened groups list with the gID
+             * @param details       contains gID, uEmail, uNickname
+             * @param connection
+             * @param callback
+             */
+            function(details, connection, callback) {
+                rethinkdb.table('accounts').get(details.uEmail).update({
+                    openedGroups: rethinkdb.row('openedGroups').append(details.gID)
+                }).run(connection, function (err, result) {
+                    connection.close();
+                    if (err) {
+                        debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
+                        return callback(true, 'Error happens while update user groups');
+                    }
+                    debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
+                    callback(null, {});
+                });
+            }
+        ], function (err, data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Remove a group at opened group
+     * @param details   contains gID
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _removeOpenedGroup(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err,connection) {
+                    if(err){
+                        debug.error('Group.service@removeOpenedGroup: can\'t connect to database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Stage 0:
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Group.service@removeOpenedGroup: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password){
+                                debug.error('Group.service@removeOpenedGroup:: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                 details.uEmail    = cookieDetails.uEmail;
+                                 details.uNickname = result.nickname;
+                                callback(null, details, connection);
+                            }
+                        });
+
+                }catch (e){
+                    debug.error('Group.service@removeOpenedGroup: user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Update the opened groups list with the gID
+             * @param details       contains gID, uEmail, uNickname
+             * @param connection
+             * @param callback
+             */
+            function(details, connection, callback) {
+                rethinkdb.table('accounts').get(details.uEmail).update({
+                    openedGroups : rethinkdb.row('openedGroups').deleteAt(rethinkdb.row('openedGroups').offsetsOf(details.gID)(0))
+                }).run(connection, function (err, result) {
+                    connection.close();
+                    if (err) {
+                        debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
+                        return callback(true, 'Error happens while update user groups');
+                    }
+                    debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
+                    callback(null, {});
+                });
+            }
+        ], function (err, data) {
             callback(err !== null, data);
         });
     }

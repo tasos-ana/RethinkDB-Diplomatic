@@ -15,7 +15,7 @@ module.exports = {
     },
     server: {
         listenPort      : 80,                                 // The port on which the server is to listen (means that the app is at http://localhost:3000 for instance)
-        listenAddress   : '192.168.1.6',
+        listenAddress   : '192.168.1.72',
         listenAddressVPN: '147.52.151.51',
         //securePort      : 8433,                                 // The HTTPS port on which the server is to listen (means that the app is at https://localhost:8433 for instance)
         securePort      : 8000,

@@ -1,0 +1,22 @@
+<!-- HEADER SECTION  -->
+<header class="header" ng-include="'./app/components/home/common/header.html'"></header>
+<div class="d-flex align-items-stretch">
+    <!-- SIDEBAR -->
+    <nav class="nav-content" ng-class="{'shrinked' : vm.sidebarToggled}" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'"></nav>
+    <div class="page-content" ng-class="{'active' : vm.sidebarToggled}">
+        <div class="page-header no-margin-bottom">
+            <div class="container-fluid">
+                <ol class="breadcrumb no-margin no-padding">
+                    <li class="breadcrumb-item h5"><a href="/home">Home</a></li>
+                    <li class="breadcrumb-item active text-secondary h5">About</li>
+                </ol>
+            </div>
+        </div><br><br>
+        <section class="no-padding-top no-padding-bottom">
+            <div class="container-fluid" ng-include="'./app/components/about/about.view.html'">
+            </div>
+        </section>
+        <!-- FOOTER -->
+        <footer class="footer" ng-include="'./app/components/home/common/footer.html'"></footer>
+    </div>
+</div>

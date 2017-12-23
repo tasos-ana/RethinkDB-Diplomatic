@@ -12,9 +12,19 @@ router.route('/create')
         });
     });
 
-router.route('/retrieve')
+router.route('/retrieve/data')
     .get(function (req,res) {
-        groupService.retrieveGroup(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
+        groupService.retrieveGroupData(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/retrieve/name')
+    .get(function (req,res) {
+        groupService.retrieveGroupName(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -45,6 +55,26 @@ router.route('/update/name')
 router.route('/delete')
     .get(function (req,res) {
         groupService.deleteGroup(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/openedList/insert')
+    .post(function (req,res) {
+        groupService.insertOpenedGroup(req.body, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/openedList/remove')
+    .post(function (req,res) {
+        groupService.removeOpenedGroup(req.body, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

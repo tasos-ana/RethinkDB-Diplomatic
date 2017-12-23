@@ -3,15 +3,16 @@
 
     angular
         .module('starterApp')
-        .controller('HomeController', HomeController);
+        .controller('SettingsController', SettingsController);
 
-    HomeController.$inject = ['$rootScope', '$location', 'homeService'];
-    function HomeController($rootScope, $location, homeService) {
+    SettingsController.$inject = ['$rootScope', '$location', 'homeService'];
+    function SettingsController($rootScope, $location, homeService) {
         const vm = this;
 
         (function initController() {
             vm.templateURL = $location.path();
             homeService.retrieveAccountDetails(function () {});
         })();
+
     }
 })();
