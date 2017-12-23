@@ -19,7 +19,6 @@
             _retrieveGroupsName();
             for(let i = 0; i<$rootScope.user.openedGroupsList.length; ++i){
                 const gID  = $rootScope.user.openedGroupsList[i];
-                console.log(gID);
                 _retrieveSingleGroupData(gID);
             }
         }
