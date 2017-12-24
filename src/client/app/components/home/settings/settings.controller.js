@@ -9,11 +9,12 @@
     function SettingsController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, notify, $window, settingsService) {
         const vm = this;
 
-        vm.updateGroupName  = _updateGroupName;
-        vm.deleteGroup      = _deleteGroup;
+        vm.updateGroupName                  = _updateGroupName;
+        vm.deleteGroup                      = _deleteGroup;
 
-        vm.updateAccount    = _updateAccount;
-        
+        vm.updateAccount                    = _updateAccount;
+        vm.accountSettingsFormReset         = _accountSettingsFormReset;
+
         (function initController() {
             vm.templateURL = $location.path();
             notify.config({duration:'4000', position:'center'});
@@ -108,7 +109,13 @@
                 error=true;
             }else if(newPassword!==undefined && newPassword.length>0 && confirmNewPassword!==undefined && confirmNewPassword.length>0){
                 if(curPassword!==undefined && curPassword.length>0){
-                    changePassword=true;
+                    if(curPassword === newPassword){
+                        notify({ message:"New password can't be the same with your current password. Please try again", classes :'bg-dark border-danger text-danger'});
+                        $window.document.getElementById('newPassword_input').focus();
+                        error = true;
+                    }else{
+                        changePassword = true;
+                    }
                 }else{
                     notify({ message:"Your current password is required", classes :'bg-dark border-danger text-danger'});
                     $window.document.getElementById('curPassword_input').focus();
@@ -116,19 +123,25 @@
                 }
             }
 
-            if(!error && changeNickname && changePassword){
-                settingsService.updateAccount(vm);
-            }else if(!error && changeNickname){
-                settingsService.updateAccountNickame(vm);
-            }else if(!error && changePassword){
-               settingsService.updateAccountPassword(vm);
-            }else{
-                if(!error){
+            if(!error){
+                if(changeNickname && changePassword){
+                    settingsService.accountUpdateAll(vm);
+                }else if(changeNickname){
+                    settingsService.accountUpdateNickname(vm);
+                }else if(changePassword){
+                    settingsService.accountUpdatePassword(vm);
+                }else{
                     notify({ message:"You are happy with your details. No changes was made on your account", classes :'bg-dark border-success text-success'});
                 }
             }
         }
-
-
+        
+        function _accountSettingsFormReset() {
+            // call that on success update
+            delete vm.accountSettings;
+            vm.accountSettings = {};
+            vm.accountSettings.applyChanges = false;
+            $scope.accountSettingsForm.$setPristine();
+        }
     }
 })();
