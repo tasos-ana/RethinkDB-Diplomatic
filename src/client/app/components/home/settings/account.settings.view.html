@@ -39,7 +39,7 @@
                             <div class="form-group row">
                                 <label class="col-sm-3 form-control-label"> New Nickname </label>
                                 <div class="col-sm-9">
-                                    <input type="text" placeholder="Type your new nickname" class="form-control" name="newNickname"
+                                    <input type="text" placeholder="Type your new nickname" class="form-control" id='newNickname_input' name="newNickname"
                                            title="Must be between 3 and 15 characters" ng-minlength="3" ng-maxlength="15"
                                            ng-model="vm.accountSettings.newNickname"
                                            ng-class="{'border-danger' : accountSettingsForm.newNickname.$error.minlength || accountSettingsForm.newNickname.$error.maxlength ,
@@ -55,11 +55,12 @@
                             <div class="form-group row">
                                 <label class="col-sm-3 form-control-label">Current password</label>
                                 <div class="col-sm-9">
-                                    <input type="password" name="curPassword" placeholder="Type your current password" class="form-control"
-                                           ng-model="vm.accountSettings.curPassword" ng-class="{'border-danger' : vm.accountSettings.curPassword.length<8 &&
-                                                                            (vm.accountSettings.newNickname.length>0 || vm.accountSettings.newPassword.length>0),
-                                                                                              'border-success' : vm.accountSettings.curPassword.length>=8 &&
-                                                                            (vm.accountSettings.newNickname.length>0 || vm.accountSettings.newPassword.length>0)}"
+                                    <input type="password" id="curPassword_input" name="curPassword" placeholder="Type your current password" class="form-control"
+                                           ng-model="vm.accountSettings.curPassword"
+                                           ng-class="{'border-danger' : vm.accountSettings.curPassword.length<8 &&
+                                           (vm.accountSettings.newNickname.length>0 || vm.accountSettings.newPassword.length>0),
+                                           'border-success' : vm.accountSettings.curPassword.length>=8 &&
+                                           (vm.accountSettings.newNickname.length>0 || vm.accountSettings.newPassword.length>0)}"
                                            ng-required="vm.accountSettings.newNickname.length>0 || vm.accountSettings.newPassword.length>0">
                                     <small class="help-block-none text-danger"
                                            ng-show="(vm.accountSettings.newNickname.length>0 || vm.accountSettings.newPassword.length>0) &&
@@ -72,7 +73,7 @@
                             <div class="form-group row">
                                 <label class="col-sm-3 form-control-label">New password</label>
                                 <div class="col-sm-9">
-                                    <input type="password" name="newPassword" placeholder="Type your new password" class="form-control"
+                                    <input type="password" id="newPassword_input" name="newPassword" placeholder="Type your new password" class="form-control"
                                            ng-model="vm.accountSettings.newPassword"
                                            ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/"
                                            title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Minimum length is 8 characters"
@@ -93,7 +94,7 @@
                             <div class="form-group row">
                                 <label class="col-sm-3 form-control-label">Confirm new password</label>
                                 <div class="col-sm-9">
-                                    <input type="password" name="confirmNewPassword" placeholder="Retype your new password" class="form-control"
+                                    <input type="password" id="confirmNewPassword_input" name="confirmNewPassword" placeholder="Retype your new password" class="form-control"
                                            ng-model="vm.accountSettings.confirmNewPassword" compare-to="vm.accountSettings.newPassword"
                                            title="Retype your new password"
                                            ng-class="{ 'border-danger' : (accountSettingsForm.newPassword.$invalid || vm.accountSettings.newPassword.length>0 ) &&
@@ -103,17 +104,16 @@
                                            class="text-danger">Confirm new password is required</small>
                                     <small ng-show="accountSettingsForm.confirmNewPassword.$error.compareto && vm.accountSettings.newPassword.length>0"
                                            class="text-danger">Passwords don't matched.</small>
-                                    <small ng-show="accountSettingsForm.confirmNewPassword.$error.compareto && accountSettingsForm.confirmNewPassword.$touched
+                                    <small ng-show="accountSettingsForm.confirmNewPassword.$error.compareto && accountSettingsForm.confirmNewPassword.$touched &&
                                     (accountSettingsForm.newPassword.$error.minlength || accountSettingsForm.newPassword.$error.maxlength || accountSettingsForm.newPassword.$error.pattern)"
                                            class="text-danger">Confirm password is invalid.</small>
                                 </div>
                             </div>
                             <div class="line"></div>
 
-
                             <div class="form-group row">
                                 <div class="col-sm-9 ml-auto">
-                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                    <button type="submit" class="btn btn-primary" ng-disabled="vm.accountSettings.applyChanges">Save changes</button>
                                 </div>
                             </div>
 
