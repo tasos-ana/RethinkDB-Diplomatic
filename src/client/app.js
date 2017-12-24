@@ -47,11 +47,14 @@
             }).otherwise({redirectTo: '/home'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies"];
-    function run($rootScope, $location, $cookies) {
+    run.$inject = ['$rootScope', '$location', "$cookies", 'notify'];
+    function run($rootScope, $location, $cookies, notify) {
+        notify.config({duration:'10000', position:'center'});
+        if($rootScope.loginCauseError === undefined){
+            $rootScope.loginCauseError = {};
+        }
 
         $rootScope.$on('$locationChangeStart', function (event, next, current) {
-            $rootScope.pageName = $location.path().split('/')[1];
             const loggedIn = $cookies.get('userCredentials');
             if(loggedIn !== undefined){
                 $rootScope.loginStatus = true;

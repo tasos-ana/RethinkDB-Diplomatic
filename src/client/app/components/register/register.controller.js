@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$location', 'httpService', 'notify'];
-    function RegisterController($rootScope, $location, httpService, notify) {
+    RegisterController.$inject = ['$rootScope', '$location', 'httpService', 'notify', '$timeout'];
+    function RegisterController($rootScope, $location, httpService, notify, $timeout) {
         const vm = this;
 
         vm.register = register;
@@ -21,7 +21,6 @@
 
         function register(valid) {
             if(valid){
-                notify({ message:"Creating account please wait...", classes :'bg-dark border-info text-info', duration:'3000'});
                 if(vm.user.uPassword === vm.user.uRepeatPassword){
                     vm.dataLoading = true;
                     vm.alert.enabled = false;

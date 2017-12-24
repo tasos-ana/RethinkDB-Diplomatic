@@ -12,21 +12,26 @@
         vm.login = login;
 
         (function initController() {
-            notify.config({duration:'10000', position:'center'});
+            notify.config({duration:'7000', position:'center'});
             vm.dataLoading = false;
-            vm.loginError = false;
+
+            vm.registerComplete = false;
+            vm.loginCauseError = {enabled : false, msg : ''};
 
             if($rootScope.registerComplete){
-                notify({ message:"Register complete!", classes :'bg-dark border-success text-success'});
+                vm.registerComplete = true;
                 $rootScope.registerComplete = false;
-            }else{
-                vm.registerComplete = false;
+            }
+
+            if($rootScope.loginCauseError !== undefined && $rootScope.loginCauseError.enabled){
+                vm.loginCauseError.enabled = true;
+                vm.msg = $rootScope.loginCauseError.msg;
+                $rootScope.loginCauseError.enabled = false;
             }
 
             // reset login status
             $rootScope.loginStatus = false;
             $rootScope.user = undefined;
-
             loginService.clearCredentials();
         })();
 
@@ -40,7 +45,6 @@
                         $rootScope.user.activeGroup = undefined;
                         $rootScope.loginStatus = true;
                         vm.dataLoading = false;
-                        vm.loginError = false;
                         $location.path('/home');
                     } else {
                         vm.dataLoading = false;

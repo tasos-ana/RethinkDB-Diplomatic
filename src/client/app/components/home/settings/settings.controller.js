@@ -42,6 +42,8 @@
                             $rootScope.user.groupsNames[group.id] = group.newName;
                             notify({ message:"Group name changed successful to \""+ group.newName +"\"", classes :'bg-dark border-success text-success'});
                         }else{
+                            $rootScope.loginCauseError.enabled = true;
+                            $rootScope.loginCauseError.msg = response.msg;
                             $location.path('/login');
                         }
                     });
@@ -57,6 +59,8 @@
                         removeGroup(gID);
                         delete $rootScope.user.groupsNames[gID];
                     }else{
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.msg;
                         $location.path('/login');
                     }
                 });

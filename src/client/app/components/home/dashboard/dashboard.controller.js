@@ -49,6 +49,8 @@
                             };
                             group.upload.uploadData = false;
                         } else{
+                            $rootScope.loginCauseError.enabled = true;
+                            $rootScope.loginCauseError.msg = response.msg;
                             $location.path('/login');
                         }
                     });
@@ -93,6 +95,8 @@
                                     $rootScope.user.openedGroupsList.push(gID);
                                     dashboardService.retrieveSingleGroupData(gID);
                                 } else{
+                                    $rootScope.loginCauseError.enabled = true;
+                                    $rootScope.loginCauseError.msg = response.msg;
                                     $location.path('/login');
                                 }
                             });
@@ -120,6 +124,8 @@
                                     }
                                 }
                             } else{
+                                $rootScope.loginCauseError.enabled = true;
+                                $rootScope.loginCauseError.msg = response.msg;
                                 $location.path('/login');
                             }
                         });

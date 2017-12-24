@@ -32,6 +32,8 @@
                         if(response.success){
                             $rootScope.user.groupsNames[response.data.id] = response.data.name;
                         }else{
+                            $rootScope.loginCauseError.enabled = true;
+                            $rootScope.loginCauseError.msg = response.msg;
                             $location.path('/login');
                         }
                     });
@@ -64,6 +66,8 @@
                             prepareGroup(response.data.id);
                             $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
                         }else{
+                            $rootScope.loginCauseError.enabled = true;
+                            $rootScope.loginCauseError.msg = response.msg;
                             $location.path('/login');
                         }
                     });

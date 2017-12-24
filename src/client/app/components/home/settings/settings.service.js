@@ -30,6 +30,8 @@
                            notify({ message:"Your nickname changed successful", classes :'bg-dark border-success text-success'});
                        }
                    }else{
+                       $rootScope.loginCauseError.enabled = true;
+                       $rootScope.loginCauseError.msg = response.msg;
                        $location.path('/login');
                    }
                 });
@@ -49,6 +51,8 @@
                             notify({message: "Your password changed successful", classes: 'bg-dark border-success text-success'});
                         }
                     }else{
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.msg;
                         $location.path('/login');
                     }
                 });
@@ -69,6 +73,8 @@
                             notify({message: "Your nickname and password changed successful",classes: 'bg-dark border-success text-success'});
                         }
                     }else{
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.msg;
                         $location.path('/login');
                     }
                 });

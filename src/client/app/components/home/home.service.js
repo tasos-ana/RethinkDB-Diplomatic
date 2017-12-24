@@ -22,6 +22,8 @@
                             $rootScope.user.activeGroup = undefined;
                             cb();
                         }else{
+                            $rootScope.loginCauseError.enabled = true;
+                            $rootScope.loginCauseError.msg = response.msg;
                             $location.path('/login');
                         }
                     });
