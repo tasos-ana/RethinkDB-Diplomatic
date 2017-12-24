@@ -57,7 +57,7 @@
         function _accountUpdateAll(vm) {
             vm.applyChanges = true;
             notify({ message:"We trying to update your account details, please wait!", classes :'bg-dark border-info text-info'});
-            httpService.accountUpdatePassword(vm.accountSettings.curPassword, vm.accountSettings.newNickname, vm.accountSettings.newPassword)
+            httpService.accountUpdateAll(vm.accountSettings.curPassword, vm.accountSettings.newNickname, vm.accountSettings.newPassword)
                 .then(function (response) {
                     if(response.success) {
                         if(response.data.wrongPassword!==undefined && response.data.wrongPassword){
