@@ -613,8 +613,26 @@ const groupService = function () {
                             connection.close();
                             return callback(true, 'Error happens while deleting group from user');
                         }
-                        callback(null, connection);
+                        callback(null, connection, uEmail);
                     });
+            },
+            /**
+             * Delete from user the gID at field openedGRoups
+             * @param connection
+             * @param uEmail        user email
+             * @param callback
+             */
+            function (connection, uEmail, callback) {
+                rethinkdb.table('accounts').get(uEmail).update({
+                    openedGroups : rethinkdb.row('openedGroups').deleteAt(rethinkdb.row('openedGroups').offsetsOf(gID)(0))
+                }).run(connection,function (err,results) {
+                    if(err){
+                        debug.error('Group.service@delete: cant delete openedGroups <' + gID + '> from user <' + uEmail + '>');
+                        connection.close();
+                        return callback(true, 'Error happens while deleting group from user');
+                    }
+                    callback(null, connection);
+                });
             },
             /**
              * Delete the group(gID) from groups table
