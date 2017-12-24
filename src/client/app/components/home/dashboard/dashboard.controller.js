@@ -11,7 +11,6 @@
 
         vm.uploadData       = uploadData;
         vm.groupCreate      = groupCreate;
-        // vm.groupSettings    = groupSettings;
         vm.groupOpen        = groupOpen;
         vm.groupClose       = groupClose;
         vm.groupSetActive   = groupSetActive;
@@ -58,18 +57,23 @@
 
         function groupCreate(isValid) {
             if(isValid){
-                vm.group.creating = true;
-                httpService.groupCreate(vm.group.name)
-                    .then(function (response) {
-                        if(response.success){
-                            if(!groupExists(response.data.gID)){
-                                $rootScope.user.groupsList.push(response.data.gID);;
-                                groupOpen(response.data.gID);
-                            }
-                            vm.group.creating = false;
-                            vm.group.name = '';
-                        }
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        vm.group.creating = true;
+                        httpService.groupCreate(vm.group.name)
+                            .then(function (response) {
+                                if(response.success){
+                                    if(!groupExists(response.data.gID)){
+                                        $rootScope.user.groupsList.push(response.data.gID);
+                                        $rootScope.user.groupsNames[response.data.gID] = vm.group.name;
+                                        groupOpen(response.data.gID);
+                                    }
+                                    vm.group.creating = false;
+                                    vm.group.name = '';
+                                }
+                            });
                     });
+                });
             }
         }
 
@@ -122,84 +126,6 @@
             $rootScope.user.activeGroup = gID;
         }
 
-
-        //
-        // function groupSettings(gID,ev) {
-        //     $rootScope.group = {
-        //         id      : gID,
-        //         curName : $rootScope.user.openedGroupsData[gID].name,
-        //         newName : undefined
-        //     };
-        //
-        //     $mdDialog.show({
-        //         controller          :   groupSettingsController,
-        //         templateUrl         :   './app/components/dashboard/templates/groupSettings.tpl.html',
-        //         parent              :   angular.element(document.body),
-        //         targetEvent         :   ev,
-        //         clickOutsideToClose :   true,
-        //         fullscreen          :   false
-        //     }).then(function (answer) {
-        //         //todo na bgazei pop up gia epibebaiwsi
-        //         if(answer === 'delete'){
-        //             socketService.deleteGroup(gID);
-        //             httpService.groupDelete(gID)
-        //                 .then(function (response) {
-        //                     if(response.success){
-        //                         removeGroup(gID);
-        //                         delete $rootScope.user.openedGroupsData[gID];
-        //                     }else{
-        //                         $location.path('/login');
-        //                     }
-        //                     delete $rootScope.group;
-        //                 });
-        //         }else{
-        //             if($rootScope.group.curName !== $rootScope.group.newName || $rootScope.group.newName.length > 0){
-        //                 httpService.groupUpdateName({gID : gID, gName : $rootScope.group.newName})
-        //                     .then(function (response) {
-        //                         if(response.success){
-        //                             $rootScope.user.openedGroupsData[gID].name = $rootScope.group.newName;
-        //                         }else{
-        //                             $location.path('/login');
-        //                         }
-        //                         delete $rootScope.group;
-        //                     });
-        //             }else{
-        //                 delete $rootScope.group;
-        //             }
-        //         }
-        //     },function () {
-        //         delete $rootScope.group;
-        //     });
-        // }
-
-        // function groupSettingsController($scope, $mdDialog) {
-        //     $scope.group = $rootScope.group;
-        //
-        //     $scope.cancelChanges = cancelChanges;
-        //     $scope.applyChanges  = applyChanges;
-        //     $scope.deleteGroup   = deleteGroup;
-        //
-        //
-        //     function cancelChanges() {
-        //         $mdDialog.cancel();
-        //     }
-        //
-        //     function applyChanges() {
-        //         $rootScope.group.newName = $scope.group.newName;
-        //         $mdDialog.hide('changes');
-        //     }
-        //
-        //     function deleteGroup() {
-        //         $mdDialog.hide('delete');
-        //     }
-        // }
-
-        function removeGroup(gID){
-            const index = $rootScope.user.groupsList.indexOf(gID);
-            if (index >= 0) {
-                $rootScope.user.groupsList.splice(index, 1);
-            }
-        }
 
         function groupExists(gID) {
             const index = $rootScope.user.groupsList.indexOf(gID);

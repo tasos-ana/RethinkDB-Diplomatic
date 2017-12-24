@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('homeService', homeService);
 
-    homeService.$inject = ['$rootScope', '$location', 'httpService', '$timeout'];
-    function homeService($rootScope, $location, httpService, $timeout) {
+    homeService.$inject = ['$rootScope', '$location', 'httpService'];
+    function homeService($rootScope, $location, httpService) {
         const service = {};
 
         service.retrieveAccountDetails = retrieveAccountDetails;
