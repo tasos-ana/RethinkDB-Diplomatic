@@ -1,6 +1,7 @@
 <!-- HEADER SECTION  -->
 <header class="header" ng-include="'./app/components/home/common/header.html'"></header>
 
+<!--EDIT NAME MODAL-->
 <div class="modal fade" id="editNameModal">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -19,7 +20,7 @@
                             <div class="form-group">
                                 <label for="newGroupName" class="sr-only">New Name</label>
                                 <input id="newGroupName" type="text" placeholder="Type new name" class="mx-sm-3 form-control"
-                                       ng-minlength="1" ng-model="editGroup.newName">
+                                       ng-minlength="3" ng-model="editGroup.newName" title="New group name must be at least 3 characters">
                             </div>
                         </form>
                     </div>
@@ -34,6 +35,7 @@
     </div>
 </div>
 
+<!--CONFIRM DELETION OF GROUP-->
 <div class="modal fade" id="deleteConfirmModal">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -52,6 +54,7 @@
     </div>
 </div>
 
+<!--MAIN CONTENT-->
 <div class="d-flex align-items-stretch">
     <!-- SIDEBAR -->
     <nav class="nav-content" ng-class="{'shrinked' : vm.sidebarToggled}" id="sidebar" ng-include="'./app/components/home/common/sidebar.html'"></nav>

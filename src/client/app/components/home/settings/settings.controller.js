@@ -44,13 +44,13 @@
             httpService.groupDelete(gID)
                 .then(function (response) {
                     if(response.success){
-                        removeGroup(gID);
-                        $rootScope.alert.msg = 'The group ' + $rootScope.groupsNames[gID] + ' deleted';
+                        $rootScope.alert.msg = 'The group ' + $rootScope.user.groupsNames[gID] + ' deleted!';
                         $rootScope.alert.enabled = true;
                         $timeout(function () {
                             $rootScope.alert.enabled = false;
                         },5000);
-                        delete $rootScope.groupsNames[gID];
+                        removeGroup(gID);
+                        delete $rootScope.user.groupsNames[gID];
                     }else{
                         $location.path('/login');
                     }
