@@ -10,10 +10,11 @@
         const service = {};
 
         service.accountGetUserInfo          = _accountGetUserInfo;
-
         service.accountCreate               = _accountCreate;
-
         service.accountAuthenticate         = _accountAuthenticate;
+        service.accountUpdateNickname       = _accountUpdateNickname;
+        service.accountUpdatePassword       = _accountUpdatePassword;
+        service.accountUpdateAll            = _accountUpdateAll;
 
         service.groupAddData                = _groupAddData;
         service.groupRetrieveData           = _groupRetrieveData;
@@ -63,6 +64,47 @@
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Error at user login'));
         }
+
+        function _accountUpdateNickname(curPassword, nickname) {
+            return $http({
+                method          : 'POST',
+                url             : '/account/update/nickname',
+                data            : {
+                    curPassword : md5.createHash(curPassword),
+                    nickname    : nickname
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Error updating nickname'));
+        }
+
+        function _accountUpdatePassword(curPassword, newPassword) {
+            return $http({
+                method          : 'POST',
+                url             : '/account/update/password',
+                data            : {
+                    curPassword : md5.createHash(curPassword),
+                    password    : md5.createHash(newPassword)
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Error updating password'));
+        }
+
+        function _accountUpdateAll(curPassword, nickname, newPassword) {
+            return $http({
+                method          : 'POST',
+                url             : '/account/update/all',
+                data            : {
+                    curPassword : md5.createHash(curPassword),
+                    nickname    : nickname,
+                    password    : md5.createHash(newPassword)
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Error updating nickname and password'));
+        }
+
 
         function _groupAddData(data) {
             return $http({
@@ -124,7 +166,7 @@
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess,handleSuccess('Cant delete group \'' + gID + '\''));
+            }).then(handleSuccess,handleError('Cant delete group \'' + gID + '\''));
         }
 
         function _groupUpdateName(data) {

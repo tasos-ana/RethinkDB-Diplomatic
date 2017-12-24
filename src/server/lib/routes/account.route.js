@@ -44,4 +44,55 @@ router.route('/info')
        });
     });
 
+router.route('/update/nickname')
+    .post(function (req,res) {
+        accountService.updateNickname(req.body ,req.cookies.userCredentials, function (err,responseData) {
+            if(err){
+                if(responseData.wrongPassword!==undefined && responseData.wrongPassword){
+                    return res.json({'success' : true, data : responseData});
+                }else{
+                    return res.json({'success' : false, 'message': responseData, 'data' : null});
+                }
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/update/password')
+    .post(function (req,res) {
+        accountService.updatePassword(req.body ,req.cookies.userCredentials, function (err,responseData) {
+            if(err){
+                if(responseData.wrongPassword!==undefined && responseData.wrongPassword){
+                    return res.json({'success' : true, data : responseData});
+                }else{
+                    return res.json({'success' : false, 'message': responseData, 'data' : null});
+                }
+            }
+            /**
+             * RE-Initialize cookie for user and encrypt it
+             */
+            const cookie = encryption.encrypt(JSON.stringify(responseData.cookie));
+            res.cookie('userCredentials', cookie);
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData.data});
+        });
+    });
+
+router.route('/update/all')
+    .post(function (req,res) {
+        accountService.updateAll(req.body ,req.cookies.userCredentials, function (err,responseData) {
+            if(err){
+                if(responseData.wrongPassword!==undefined && responseData.wrongPassword){
+                    return res.json({'success' : true, data : responseData});
+                }else{
+                    return res.json({'success' : false, 'message': responseData, 'data' : null});
+                }
+            }
+            /**
+             * RE-Initialize cookie for user and encrypt it
+             */
+            const cookie = encryption.encrypt(JSON.stringify(responseData.cookie));
+            res.cookie('userCredentials', cookie);
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData.data});
+        });
+    });
 module.exports = router;

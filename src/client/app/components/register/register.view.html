@@ -35,15 +35,14 @@
                                     <label for="register-nickname" class="label-material"
                                            ng-class="{'active' : registerForm.uNickname.focus}"> Nickname *</label>
 
-                                    <p ng-show="!registerForm.uNickname.$error.minlength && !registerForm.uNickname.$error.maxlength &&
+                                    <small ng-show="!registerForm.uNickname.$error.minlength && !registerForm.uNickname.$error.maxlength &&
                                                 registerForm.uNickname.$invalid && registerForm.uNickname.$touched"
-                                        class="text-danger">Nickname is required.</p>
-                                    <p ng-show="registerForm.uNickname.$error.minlength"
-                                        class="text-danger">Nickname is too short. Minimum length is 3 characters!</p>
-                                    <p ng-show="registerForm.uNickname.$error.maxlength"
-                                        class="text-danger">Nickname is too long. Maximum length is 15 characters!</p>
+                                        class="text-danger">Nickname is required.</small>
+                                    <small ng-show="registerForm.uNickname.$error.minlength"
+                                        class="text-danger">Nickname is too short. Minimum length is 3 characters!</small>
+                                    <small ng-show="registerForm.uNickname.$error.maxlength"
+                                        class="text-danger">Nickname is too long. Maximum length is 15 characters!</small>
                                 </div>
-
                                 <!---->
                                 <div class="form-group">
                                     <input id="register-email" class="input-material" type="email" name="uEmail"
@@ -58,13 +57,13 @@
                                     <label for="register-email" class="label-material"
                                            ng-class="{'active' : registerForm.uEmail.focus}"> Email *</label>
 
-                                    <p ng-show="!registerForm.uEmail.$error.emailExists && !registerForm.uEmail.$error.pattern &&
+                                    <small ng-show="!registerForm.uEmail.$error.emailExists && !registerForm.uEmail.$error.pattern &&
                                             registerForm.uEmail.$invalid && registerForm.uEmail.$touched"
-                                        class="text-danger">Email is required.</p>
-                                    <p ng-show="registerForm.uEmail.$error.pattern"
-                                        class="text-danger">Email is invalid. Example csd3166@csd.gr</p>
-                                    <p ng-show="registerForm.uEmail.$error.emailExists"
-                                        class="text-danger">Email already exists.</p>
+                                        class="text-danger">Email is required.</small>
+                                    <small ng-show="registerForm.uEmail.$error.pattern"
+                                        class="text-danger">Email is invalid. Example csd3166@csd.gr</small>
+                                    <small ng-show="registerForm.uEmail.$error.emailExists"
+                                        class="text-danger">Email already exists.</small>
                                 </div>
 
                                 <!---->
@@ -72,22 +71,25 @@
                                     <input id="register-password" class="input-material" type="password" name="uPassword"
                                            required ng-model="vm.user.uPassword"
                                            ng-minlength="8" ng-maxlength="20" ng-pattern="/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z])/"
-                                           title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Password must contain at least 8 characters"
+                                           title="Must contain one lower &amp; uppercase letter, and at least one number or symbol. Minimum length is 8 characters"
                                            ng-class="{'border-danger' : registerForm.uPassword.$invalid && registerForm.uPassword.$touched,
                                                        'border-success': !registerForm.uPassword.$invalid}"
                                            ng-focus="registerForm.uPassword.focus=true"
-                                           ng-blur="registerForm.uPassword.focus=vm.user.uPassword.length>0 ||
-                                                    registerForm.uPassword.$error.minlength || registerForm.uPassword.$error.pattern">
+                                           ng-blur="registerForm.uPassword.focus=vm.user.uPassword.length>0 || registerForm.uPassword.$error.pattern ||
+                                                    registerForm.uPassword.$error.minlength || registerForm.uPassword.$error.maxlength">
                                     <label for="register-password" class="label-material"
                                            ng-class="{'active' : registerForm.uPassword.focus}"> Password *</label>
 
-                                    <p ng-show="!registerForm.uPassword.$error.minlength && !registerForm.uPassword.$error.pattern &&
-                                                 registerForm.uPassword.$invalid && registerForm.uPassword.$touched"
-                                        class="text-danger">Password is required.</p>
-                                    <p ng-show="registerForm.uPassword.$error.minlength"
-                                       class="text-danger">Password is too short. Minimum length is 8 characters!</p>
-                                    <p ng-show="registerForm.uPassword.$error.pattern && !registerForm.uPassword.$error.minlength"
-                                       class="text-danger">Password must contain one lower &amp; uppercase letter, and at least one number or symbol</p>
+                                    <small ng-show="!registerForm.uPassword.$error.minlength && !registerForm.uPassword.$error.maxlength &&
+                                                !registerForm.uPassword.$error.pattern && registerForm.uPassword.$invalid && registerForm.uPassword.$touched"
+                                        class="text-danger">Password is required.</small>
+                                    <small ng-show="registerForm.uPassword.$error.minlength"
+                                       class="text-danger">Password is too short. Minimum length is 8 characters!</small>
+                                    <small ng-show="registerForm.uPassword.$error.maxlength"
+                                       class="text-danger">Password is too long. Maximum length is 20 characters!</small>
+                                    <small ng-show="registerForm.uPassword.$error.pattern && !registerForm.uPassword.$error.minlength &&
+                                                !registerForm.uPassword.$error.maxlength"
+                                       class="text-danger">Password must contain one lower &amp; uppercase letter, and at least one number or symbol</small>
                                 </div>
 
                                 <div class="form-group">
@@ -102,13 +104,13 @@
                                     <label for="register-repeatPassword" class="label-material"
                                            ng-class="{'active' : registerForm.uRepeatPassword.focus}"> Confirm Password *</label>
 
-                                    <p ng-show="!registerForm.uRepeatPassword.$error.compareto &&
+                                    <small ng-show="!registerForm.uRepeatPassword.$error.compareto &&
                                                  registerForm.uRepeatPassword.$invalid && registerForm.uRepeatPassword.$touched"
-                                       class="text-danger">Confirm password is required.</p>
-                                    <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$valid"
-                                        class="text-danger">Passwords don't matched.</p>
-                                    <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$invalid"
-                                       class="text-danger">Confirm password is invalid.</p>
+                                       class="text-danger">Confirm password is required.</small>
+                                    <small ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$valid"
+                                        class="text-danger">Passwords don't matched.</small>
+                                    <small ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$invalid"
+                                       class="text-danger">Confirm password is invalid.</small>
                                 </div>
                                 <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary"> Register </button>
                             </form>
