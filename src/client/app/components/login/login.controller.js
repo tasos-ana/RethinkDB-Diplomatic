@@ -5,18 +5,19 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService'];
-    function LoginController($rootScope, $location, loginService, httpService) {
+    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService', 'notify'];
+    function LoginController($rootScope, $location, loginService, httpService, notify) {
         const vm = this;
 
         vm.login = login;
 
         (function initController() {
+            notify.config({duration:'10000', position:'center'});
             vm.dataLoading = false;
             vm.loginError = false;
 
             if($rootScope.registerComplete){
-                vm.registerComplete = true;
+                notify({ message:"Register complete!", classes :'bg-dark border-success text-success'});
                 $rootScope.registerComplete = false;
             }else{
                 vm.registerComplete = false;
@@ -43,7 +44,7 @@
                         $location.path('/home');
                     } else {
                         vm.dataLoading = false;
-                        vm.loginError = true;
+                        notify({ message:"Email or password do not matched.", classes :'bg-dark border-danger text-danger'});
                     }
                 });
         }

@@ -22,9 +22,6 @@
                         <div class="content">
                             <form id="login-form" name="loginForm"
                                   ng-submit="vm.login()" role="form">
-                                <div ng-hide="!vm.registerComplete" class="alert alert-success">
-                                    <strong>Register complete!</strong>.
-                                </div>
                                 <div class="form-group">
                                     <input id="login-userEmail" class="input-material" type="text"
                                             name="loginUserEmail" required ng-model="vm.user.uEmail"
@@ -40,9 +37,6 @@
                                            ng-blur="loginForm.loginPassword.focus=vm.user.uPassword.length>0">
                                     <label for="login-password" class="label-material"
                                            ng-class="{'active' : loginForm.loginPassword.focus}">Password</label>
-                                </div>
-                                <div class="alert alert-danger" ng-hide="!vm.loginError">
-                                    <strong>Login fail!</strong> Email or password do not matched.
                                 </div>
                                 <button id="login" type="submit" class="btn btn-primary"
                                         ng-disabled="vm.dataLoading">Login</button>

@@ -5,18 +5,17 @@
         .module('starterApp')
         .controller('SettingsController', SettingsController);
 
-    SettingsController.$inject = ['$rootScope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout'];
-    function SettingsController($rootScope, $location, homeService, dashboardService, socketService, httpService, $timeout) {
+    SettingsController.$inject = ['$rootScope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout', 'notify'];
+    function SettingsController($rootScope, $location, homeService, dashboardService, socketService, httpService, $timeout, notify) {
         const vm = this;
 
         vm.updateGroupName  = _updateGroupName;
         vm.deleteGroup      = _deleteGroup;
         
         (function initController() {
+            notify.config({duration:'4000', position:'center'});
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
-            $rootScope.alert = {};
-            $rootScope.alert.enabled = false;
             vm.templateURL = $location.path();
             homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
         })();
@@ -27,12 +26,7 @@
                     .then(function (response) {
                         if(response.success){
                             $rootScope.user.groupsNames[group.id] = group.newName;
-                            $rootScope.alert.msg = 'Group name changed to ';
-                            $rootScope.alert.name =  group.newName;
-                            $rootScope.alert.enabled = true;
-                            $timeout(function () {
-                                $rootScope.alert.enabled = false;
-                            },5000);
+                            notify({ message:"Group name changed successful to \""+ group.newName +"\"", classes :'bg-dark border-success text-success'});
                         }else{
                             $location.path('/login');
                         }
@@ -45,12 +39,7 @@
             httpService.groupDelete(gID)
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.alert.msg = 'Delete complete for group ';
-                        $rootScope.alert.name = $rootScope.user.groupsNames[gID];
-                        $rootScope.alert.enabled = true;
-                        $timeout(function () {
-                            $rootScope.alert.enabled = false;
-                        },5000);
+                        notify({ message: "Group \"" + $rootScope.user.groupsNames[gID] + "\" deleted successful", classes :'bg-dark border-success text-success'});
                         removeGroup(gID);
                         delete $rootScope.user.groupsNames[gID];
                     }else{

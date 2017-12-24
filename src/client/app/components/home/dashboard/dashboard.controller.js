@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout', 'notify'];
+    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout, notify) {
         const vm = this;
 
         vm.uploadData       = uploadData;
@@ -16,6 +16,7 @@
         vm.groupSetActive   = groupSetActive;
 
         (function initController() {
+            notify.config({duration:'5000', position:'center'});
             socketService.connect();
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
@@ -69,12 +70,7 @@
                                         $rootScope.user.groupsNames[response.data.gID] = vm.group.name;
                                         groupOpen(response.data.gID);
                                     }
-                                    $rootScope.alert.msg = 'New group added with name ';
-                                    $rootScope.alert.name = vm.group.name;
-                                    $rootScope.alert.enabled = true;
-                                    $timeout(function () {
-                                        $rootScope.alert.enabled = false;
-                                    },5000);
+                                    notify({ message:"New group created successfully with name: "+ vm.group.name, classes :'bg-dark border-success text-success'});
                                     vm.group.creating = false;
                                     vm.group.name = '';
                                 }
