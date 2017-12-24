@@ -30,7 +30,7 @@
                                            ng-class="{'border-danger' : registerForm.uNickname.$invalid && registerForm.uNickname.$touched ,
                                                       'border-success': !registerForm.uNickname.$invalid}"
                                            ng-focus="registerForm.uNickname.focus=true"
-                                           ng-blur="registerForm.uNickname.focus=vm.user.uNickname > 0 ||
+                                           ng-blur="registerForm.uNickname.focus=vm.user.uNickname.length > 0 ||
                                                     registerForm.uNickname.$error.minlength || registerForm.uNickname.$error.maxlength">
                                     <label for="register-nickname" class="label-material"
                                            ng-class="{'active' : registerForm.uNickname.focus}"> Nickname *</label>
