@@ -15,14 +15,14 @@
         <section class="no-padding-top no-padding-bottom">
             <!--DASHBOARD SECTION-->
             <div class="container-fluid">
-                <div class="alert alert-success fade show" ng-show="alert.enabled">
-                    <strong>Success!</strong> {{alert.msg}} <strong>{{alert.name}}</strong>
-                </div>
-                <div class="block" ng-show="user.openedGroupsList.length === 0">
-                    <div class="title"><p class="text-center text-danger"><strong>No group opened yet.</strong></p></div>
-                </div>
-                <div class="block" ng-show="user.openedGroupsList.length !== 0">
-                    <div class="container">
+                <div class="block" >
+                    <div class="bg-success border-primary text-dark fade show text-center" ng-show="alert.enabled">
+                        <strong>Success!</strong> {{alert.msg}} <strong>{{alert.name}}</strong>
+                    </div>
+                    <div class="title" ng-show="user.openedGroupsList.length === 0">
+                        <p class="text-center text-danger"><strong>No group opened yet.</strong></p>
+                    </div>
+                    <div class="container" ng-show="user.openedGroupsList.length !== 0">
                         <!-- Nav tabs -->
                         <ul class="nav nav-tabs">
                             <li class="nav-item" ng-repeat="gID in user.openedGroupsList" ng-click="vm.groupSetActive(gID)">

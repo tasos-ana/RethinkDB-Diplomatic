@@ -110,11 +110,6 @@
                                     <p ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$invalid"
                                        class="text-danger">Confirm password is invalid.</p>
                                 </div>
-
-                                <div ng-hide="!vm.alert.enabled" class="alert alert-danger">
-                                    <strong>{{vm.alert.title}}</strong>{{vm.alert.msg}}
-                                </div>
-
                                 <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary"> Register </button>
                             </form>
                             <small>Already have an account? </small><a href="/login" class="signup">Login</a>

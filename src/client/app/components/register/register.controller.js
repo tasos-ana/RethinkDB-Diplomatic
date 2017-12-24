@@ -5,13 +5,14 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$location', 'httpService'];
-    function RegisterController($rootScope, $location, httpService) {
+    RegisterController.$inject = ['$rootScope', '$location', 'httpService', 'notify'];
+    function RegisterController($rootScope, $location, httpService, notify) {
         const vm = this;
 
         vm.register             = register;
 
         (function initController() {
+            notify.config({duration:'5000', position:'center'});
             vm.dataLoading = false;
             vm.registerComplete = false;
             vm.user = {};
@@ -29,9 +30,7 @@
                                 $location.path('/login');
                             } else {
                                 vm.dataLoading = false;
-                                vm.alert.form.title    = "Form invalid!";
-                                vm.alert.form.msg      = " Something goes wrong with registration, try again later";
-                                vm.alert.form.enabled  = true;
+                                notify({ message:"Something goes wrong with registration, try again later", classes :'bg-dark border-danger text-danger'});
                             }
                         });
                 }

@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@cgross/angular-notify": "^2.5.1",
     "angular": "^1.6.7",
     "angular-animate": "^1.6.7",
     "angular-cookies": "^1.6.7",
