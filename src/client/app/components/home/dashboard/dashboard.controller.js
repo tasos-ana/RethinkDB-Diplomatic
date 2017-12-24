@@ -21,6 +21,7 @@
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
             vm.myGroupsExpand = false;
+            $rootScope.alert = {};
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
@@ -68,6 +69,12 @@
                                         $rootScope.user.groupsNames[response.data.gID] = vm.group.name;
                                         groupOpen(response.data.gID);
                                     }
+                                    $rootScope.alert.msg = 'New group added with name ';
+                                    $rootScope.alert.name = vm.group.name;
+                                    $rootScope.alert.enabled = true;
+                                    $timeout(function () {
+                                        $rootScope.alert.enabled = false;
+                                    },5000);
                                     vm.group.creating = false;
                                     vm.group.name = '';
                                 }

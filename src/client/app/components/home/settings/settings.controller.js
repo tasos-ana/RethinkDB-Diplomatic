@@ -27,7 +27,8 @@
                     .then(function (response) {
                         if(response.success){
                             $rootScope.user.groupsNames[group.id] = group.newName;
-                            $rootScope.alert.msg = 'Group name changed to ' + group.newName;
+                            $rootScope.alert.msg = 'Group name changed to ';
+                            $rootScope.alert.name =  group.newName;
                             $rootScope.alert.enabled = true;
                             $timeout(function () {
                                 $rootScope.alert.enabled = false;
@@ -44,7 +45,8 @@
             httpService.groupDelete(gID)
                 .then(function (response) {
                     if(response.success){
-                        $rootScope.alert.msg = 'The group ' + $rootScope.user.groupsNames[gID] + ' deleted!';
+                        $rootScope.alert.msg = 'Delete complete for group ';
+                        $rootScope.alert.name = $rootScope.user.groupsNames[gID];
                         $rootScope.alert.enabled = true;
                         $timeout(function () {
                             $rootScope.alert.enabled = false;
