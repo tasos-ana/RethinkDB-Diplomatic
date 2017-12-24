@@ -7,8 +7,7 @@
                 <div class="form-group">
                     <input type="search" name="create" placeholder="Group name is..." ng-model="vm.group.name"
                            required ng-minlength="3" title="Group name should have more than 3 characters">
-                    <button type="submit" class="submit" ng-hide="createForm.$invalid"
-                            ng-click="vm.createGroupFadeIn=false">Create</button>
+                    <button type="submit" class="submit" ng-hide="createForm.$invalid">Create</button>
                 </div>
                 <p ng-show="createForm.create.$error.minlength"
                    class="text-danger">Group name is too short.</p>

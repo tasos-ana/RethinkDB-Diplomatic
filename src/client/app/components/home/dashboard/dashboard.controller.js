@@ -59,6 +59,7 @@
 
         function groupCreate(isValid) {
             if(isValid){
+                notify({ message:"Group creating, please wait...", classes :'bg-dark border-info text-info', duration:'3000'});
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         vm.group.creating = true;
@@ -73,6 +74,7 @@
                                     notify({ message:"New group created successfully with name: "+ vm.group.name, classes :'bg-dark border-success text-success'});
                                     vm.group.creating = false;
                                     vm.group.name = '';
+                                    vm.createGroupFadeIn=false;
                                 }
                             });
                     });

@@ -9,7 +9,7 @@
     function RegisterController($rootScope, $location, httpService, notify) {
         const vm = this;
 
-        vm.register             = register;
+        vm.register = register;
 
         (function initController() {
             notify.config({duration:'5000', position:'center'});
@@ -21,6 +21,7 @@
 
         function register(valid) {
             if(valid){
+                notify({ message:"Creating account please wait...", classes :'bg-dark border-info text-info', duration:'3000'});
                 if(vm.user.uPassword === vm.user.uRepeatPassword){
                     vm.dataLoading = true;
                     vm.alert.enabled = false;
