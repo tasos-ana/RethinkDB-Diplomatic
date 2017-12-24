@@ -11,14 +11,20 @@
 
         vm.updateGroupName  = _updateGroupName;
         vm.deleteGroup      = _deleteGroup;
+
+        vm.updateAccount    = _updateAccount;
         
         (function initController() {
             notify.config({duration:'4000', position:'center'});
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
+            vm.accountSettings = {};
             vm.templateURL = $location.path();
             homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
         })();
+
+
+        // Required for groups.settings.view
 
         function _updateGroupName(group) {
             if(group.curName !== group.newName || group.newName.length > 0){
@@ -55,5 +61,10 @@
             }
         }
 
+
+        //Required for account.settings.view
+        function _updateAccount() {
+
+        }
     }
 })();

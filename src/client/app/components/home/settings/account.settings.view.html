@@ -15,27 +15,87 @@
         <section class="no-padding-top no-padding-bottom">
             <div class="container-fluid">
                 <div class="block">
-                    <div class="title"><strong>Edit your personal details.</strong></div>
+                    <div class="title"><strong>Edit your account details.</strong></div>
+                    <!--<form id="accountSettingsForm" name="accountSettingsForm" ng-submit="vm.updateAccount()" novalidate>-->
+                        <!--<div class="form-group">-->
+                            <!--<input id="curNickname" class="input-material" type="text" name="curNickname"-->
+                                   <!--disabled ng-model="user.nickname">-->
+                            <!--<label for="curNickname" class="label-material active"> Current Nickname </label>-->
+
+                            <!--<input id="newNickname" class="input-material" type="text" name="newNickname"-->
+                                   <!--ng-model="vm.accountSettings.newNickname">-->
+                            <!--<label for="newNickname" class="label-material"> New Nickname </label>-->
+
+                        <!--</div>-->
+                    <!--</form>-->
+                    <div class="block-body">
+                        <div class="line"></div>
+                        <form class="form-horizontal">
+
+                            <div class="form-group row">
+                                <label class="col-sm-3 form-control-label"> Login email </label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" disabled ng-model="user.email">
+                                </div>
+                            </div>
+                            <div class="line"></div>
+
+
+                            <div class="form-group row">
+                                <label class="col-sm-3 form-control-label"> Nickname </label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" disabled ng-model="user.nickname">
+                                </div>
+                            </div>
+                            <div class="line"></div>
+
+
+                            <div class="form-group row">
+                                <label class="col-sm-3 form-control-label"> New Nickname </label>
+                                <div class="col-sm-9">
+                                    <input type="text" placeholder="Type your new nickname" class="form-control">
+                                </div>
+                            </div>
+                            <div class="line"></div>
+
+
+                            <div class="form-group row">
+                                <label class="col-sm-3 form-control-label">Current password</label>
+                                <div class="col-sm-9">
+                                    <input type="password" name="password" placeholder="Type your current password" class="form-control">
+                                    <small class="help-block-none">Current password required to save your changes</small>
+                                </div>
+                            </div>
+                            <div class="line"></div>
+
+
+                            <div class="form-group row">
+                                <label class="col-sm-3 form-control-label">New password</label>
+                                <div class="col-sm-9">
+                                    <input type="password" name="password" placeholder="Type your new password" class="form-control">
+                                </div>
+                            </div>
+                            <div class="line"></div>
+
+
+                            <div class="form-group row">
+                                <label class="col-sm-3 form-control-label">Confirm new password</label>
+                                <div class="col-sm-9">
+                                    <input type="password" name="password" placeholder="Retype your new password" class="form-control">
+                                </div>
+                            </div>
+                            <div class="line"></div>
+
+
+                            <div class="form-group row">
+                                <div class="col-sm-9 ml-auto">
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
                 </div>
-                <div class="title">
-
-                </div>
-                <!---->
-                <h1 class="text-primary">ACCOUNT SETTINGS CONTENT</h1>
-
-
-
-
-
-
-
-
-
-
-
-
-                <!---->
-
             </div>
         </section>
         <!-- FOOTER -->
