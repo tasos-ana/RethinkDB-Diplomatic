@@ -9,7 +9,7 @@ const accountService    = require('./account.service');
 
 /**
  * API for sync data between devices
- * @returns {{feedGroupData: _feedGroupData, disconnect: _disconnect}}
+ * @type {{connectAll, disconnectAll, connectSingleGroup, disconnectSingleGroup}}
  */
 const syncService = function () {
 
@@ -18,20 +18,175 @@ const syncService = function () {
     };
 
     return{
-        feedGroupData   : _feedGroupData,
-        feedGroupName   : _feedGroupName,
-        connect         : _connect,
-        disconnect      : _disconnect,
-        disconnectGroup : _disconnectGroup
+        connectAll              : _connectAll,
+        disconnectAll           : _disconnectAll,
+
+        connectSingleGroup      : _connectSingleGroup,
+        disconnectSingleGroup   : _disconnectSingleGroup,
+
+        deleteSingleGroup       : _deleteSingleGroup
     };
 
     /**
-     * Live feed changes on table and emit it on user
+     * Retrieve user details from database and
+     * then feed on basic components
+     *
+     * @param socket    communication socket between server,client
+     * @private
+     */
+    function _connectAll(socket) {
+        socket.state = 'connecting';
+        debug.status('START SOCKET CONNECTION');
+        if(socket.request.cookies['userCredentials'] !== undefined){
+            accountService.info(undefined, socket.request.cookies['userCredentials'], function (err,responseData) {
+                if(!err){
+                    //INITIALIAZE STRUCTURE ON socket THAT WE WILL KEEP CONNECTION
+                    socket.feeds = {
+                        account : {
+                            password    : undefined,
+                            name        : undefined
+                        },
+                        groupForBadgeNotification : {
+                            //gID : connection
+                        },
+                        groupOnDataChange : {
+                            //gID : connection
+                        },
+                        groupOnNameChange : {
+                            //gID : connection
+                        },
+                        groupOnDelete : {
+                            //gID : connection
+                        }
+                    };
+
+                    //FEED ON ACCOUNT FOR CHANGES
+                    const uEmail = responseData.email;
+                    _feedAccountOnNameChange(socket, uEmail);
+                    _feedAccountOnPasswordChange(socket, uEmail);
+
+                    //FEED ON ALL groupsList for badge notification,name change and delete perform
+                    //FEED ON ALL openedGroup for data
+                    const groupsList = responseData.groupsList;
+                    const openedList = responseData.openedGroupsList;
+                    while (groupsList.length > 0){
+                        const gID = groupsList.pop();
+                        if(_tryPop(openedList, gID) !== undefined ){
+                            _feedGroupOnDataChange(socket, gID);
+                        }
+                        _feedGroupOnNameChange(socket, gID);
+                        _feedGroupForBadgeNotification(socket, gID);
+                        _feedGroupOnDelete(socket, gID);
+                    }
+                    socket.state = 'ready';
+                    debug.status('SOCKET CONNECTION ESTABLISHED');
+                }
+            });
+        }
+    }
+
+    /**
+     * On socket disconnect or logout we close all opened cursor
+     *
+     * @param socket    communication socket between server,client
+     * @private
+     */
+    function _disconnectAll(socket) {
+        socket.state = 'disconnecting';
+        debug.status('START SOCKET DISCONNECT');
+        if(socket.feeds !== undefined){
+            for(const group in socket.feeds){
+                for(const id in socket.feeds[group]){
+                    if(socket.feeds[group][id] !== undefined){
+                        socket.feeds[group][id].close();
+                        debug.correct('Feed on ' + group + ' for <' + id + '> closed successful');
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Connect single group on data and name change
+     * @param socket
+     * @param gID
+     * @private
+     */
+    function _connectSingleGroup(socket, gID) {
+        _feedGroupOnDataChange(socket, gID);
+        _feedGroupOnNameChange(socket, gID);
+        _feedGroupForBadgeNotification(socket, gID);
+        _feedGroupOnDelete(socket, gID);
+    }
+
+    /**
+     * After a group deleted we must close all the sockets of group
+     * @param socket
+     * @param gID
+     * @private
+     */
+    function _disconnectSingleGroup(socket, gID) {
+        const groupOnDataChange = socket.feeds.groupOnDataChange[gID];
+
+        if(groupOnDataChange !== undefined){
+            groupOnDataChange.close();
+            debug.correct('Feed on groupOnDataChange for <' + gID + '> closed successful');
+            delete socket.feeds.groupOnDataChange[gID];
+        }
+    }
+
+    /**
+     * Close all the connection that we have for group gID
+     *
+     * @param socket
+     * @param gID
+     * @private
+     */
+    function _deleteSingleGroup(socket, gID) {
+        _disconnectSingleGroup(socket, gID);
+        const groupForBadgeNotification = socket.feeds.groupForBadgeNotification[gID];
+        const groupOnNameChange         = socket.feeds.groupOnNameChange[gID];
+        const groupOnDelete             = socket.feeds.groupOnDelete[gID];
+
+        if(groupForBadgeNotification !== undefined){
+            groupForBadgeNotification.close();
+            debug.correct('Feed on groupForBadgeNotification for <' + gID + '> closed successful');
+            delete socket.feeds.groupForBadgeNotification[gID];
+        }
+
+        if(groupOnNameChange !== undefined){
+            groupOnNameChange.close();
+            debug.correct('Feed on groupOnNameChange for <' + gID + '> closed successful');
+            delete socket.feeds.groupOnNameChange[gID];
+        }
+
+        if(groupOnDelete !== undefined){
+            groupOnDelete.close();
+            debug.correct('Feed on groupOnDelete for <' + gID + '> closed successful');
+            delete socket.feeds.groupOnDelete[gID];
+        }
+    }
+
+    /**
+     * Live feed on group and emit notification if we take new data
+     *
+     * @param socket
+     * @param gID
+     * @private
+     */
+    function _feedGroupForBadgeNotification(socket, gID) {
+
+    }
+
+    /**
+     * Live feed on group with id gID for data change
+     * And then emit on client the changes
+     *
      * @param socket    communication socket between server,client
      * @param gID       group id that we feed
      * @private
      */
-    function _feedGroupData(socket, gID) {
+    function _feedGroupOnDataChange(socket, gID) {
         async.waterfall([
             /**
              * Connect on database
@@ -86,68 +241,165 @@ const syncService = function () {
     }
 
     /**
-     * Retrieve data from database and start feeding
+     * Live feed on gID for name change
+     *
      * @param socket
+     * @param gID   groupID
      * @private
      */
-    function _connect(socket) {
-        if(socket.request.cookies['userCredentials'] !== undefined){
-            accountService.info(undefined, socket.request.cookies['userCredentials'], function (err,responseData) {
-                if(!err){
-                    socket.feeds = { };
-                    const uEmail = responseData.email;
-                    _feedAccountsGroups(socket, uEmail);
-                    const groupsList = responseData.groupsList;
-                    while (groupsList.length > 0){
-                        const gID = groupsList.pop();
-                        _feedGroupData(socket, gID);
-                        _feedGroupName(socket, gID);
+    function _feedGroupOnNameChange(socket, gID) {
+        gID = convertGroupID(gID, '-');
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@feedGroupName: cant connect on database');
                     }
-                }
-            });
-        }
-    }
-
-    /**
-     * If user disconnect or logout we must stop live feed
-     * @param socket
-     * @private
-     */
-    function _disconnect(socket) {
-        if(socket.feeds !== undefined){
-            for(const target in socket.feeds){
-                if(socket.feeds[target] !== undefined){
-                    for(const id in socket.feeds[target]){
-                        socket.feeds[target][id].close();
-                        debug.correct('Feed on <' + id + '> closed successful');
-                        delete socket.feeds[target][id];
-                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on group
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                if(tryPush(gID, connection, socket, 'groupName')){
+                    debug.status('Start feeding on group <' + gID + '>');
+                    rethinkdb.table('groups').get(gID).changes().run(connection,function (err, cursor) {
+                        if(err){
+                            delete socket.feeds['groupName'][gID];
+                            connection.close();
+                            return callback(true,'Sync.service@feedGroupName: something goes wrong with changes on group <' + gID + '>');
+                        }
+                        cursor.each(function (err, row) {
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                    debug.status('Broadcast new name for group <' + gID + '>');
+                                    socket.emit(gID, row.new_val.name);
+                                }
+                            }
+                        });
+                    });
+                }else{
+                    connection.close();
+                    callback(null,'');
                 }
             }
-        }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
     }
 
     /**
-     * After a group deleted we must close all the sockets of group
+     * Live feed on gID for deletion performed
+     *
      * @param socket
      * @param gID
      * @private
      */
-    function _disconnectGroup(socket, gID) {
-        if(socket.feeds !== undefined){
-            if(socket.feeds['groupData'] !== undefined && socket.feeds['groupData'][gID] !== undefined){
-                socket.feeds['groupData'][gID].close();
-                delete socket.feeds['groupData'][gID];
-                debug.correct('Feed on <' + gID + '> closed successful');
-            }
-            gID = convertGroupID(gID,'-');
-            if(socket.feeds['groupName'] !== undefined && socket.feeds['groupName'][gID] !== undefined){
-                socket.feeds['groupName'][gID].close();
-                delete socket.feeds['groupName'][gID];
-                debug.correct('Feed on <' + gID + '> closed successful');
+    function _feedGroupOnDelete(socket, gID) {
+
+    }
+
+    /**
+     * Live feed on user for name change
+     *
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnNameChange(socket, uEmail) {
+
+    }
+
+    /**
+     * Live feed on user for password change
+     * 
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnPasswordChange(socket, uEmail) {
+
+    }
+
+    /**
+     * If the gID contained in the list it's popped else return undefined
+     *
+     * @param gID
+     * @param list
+     * @returns {*}
+     * @private
+     */
+    function _tryPop(list, gID) {
+        let elem;
+        if(list === undefined || list.length === 0){
+            elem = undefined;
+        }else{
+            const index = list.indexOf(gID);
+            if (index >= 0) {
+                elem = list[index];
+                list.splice(index, 1);
             }
         }
+        return elem;
     }
+
+    /**
+     * If the gID contained in the list we return undefined else we push it
+     *
+     * @param gID
+     * @param list
+     * @returns {*}
+     * @private
+     */
+    function _tryPush(list, gID) {
+        let elem;
+        if(list === undefined){
+            elem = undefined;
+        }else{
+            if(list.length === 0){
+                list.push(gID);
+                elem = gID;
+            }else{
+                const index = list.indexOf(gID);
+                if (index >= 0) {
+                    elem = undefined
+                }else{
+                    list.push(gID);
+                    elem = gID;
+                }
+            }
+        }
+        return elem;
+    }
+
+    /**
+     * Convert on group id the _ to - and reverse,
+     * depends on to variable
+     *
+     * @param id
+     * @param to
+     * @returns {*}
+     */
+    function convertGroupID(id, to){
+        let retID;
+        if(to === '-'){
+            retID = id.replace(/_/g, '-');
+        }else{
+            retID = id.replace(/-/g, '_');
+        }
+        return retID;
+    }
+
+    //=============================================================================================
 
     function _feedAccountsGroups(socket, uEmail) {
         async.waterfall([
@@ -217,94 +469,30 @@ const syncService = function () {
         });
     }
 
-    /**
-     * Feed on gID for name change
-     * @param socket
-     * @param gID   groupID
-     * @private
-     */
-    function _feedGroupName(socket, gID) {
-        gID = convertGroupID(gID, '-');
-        async.waterfall([
-            /**
-             * Connect on database
-             * @param callback
-             */
-            function (callback) {
-                db.connectToDb(function (err, connection) {
-                    if (err){
-                        return callback(true, 'Sync.service@feedGroupName: cant connect on database');
-                    }
-                    callback(null, connection);
-                });
-            },
-            /**
-             * Start live feeding on group
-             * @param connection
-             * @param callback
-             */
-            function (connection, callback) {
-                if(tryPush(gID, connection, socket, 'groupName')){
-                    debug.status('Start feeding on group <' + gID + '>');
-                    rethinkdb.table('groups').get(gID).changes().run(connection,function (err, cursor) {
-                        if(err){
-                            delete socket.feeds['groupName'][gID];
-                            connection.close();
-                            return callback(true,'Sync.service@feedGroupName: something goes wrong with changes on group <' + gID + '>');
-                        }
-                        cursor.each(function (err, row) {
-                            if(row !== undefined){
-                                if(Object.keys(row).length>0 && row.new_val !== null){
-                                    debug.status('Broadcast new name for group <' + gID + '>');
-                                    socket.emit(gID, row.new_val.name);
-                                }
-                            }
-                        });
-                    });
-                }else{
-                    connection.close();
-                    callback(null,'');
-                }
-            }
-        ], function (err, msg) {
-            if(err){
-                debug.error(msg);
-            }
-        });
-    }
+    // /**
+    //  * If gID do not exists on list push them else return false
+    //  * @param id           the id of table
+    //  * @param connection
+    //  * @param socket
+    //  * @param target            where we will add the data
+    //  * @returns {boolean}
+    //  * @private
+    //  */
+    // function tryPush(id, connection, socket, target) {
+    //     if(socket.feeds[target] === undefined){
+    //         socket.feeds[target] = { };
+    //     }
+    //     let status = false;
+    //
+    //     if(socket.feeds[target][id] === undefined){
+    //         status = true;
+    //         socket.feeds[target][id] = connection;
+    //     }
+    //
+    //     return status;
+    // }
 
-    /**
-     * If gID do not exists on list push them else return false
-     * @param id           the id of table
-     * @param connection
-     * @param socket
-     * @param target            where we will add the data
-     * @returns {boolean}
-     * @private
-     */
-    function tryPush(id, connection, socket, target) {
-        if(socket.feeds[target] === undefined){
-            socket.feeds[target] = { };
-        }
-        let status = false;
 
-        if(socket.feeds[target][id] === undefined){
-            status = true;
-            socket.feeds[target][id] = connection;
-        }
-
-        return status;
-    }
-
-    function convertGroupID(id, to){
-        let retID;
-        if(to === '-'){
-            retID = id.replace(/_/g, '-');
-        }else{
-            retID = id.replace(/-/g, '_');
-        }
-        return retID;
-    }
 
 }();
 

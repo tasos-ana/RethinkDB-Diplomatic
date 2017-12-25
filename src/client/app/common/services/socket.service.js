@@ -10,43 +10,75 @@
         let socket = null;
 
         return {
-            connect     : _connect,
-            logout      : _logout,
-            deleteGroup : _deleteGroup,
-            on          : _on,
-            emit        : _emit
+            connectSocket           : _connectSocket,
+            disconnectSocket        : _disconnectSocket,
+
+            emitOpenGroup           : _emitOpenGroup,
+            emitCloseGroup          : _emitCloseGroup,
+            emitDeleteGroup         : _emitDeleteGroup,
+
+            onGroupNameChange       : _onGroupNameChange,
+            onGroupDataChange       : _onGroupDataChange,
+            onGroupDelete           : _onGroupDelete,
+
+            onAccountNameChange     : _onAccountNameChange,
+            onAccountPasswordChange : _onAccountPasswordChange
         };
 
-
-        function _connect() {
+        function _connectSocket() {
             socket = io();
         }
 
-        function _logout() {
+        function _disconnectSocket() {
             if(socket !== null){
                 socket.emit('logout');
             }
         }
 
-        function _deleteGroup(gID) {
-            if(socket === null){
-                _connect();
-            }
-            socket.emit('deleteGroup',gID);
+        function _emitOpenGroup(gID) {
+            socketValidate();
+            socket.emit('openGroup', gID);
         }
 
-        function _on(gID, callback) {
-            if(socket === null){
-                _connect();
-            }
-            socket.on(gID, callback);
+        function _emitCloseGroup(gID) {
+            socketValidate();
+            socket.emit('closeGroup', gID);
         }
 
-        function _emit(gID) {
+        function _emitDeleteGroup(gID) {
+            socketValidate();
+            socket.emit('deleteGroup', gID);
+        }
+
+        function _onGroupNameChange(callback) {
+            socketValidate();
+            socket.on('groupNameChange', callback);
+        }
+
+        function _onGroupDataChange(callback) {
+            socketValidate();
+            socket.on('groupDataChange', callback);
+        }
+
+        function _onGroupDelete(callback) {
+            socketValidate();
+            socket.on('groupDelete', callback);
+        }
+
+        function _onAccountNameChange(callback) {
+            socketValidate();
+            socket.on('accountNameChange', callback);
+        }
+
+        function _onAccountPasswordChange(callback) {
+            socketValidate();
+            socket.on('accountPasswordChange', callback);
+        }
+        
+        function socketValidate() {
             if(socket === null){
-                _connect();
+                _connectSocket();
             }
-            socket.emit('sync', gID);
         }
     }
 })();
