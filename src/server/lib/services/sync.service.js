@@ -177,7 +177,56 @@ const syncService = function () {
      * @private
      */
     function _feedGroupForBadgeNotification(socket, gID) {
-
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedGroupForBadgeNotification: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on group for new data
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedGroupForBadgeNotification on group <' + gID + '>');
+                rethinkdb.table(gID).changes({includeTypes:true})
+                    .run(connection,function (err, cursor) {
+                        if(err){
+                            connection.close();
+                            return callback(true,'Sync.service@_feedGroupForBadgeNotification: something goes wrong with _feedGroupOnDataChange on group <' + gID + '>');
+                        }
+                        if(socket.feeds.groupForBadgeNotification[gID] === undefined){
+                            socket.feeds.groupForBadgeNotification[gID] = connection;
+                        }
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.groupForBadgeNotification[gID];
+                                connection.close();
+                            }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.type === 'add'){
+                                    debug.status('Broadcast groupDataBadge for group <' + gID + '>');
+                                    socket.emit('groupDataBadge', {
+                                        "gID": gID,
+                                    });
+                                }
+                            }
+                        });
+                    });
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
     }
 
     /**
@@ -291,8 +340,8 @@ const syncService = function () {
                             if(Object.keys(row).length>0 && row.new_val !== null){
                                 debug.status('Broadcast groupNameChange for group <' + gID + '>');
                                 socket.emit('groupNameChange',{
-                                 id     : gID,
-                                 name   : row.new_val.name
+                                 "id"     : gID,
+                                 "name"   : row.new_val.name
                                 });
                             }
                         }
@@ -354,8 +403,8 @@ const syncService = function () {
                                 if(Object.keys(row).length>0 && row.new_val !== null){
                                     debug.status('Broadcast accountNameChange for user <' + uEmail + '>');
                                     socket.emit('accountNameChange',{
-                                        email       : uEmail,
-                                        nickname    : row.new_val.nickname
+                                        "email"       : uEmail,
+                                        "nickname"    : row.new_val.nickname
                                     });
                                 }
                             }
@@ -478,8 +527,8 @@ const syncService = function () {
                                 debug.status('Broadcast groupCreate for user <' + uEmail + '>');
                                 const gID = convertGroupID((row.new_val.groups.diff(row.old_val.groups))[0], '_');
                                 socket.emit('groupCreate',{
-                                    uEmail  : uEmail,
-                                    gID     : gID
+                                    "uEmail"  : uEmail,
+                                    "gID"     : gID
                                 });
                             }
                         }
@@ -542,8 +591,8 @@ const syncService = function () {
                                 debug.status('Broadcast groupDelete for user <' + uEmail + '>');
                                 const gID = convertGroupID((row.old_val.groups.diff(row.new_val.groups))[0], '_');
                                 socket.emit('groupDelete',{
-                                    uEmail  : uEmail,
-                                    gID     : gID
+                                    "uEmail"  : uEmail,
+                                    "gID"     : gID
                                 });
                             }
                         }
@@ -625,7 +674,7 @@ const syncService = function () {
         }
         return retID;
     }
-    
+
 }();
 
 module.exports = syncService;
