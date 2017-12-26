@@ -30,59 +30,89 @@
                 dashboardService.retrieveGroupsData();
             }
 
-            //REFACTORSOCKET
-            // //send emit on server
-            // socketService.emit(id);
-            //
-            // //on listen add the new data
-            // socketService.on(id, function (data) {
-            //     $timeout(function () {
-            //         $rootScope.$apply(function () {
-            //             data.date = configureDate(new Date(), new Date(data.time));
-            //             if($rootScope.user.openedGroupsData[id] !== undefined){
-            //                 $rootScope.user.openedGroupsData[id].data[$rootScope.user.openedGroupsData[id].data.length] = data;
-            //             }
-            //         });
-            //     });
-            // });
-
-            //REFACTORSOCKET
-
-            // //on listen change the group name
-            // socketService.on(convertGroupID(id, '-'), function (newName) {
-            //     $timeout(function () {
-            //         $rootScope.$apply(function () {
-            //             $rootScope.user.openedGroupsData[id].name = newName;
-            //         });
-            //     });
-            // });
-
-            socketService.onAccountNameChange(function () {
-                //todo
+            socketService.onAccountNameChange(function (newNickname) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if($rootScope.user.nickname !== newNickname){
+                            $rootScope.user.nickname = newNickname;
+                            notify({ message:"Your nickname change to '" + newNickname +"' from another device.", classes :'bg-dark border-success text-success'});
+                        }
+                    });
+                });
             });
 
-            socketService.onAccountPasswordChange(function () {
-                //todo
+            socketService.onAccountPasswordChange(function (newPassword) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if($rootScope.user.password !== newPassword){
+                            $rootScope.user.password = newPassword;
+                            $rootScope.loginCauseSuccess.title      = ' Password change ';
+                            $rootScope.loginCauseSuccess.msg        = ' from another device. Please login again!';
+                            $rootScope.loginCauseSuccess.enabled    = true;
+                            $location.path('/login');
+                        }
+                    });
+                });
             });
 
-            socketService.onGroupCreate(function () {
-                //todo
+            socketService.onGroupCreate(function (gID, gName) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        const index = $rootScope.user.groupsList.indexOf(gID);
+                        if(index === -1){
+                            $rootScope.user.groupsList.push(gID);
+                            $rootScope.user.groupsNames[gID] = gName;
+                            notify({ message:"New group created with name '" + gName +"'.", classes :'bg-dark border-success text-success'});
+                        }
+                    });
+                });
             });
 
-            socketService.onGroupDelete(function () {
-                //todo
+            socketService.onGroupDelete(function (gID) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        const index = $rootScope.user.groupsList.indexOf(gID);
+                        if(index >= -1){
+                            $rootScope.user.groupsList.splice(index, 1);
+                            delete $rootScope.user.groupsNames[gID];
+                            notify({ message:"The group with name '" + gName +"' deleted.", classes :'bg-dark border-success text-success'});
+                        }
+                    });
+                });
             });
 
-            socketService.onGroupNameChange(function () {
-                //todo
+            socketService.onGroupNameChange(function (gID, gName) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        const index = $rootScope.user.groupsList.indexOf(gID);
+                        const prevName = $rootScope.user.groupsNames[gID];
+                        if(index === -1 && prevName!==gName){
+                            $rootScope.user.groupsList.push(gID);
+                            $rootScope.user.groupsNames[gID] = gName;
+                            notify({ message:"Group name change from '" + gName +"' to '" + prevName +"'.", classes :'bg-dark border-success text-success'});
+                        }
+                    });
+                });
             });
 
             socketService.onGroupDataBadge(function () {
-                //todo
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        //todo
+                    });
+                });
             });
 
-            socketService.onGroupDataChange(function () {
-                //todo
+
+            socketService.onGroupDataChange(function (gID, data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        data.date = dashboardService.configureDate(new Date(), new Date(data.time));
+                        if($rootScope.user.openedGroupsData[gID] !== undefined){
+                            $rootScope.user.openedGroupsData[gID].data[$rootScope.user.openedGroupsData[gID].data.length] = data;
+                        }
+                    });
+                });
             });
         })();
 

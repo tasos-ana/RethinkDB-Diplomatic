@@ -13,6 +13,7 @@
         service.retrieveSingleGroupData = _retrieveSingleGroupData;
         service.retrieveGroupsName      = _retrieveGroupsName;
         service.retrieveSingleGroupName = _retrieveSingleGroupName;
+        service.configureDate           = configureDate;
 
         return service;
 
