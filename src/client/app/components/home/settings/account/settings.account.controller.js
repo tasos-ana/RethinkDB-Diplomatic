@@ -16,7 +16,8 @@
             vm.templateURL = $location.path();
             notify.config({duration:'4000', position:'center'});
 
-            //Required for account settings
+            socketService.connectSocket();
+
             vm.accountSettings = {};
             vm.accountSettings.applyChanges = false;
 

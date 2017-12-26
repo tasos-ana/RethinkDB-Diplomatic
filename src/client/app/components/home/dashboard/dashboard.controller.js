@@ -17,7 +17,8 @@
 
         (function initController() {
             notify.config({duration:'5000', position:'center'});
-            socketService.connect();
+            socketService.connectSocket();
+
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
@@ -28,6 +29,33 @@
             }else{
                 dashboardService.retrieveGroupsData();
             }
+
+            //REFACTORSOCKET
+            // //send emit on server
+            // socketService.emit(id);
+            //
+            // //on listen add the new data
+            // socketService.on(id, function (data) {
+            //     $timeout(function () {
+            //         $rootScope.$apply(function () {
+            //             data.date = configureDate(new Date(), new Date(data.time));
+            //             if($rootScope.user.openedGroupsData[id] !== undefined){
+            //                 $rootScope.user.openedGroupsData[id].data[$rootScope.user.openedGroupsData[id].data.length] = data;
+            //             }
+            //         });
+            //     });
+            // });
+
+            //REFACTORSOCKET
+
+            // //on listen change the group name
+            // socketService.on(convertGroupID(id, '-'), function (newName) {
+            //     $timeout(function () {
+            //         $rootScope.$apply(function () {
+            //             $rootScope.user.openedGroupsData[id].name = newName;
+            //         });
+            //     });
+            // });
 
             socketService.onAccountNameChange(function () {
                 //todo
@@ -138,6 +166,7 @@
 
         function groupClose(gID) {
             socketService.emitCloseGroup(gID);
+
             $timeout(function () {
                 $rootScope.$apply(function () {
                     httpService.groupRemoveFromOpenedList(gID)

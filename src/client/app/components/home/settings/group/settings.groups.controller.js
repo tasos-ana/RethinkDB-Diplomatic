@@ -16,6 +16,8 @@
             vm.templateURL = $location.path();
             notify.config({duration:'4000', position:'center'});
 
+            socketService.connectSocket();
+
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
 
