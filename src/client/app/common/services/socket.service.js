@@ -19,6 +19,7 @@
 
             onGroupNameChange       : _onGroupNameChange,
             onGroupDataChange       : _onGroupDataChange,
+            onGroupCreate           : _onGroupCreate,
             onGroupDelete           : _onGroupDelete,
 
             onAccountNameChange     : _onAccountNameChange,
@@ -58,6 +59,11 @@
         function _onGroupDataChange(callback) {
             socketValidate();
             socket.on('groupDataChange', callback);
+        }
+
+        function _onGroupCreate(callback) {
+            socketValidate();
+            socket.on('groupCreate', callback);
         }
 
         function _onGroupDelete(callback) {

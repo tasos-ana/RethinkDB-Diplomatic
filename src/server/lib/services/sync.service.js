@@ -44,7 +44,9 @@ const syncService = function () {
                     socket.feeds = {
                         account : {
                             password    : undefined,
-                            name        : undefined
+                            name        : undefined,
+                            insertGroup : undefined,
+                            deleteGroup : undefined
                         },
                         groupForBadgeNotification : {
                             //gID : connection
@@ -64,6 +66,8 @@ const syncService = function () {
                     const uEmail = responseData.email;
                     _feedAccountOnNameChange(socket, uEmail);
                     _feedAccountOnPasswordChange(socket, uEmail);
+                    _feedAccountOnGroupCreate(socket, uEmail);
+                    _feedAccountOnGroupDelete(socket, uEmail);
 
                     //FEED ON ALL groupsList for badge notification,name change and delete perform
                     //FEED ON ALL openedGroup for data
@@ -426,14 +430,131 @@ const syncService = function () {
     }
 
     /**
-     * Live feed on user for group insert/delete
-     * todo
+     * Live feed on user for group insert
+     *
      * @param socket
      * @param uEmail
      * @private
      */
-    function _feedAccountOnGroupChange(socket, uEmail) {
+    function _feedAccountOnGroupCreate(socket, uEmail) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnGroupCreate: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnPasswordChange on account <' + uEmail + '>');
+                rethinkdb.table('accounts').get(uEmail).changes()
+                    .filter(
+                        rethinkdb.row('new_val')('groups').count().gt(rethinkdb.row('old_val')('groups').count())
+                    ).run(connection,function (err, cursor) {
+                    if(err){
+                        connection.close();
+                        return callback(true,'Sync.service@_feedAccountOnGroupCreate : something goes wrong with changes on <' + uEmail + '>');
+                    }
+                    if(socket.feeds.account.insertGroup === undefined){
+                        socket.feeds.account.insertGroup = connection;
+                    }
+                    cursor.each(function (err, row) {
+                        if(socket.state === 'disconnecting'){
+                            delete socket.feeds.account.insertGroup;
+                            connection.close();
+                        }
+                        if(row !== undefined){
+                            if(Object.keys(row).length>0 && row.new_val !== null){
+                                debug.status('Broadcast groupCreate for user <' + uEmail + '>');
+                                const gID = convertGroupID((row.new_val.groups.diff(row.old_val.groups))[0], '_');
+                                socket.emit('groupCreate',{
+                                    uEmail  : uEmail,
+                                    gID     : gID
+                                });
+                            }
+                        }
+                    });
+                });
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
+    }
 
+    /**
+     * Live feed on user for group delete
+     *
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnGroupDelete(socket, uEmail) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnGroupDelete: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnGroupDelete on account <' + uEmail + '>');
+                rethinkdb.table('accounts').get(uEmail).changes()
+                    .filter(
+                        rethinkdb.row('old_val')('groups').count().gt(rethinkdb.row('new_val')('groups').count())
+                    ).run(connection,function (err, cursor) {
+                    if(err){
+                        connection.close();
+                        return callback(true,'Sync.service@_feedAccountOnGroupDelete : something goes wrong with changes on <' + uEmail + '>');
+                    }
+                    if(socket.feeds.account.deleteGroup === undefined){
+                        socket.feeds.account.deleteGroup = connection;
+                    }
+                    cursor.each(function (err, row) {
+                        if(socket.state === 'disconnecting'){
+                            delete socket.feeds.account.deleteGroup;
+                            connection.close();
+                        }
+                        if(row !== undefined){
+                            if(Object.keys(row).length>0 && row.new_val !== null){
+                                debug.status('Broadcast groupDelete for user <' + uEmail + '>');
+                                const gID = convertGroupID((row.old_val.groups.diff(row.new_val.groups))[0], '_');
+                                socket.emit('groupDelete',{
+                                    uEmail  : uEmail,
+                                    gID     : gID
+                                });
+                            }
+                        }
+                    });
+                });
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
     }
 
     /**
@@ -504,102 +625,7 @@ const syncService = function () {
         }
         return retID;
     }
-
-    //=============================================================================================
-
-    function _feedAccountsGroups(socket, uEmail) {
-        async.waterfall([
-            /**
-             * Connect on database
-             * @param callback
-             */
-            function (callback) {
-                db.connectToDb(function (err, connection) {
-                    if (err){
-                        return callback(true, 'Sync.service@feedAccountsGroups: cant connect on database');
-                    }
-                    callback(null, connection);
-                });
-            },
-            /**
-             * Start live feeding on group for new data
-             * @param connection
-             * @param callback
-             */
-            function (connection, callback) {
-                if(tryPush(uEmail, connection, socket, 'accountsGroups')){
-                    debug.status('Start feeding on user <' + uEmail + '>');
-                    rethinkdb.table('accounts').get(uEmail).changes().run(connection,function (err, cursor) {
-                        if(err){
-                            delete socket.feeds['accountsGroups'][uEmail];
-                            connection.close();
-                            return callback(true,'Sync.service@feedAccountsGroups: ' +
-                                'something goes wrong with changes on user <' + uEmail + '>');
-                        }
-                        cursor.each(function (err, row) {
-                            if(row !== undefined){
-                                if(Object.keys(row).length>0){
-                                    let ignore = false;
-                                    const oldGroupsList = row.old_val.groups;
-                                    const newGroupsList = row.new_val.groups;
-                                    let action,gID;
-                                    if(oldGroupsList.length > newGroupsList.length){
-                                        action = 'deleteGroup' ;
-                                        gID = row.old_val.groups.diff(row.new_val.groups);
-                                    }else if (oldGroupsList.length < newGroupsList.length){
-                                        action = 'createGroup';
-                                        gID = row.new_val.groups.diff(row.old_val.groups);
-                                    }else{
-                                        ignore = true;
-                                    }
-                                    if(!ignore) {
-                                        debug.status('Broadcast ' + action + ' for user <' + uEmail + '>');
-                                        socket.emit(uEmail, {
-                                            "action": action,
-                                            "gID": convertGroupID(gID[0], '_')
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    });
-                }else{
-                    connection.close();
-                    callback(null,'');
-                }
-            }
-        ], function (err, msg) {
-            if(err){
-                debug.error(msg);
-            }
-        });
-    }
-
-    // /**
-    //  * If gID do not exists on list push them else return false
-    //  * @param id           the id of table
-    //  * @param connection
-    //  * @param socket
-    //  * @param target            where we will add the data
-    //  * @returns {boolean}
-    //  * @private
-    //  */
-    // function tryPush(id, connection, socket, target) {
-    //     if(socket.feeds[target] === undefined){
-    //         socket.feeds[target] = { };
-    //     }
-    //     let status = false;
-    //
-    //     if(socket.feeds[target][id] === undefined){
-    //         status = true;
-    //         socket.feeds[target][id] = connection;
-    //     }
-    //
-    //     return status;
-    // }
-
-
-
+    
 }();
 
 module.exports = syncService;
