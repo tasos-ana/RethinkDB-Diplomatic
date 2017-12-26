@@ -28,6 +28,34 @@
             }else{
                 dashboardService.retrieveGroupsData();
             }
+
+            socketService.onAccountNameChange(function () {
+                //todo
+            });
+
+            socketService.onAccountPasswordChange(function () {
+                //todo
+            });
+
+            socketService.onGroupCreate(function () {
+                //todo
+            });
+
+            socketService.onGroupDelete(function () {
+                //todo
+            });
+
+            socketService.onGroupNameChange(function () {
+                //todo
+            });
+
+            socketService.onGroupDataBadge(function () {
+                //todo
+            });
+
+            socketService.onGroupDataChange(function () {
+                //todo
+            });
         })();
 
         function uploadData(group) {
@@ -85,6 +113,8 @@
         }
 
         function groupOpen(gID) {
+            socketService.emitOpenGroup(gID);
+
             $timeout(function () {
                 $rootScope.$apply(function () {
                     const index = $rootScope.user.openedGroupsList.indexOf(gID);
@@ -107,6 +137,7 @@
         }
 
         function groupClose(gID) {
+            socketService.emitCloseGroup(gID);
             $timeout(function () {
                 $rootScope.$apply(function () {
                     httpService.groupRemoveFromOpenedList(gID)
