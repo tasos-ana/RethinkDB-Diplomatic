@@ -3,14 +3,11 @@
 
     angular
         .module('starterApp')
-        .controller('SettingsController', SettingsController);
+        .controller('SettingsAccountController', SettingsAccountController);
 
-    SettingsController.$inject = ['$rootScope', '$scope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout', 'notify', '$window', 'settingsService'];
-    function SettingsController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, notify, $window, settingsService) {
+    SettingsAccountController.$inject = ['$rootScope', '$scope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout', 'notify', '$window', 'settingsAccountService'];
+    function SettingsAccountController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, notify, $window, settingsAccountService) {
         const vm = this;
-
-        vm.updateGroupName                  = _updateGroupName;
-        vm.deleteGroup                      = _deleteGroup;
 
         vm.updateAccount                    = _updateAccount;
         vm.accountSettingsFormReset         = _accountSettingsFormReset;
@@ -19,62 +16,20 @@
             vm.templateURL = $location.path();
             notify.config({duration:'4000', position:'center'});
 
-            //Required for group settings
-            $rootScope.editGroup = {};
-            $rootScope.deleteGroup = {};
-
-
             //Required for account settings
             vm.accountSettings = {};
             vm.accountSettings.applyChanges = false;
 
             homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
+
+            socketService.onAccountNameChange(function () {
+               //todo
+            });
+
+            socketService.onAccountPasswordChange(function () {
+                //todo
+            });
         })();
-
-
-        // Required for groups.settings.view
-
-        function _updateGroupName(group) {
-            if(group.curName !== group.newName || group.newName.length > 0){
-                httpService.groupUpdateName({gID : group.id, gName : group.newName})
-                    .then(function (response) {
-                        if(response.success){
-                            $rootScope.user.groupsNames[group.id] = group.newName;
-                            notify({ message:"Group name changed successful to \""+ group.newName +"\"", classes :'bg-dark border-success text-success'});
-                        }else{
-                            $rootScope.loginCauseError.enabled = true;
-                            $rootScope.loginCauseError.msg = response.msg;
-                            $location.path('/login');
-                        }
-                    });
-            }
-        }
-
-        function _deleteGroup(gID) {
-            socketService.deleteGroup(gID);
-            httpService.groupDelete(gID)
-                .then(function (response) {
-                    if(response.success){
-                        notify({ message: "Group \"" + $rootScope.user.groupsNames[gID] + "\" deleted successful", classes :'bg-dark border-success text-success'});
-                        removeGroup(gID);
-                        delete $rootScope.user.groupsNames[gID];
-                    }else{
-                        $rootScope.loginCauseError.enabled = true;
-                        $rootScope.loginCauseError.msg = response.msg;
-                        $location.path('/login');
-                    }
-                });
-        }
-
-        function removeGroup(gID){
-            const index = $rootScope.user.groupsList.indexOf(gID);
-            if (index >= 0) {
-                $rootScope.user.groupsList.splice(index, 1);
-            }
-        }
-
-
-        //Required for account.settings.view
 
         function _updateAccount() {
             //Clean up
@@ -129,17 +84,17 @@
 
             if(!error){
                 if(changeNickname && changePassword){
-                    settingsService.accountUpdateAll(vm);
+                    settingsAccountService.accountUpdateAll(vm);
                 }else if(changeNickname){
-                    settingsService.accountUpdateNickname(vm);
+                    settingsAccountService.accountUpdateNickname(vm);
                 }else if(changePassword){
-                    settingsService.accountUpdatePassword(vm);
+                    settingsAccountService.accountUpdatePassword(vm);
                 }else{
                     notify({ message:"You are happy with your details. No changes was made on your account", classes :'bg-dark border-success text-success'});
                 }
             }
         }
-        
+
         function _accountSettingsFormReset() {
             // call that on success update
             delete vm.accountSettings;
