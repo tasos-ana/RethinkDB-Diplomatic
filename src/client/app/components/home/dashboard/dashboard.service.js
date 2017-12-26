@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('dashboardService', dashboardService);
 
-    dashboardService.$inject = ['$rootScope', '$location', 'httpService', 'socketService', '$timeout'];
-    function dashboardService($rootScope, $location, httpService, socketService, $timeout) {
+    dashboardService.$inject = ['$rootScope', '$location', 'httpService'];
+    function dashboardService($rootScope, $location, httpService) {
         const service = {};
 
         service.retrieveGroupsData      = _retrieveGroupsData;
@@ -121,16 +121,6 @@
             dateAsString += " @ " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
             return dateAsString;
-        }
-
-        function convertGroupID(id, to){
-            let retID;
-            if(to === '-'){
-                retID = id.replace(/_/g, '-');
-            }else{
-                retID = id.replace(/-/g, '_');
-            }
-            return retID;
         }
     }
 })();
