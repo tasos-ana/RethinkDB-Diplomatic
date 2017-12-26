@@ -304,28 +304,130 @@ const syncService = function () {
 
     /**
      * Live feed on user for name change
-     *todo
+     *
      * @param socket
      * @param uEmail
      * @private
      */
     function _feedAccountOnNameChange(socket, uEmail) {
-
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnNameChange: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnNameChange on account <' + uEmail + '>');
+                rethinkdb.table('accounts').get(uEmail).changes()
+                    .filter(
+                     rethinkdb.row('old_val')('nickname').ne(rethinkdb.row('new_val')('nickname'))
+                    ).run(connection,function (err, cursor) {
+                        if(err){
+                            connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnNameChange : something goes wrong with changes on <' + uEmail + '>');
+                        }
+                        if(socket.feeds.account.name === undefined){
+                            socket.feeds.account.name = connection;
+                        }
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.name;
+                                connection.close();
+                            }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                    debug.status('Broadcast accountNameChange for user <' + uEmail + '>');
+                                    socket.emit('accountNameChange',{
+                                        email       : uEmail,
+                                        nickname    : row.new_val.nickname
+                                    });
+                                }
+                            }
+                        });
+                });
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
     }
 
     /**
      * Live feed on user for password change
-     * todo
+     *
      * @param socket
      * @param uEmail
      * @private
      */
     function _feedAccountOnPasswordChange(socket, uEmail) {
-
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnPasswordChange: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnPasswordChange on account <' + uEmail + '>');
+                rethinkdb.table('accounts').get(uEmail).changes()
+                    .filter(
+                        rethinkdb.row('old_val')('password').ne(rethinkdb.row('new_val')('password'))
+                    ).run(connection,function (err, cursor) {
+                    if(err){
+                        connection.close();
+                        return callback(true,'Sync.service@_feedAccountOnPasswordChange : something goes wrong with changes on <' + uEmail + '>');
+                    }
+                    if(socket.feeds.account.password === undefined){
+                        socket.feeds.account.password = connection;
+                    }
+                    cursor.each(function (err, row) {
+                        if(socket.state === 'disconnecting'){
+                            delete socket.feeds.account.password;
+                            connection.close();
+                        }
+                        if(row !== undefined){
+                            if(Object.keys(row).length>0 && row.new_val !== null){
+                                debug.status('Broadcast accountPasswordChange for user <' + uEmail + '>');
+                                socket.emit('accountPasswordChange');
+                            }
+                        }
+                    });
+                });
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
     }
 
     /**
      * Live feed on user for group insert/delete
+     * todo
      * @param socket
      * @param uEmail
      * @private
