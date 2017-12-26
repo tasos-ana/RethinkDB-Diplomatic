@@ -47,24 +47,35 @@
                         if(index === -1){
                             $rootScope.user.groupsList.push(gID);
                             $rootScope.user.groupsNames[gID] = gName;
-                            notify({ message:"New group created with name '" + newNickname +"'.", classes :'bg-dark border-success text-success'});
+                            notify({ message:"New group created with name '" + gName +"'.", classes :'bg-dark border-success text-success'});
                         }
                     });
                 });
             });
 
-            socketService.onGroupDelete(function () {
+            socketService.onGroupDelete(function (gID) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-
+                        const index = $rootScope.user.groupsList.indexOf(gID);
+                        if(index >= -1){
+                            $rootScope.user.groupsList.splice(index, 1);
+                            delete $rootScope.user.groupsNames[gID];
+                            notify({ message:"The group with name '" + gName +"' deleted.", classes :'bg-dark border-success text-success'});
+                        }
                     });
                 });
             });
 
-            socketService.onGroupNameChange(function () {
+            socketService.onGroupNameChange(function (gID, gName) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-
+                        const index = $rootScope.user.groupsList.indexOf(gID);
+                        const prevName = $rootScope.user.groupsNames[gID];
+                        if(index === -1 && prevName!==gName){
+                            $rootScope.user.groupsList.push(gID);
+                            $rootScope.user.groupsNames[gID] = gName;
+                            notify({ message:"Group name change from '" + gName +"' to '" + prevName +"'.", classes :'bg-dark border-success text-success'});
+                        }
                     });
                 });
             });
@@ -72,7 +83,7 @@
             socketService.onGroupDataBadge(function () {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-
+                        //todo
                     });
                 });
             });
