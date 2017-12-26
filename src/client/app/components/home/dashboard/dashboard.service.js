@@ -10,8 +10,9 @@
         const service = {};
 
         service.retrieveGroupsData      = _retrieveGroupsData;
-        service.retrieveGroupsName      = _retrieveGroupsName;
         service.retrieveSingleGroupData = _retrieveSingleGroupData;
+        service.retrieveGroupsName      = _retrieveGroupsName;
+        service.retrieveSingleGroupName = _retrieveSingleGroupName;
 
         return service;
 
@@ -20,23 +21,6 @@
             for(let i = 0; i<$rootScope.user.openedGroupsList.length; ++i){
                 const gID  = $rootScope.user.openedGroupsList[i];
                 _retrieveSingleGroupData(gID);
-            }
-        }
-
-        function _retrieveGroupsName() {
-            $rootScope.user.groupsNames = {};
-            for(let i=0; i<$rootScope.user.groupsList.length; ++i){
-                const gID = $rootScope.user.groupsList[i];
-                httpService.groupRetrieveName(gID)
-                    .then(function (response) {
-                        if(response.success){
-                            $rootScope.user.groupsNames[response.data.id] = response.data.name;
-                        }else{
-                            $rootScope.loginCauseError.enabled = true;
-                            $rootScope.loginCauseError.msg = response.msg;
-                            $location.path('/login');
-                        }
-                    });
             }
         }
 
@@ -74,6 +58,27 @@
             }
         }
 
+        function _retrieveGroupsName() {
+            $rootScope.user.groupsNames = {};
+            for(let i=0; i<$rootScope.user.groupsList.length; ++i){
+                const gID = $rootScope.user.groupsList[i];
+                _retrieveSingleGroupName(gID);
+            }
+        }
+
+        function _retrieveSingleGroupName(id) {
+            httpService.groupRetrieveName(id)
+                .then(function (response) {
+                    if(response.success){
+                        $rootScope.user.groupsNames[response.data.id] = response.data.name;
+                    }else{
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.msg;
+                        $location.path('/login');
+                    }
+                });
+        }
+
         function prepareGroup(id){
 
             configureAllDates(id);
@@ -86,29 +91,6 @@
                 table   : ''
             };
 
-            //send emit on server
-            socketService.emit(id);
-
-            //on listen add the new data
-            socketService.on(id, function (data) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        data.date = configureDate(new Date(), new Date(data.time));
-                        if($rootScope.user.openedGroupsData[id] !== undefined){
-                            $rootScope.user.openedGroupsData[id].data[$rootScope.user.openedGroupsData[id].data.length] = data;
-                        }
-                    });
-                });
-            });
-
-            //on listen change the group name
-            socketService.on(convertGroupID(id, '-'), function (newName) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        $rootScope.user.openedGroupsData[id].name = newName;
-                    });
-                });
-            });
         }
 
         function configureAllDates(index) {
