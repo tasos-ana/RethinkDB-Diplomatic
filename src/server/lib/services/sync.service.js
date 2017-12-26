@@ -76,7 +76,6 @@ const syncService = function () {
                         }
                         _feedGroupOnNameChange(socket, gID);
                         _feedGroupForBadgeNotification(socket, gID);
-                        _feedGroupOnDelete(socket, gID);
                     }
                     socket.state = 'ready';
                     debug.status('SOCKET CONNECTION ESTABLISHED');
@@ -116,7 +115,6 @@ const syncService = function () {
         _feedGroupOnDataChange(socket, gID);
         _feedGroupOnNameChange(socket, gID);
         _feedGroupForBadgeNotification(socket, gID);
-        _feedGroupOnDelete(socket, gID);
     }
 
     /**
@@ -169,7 +167,7 @@ const syncService = function () {
 
     /**
      * Live feed on group and emit notification if we take new data
-     *
+     *TODO
      * @param socket
      * @param gID
      * @private
@@ -195,7 +193,7 @@ const syncService = function () {
             function (callback) {
                 db.connectToDb(function (err, connection) {
                     if (err){
-                        return callback(true, 'Sync.service@feed: cant connect on database');
+                        return callback(true, 'Sync.service@_feedGroupOnDataChange: cant connect on database');
                     }
                     callback(null, connection);
                 });
@@ -206,19 +204,26 @@ const syncService = function () {
              * @param callback
              */
             function (connection, callback) {
-                if(tryPush(gID, connection, socket, 'groupData')){
-                    debug.status('Start feeding on group <' + gID + '>');
-                    rethinkdb.table(gID).changes().run(connection,function (err, cursor) {
+                debug.status('Start _feedGroupOnDataChange on group <' + gID + '>');
+                rethinkdb.table(gID).changes({includeTypes:true})
+                    .run(connection,function (err, cursor) {
                         if(err){
-                            delete socket.feeds['groupData'][gID];
                             connection.close();
-                            return callback(true,'Sync.service@feed: something goes wrong with changes on group <' + gID + '>');
+                            return callback(true,'Sync.service@_feedGroupOnDataChange: something goes wrong with _feedGroupOnDataChange on group <' + gID + '>');
+                        }
+                        if(socket.feeds.groupOnDataChange[gID] === undefined){
+                            socket.feeds.groupOnDataChange[gID] = connection;
                         }
                         cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.groupOnDataChange[gID];
+                                connection.close();
+                            }
                             if(row !== undefined){
-                                if(Object.keys(row).length>0){
-                                    debug.status('Broadcast new data for group <' + gID + '>');
-                                    socket.emit(gID, {
+                                if(Object.keys(row).length>0 && row.type === 'add'){
+                                    debug.status('Broadcast groupDataChange for group <' + gID + '>');
+                                    socket.emit('groupDataChange', {
+                                        "gID"   : gID,
                                         "data"  : row.new_val.data,
                                         "id"    : row.new_val.id,
                                         "time"  : row.new_val.time,
@@ -227,11 +232,7 @@ const syncService = function () {
                                 }
                             }
                         });
-                    });
-                }else{
-                    connection.close();
-                    callback(null,'');
-                }
+                });
             }
         ], function (err, msg) {
             if(err){
@@ -248,7 +249,7 @@ const syncService = function () {
      * @private
      */
     function _feedGroupOnNameChange(socket, gID) {
-        gID = convertGroupID(gID, '-');
+        const groupID = convertGroupID(gID, '-');
         async.waterfall([
             /**
              * Connect on database
@@ -257,7 +258,7 @@ const syncService = function () {
             function (callback) {
                 db.connectToDb(function (err, connection) {
                     if (err){
-                        return callback(true, 'Sync.service@feedGroupName: cant connect on database');
+                        return callback(true, 'Sync.service@_feedGroupOnNameChange: cant connect on database');
                     }
                     callback(null, connection);
                 });
@@ -268,27 +269,31 @@ const syncService = function () {
              * @param callback
              */
             function (connection, callback) {
-                if(tryPush(gID, connection, socket, 'groupName')){
-                    debug.status('Start feeding on group <' + gID + '>');
-                    rethinkdb.table('groups').get(gID).changes().run(connection,function (err, cursor) {
-                        if(err){
-                            delete socket.feeds['groupName'][gID];
+                debug.status('Start _feedGroupOnDataChange on  group <' + gID + '>');
+                rethinkdb.table('groups').get(groupID).changes().run(connection,function (err, cursor) {
+                    if(err){
+                        connection.close();
+                        return callback(true,'Sync.service@_feedGroupOnDataChange : something goes wrong with changes on group <' + gID + '>');
+                    }
+                    if(socket.feeds.groupOnNameChange[gID] === undefined){
+                        socket.feeds.groupOnNameChange[gID] = connection;
+                    }
+                    cursor.each(function (err, row) {
+                        if(socket.state === 'disconnecting'){
+                            delete socket.feeds.groupOnNameChange[gID];
                             connection.close();
-                            return callback(true,'Sync.service@feedGroupName: something goes wrong with changes on group <' + gID + '>');
                         }
-                        cursor.each(function (err, row) {
-                            if(row !== undefined){
-                                if(Object.keys(row).length>0 && row.new_val !== null){
-                                    debug.status('Broadcast new name for group <' + gID + '>');
-                                    socket.emit(gID, row.new_val.name);
-                                }
+                        if(row !== undefined){
+                            if(Object.keys(row).length>0 && row.new_val !== null){
+                                debug.status('Broadcast groupNameChange for group <' + gID + '>');
+                                socket.emit('groupNameChange',{
+                                 id     : gID,
+                                 name   : row.new_val.name
+                                });
                             }
-                        });
+                        }
                     });
-                }else{
-                    connection.close();
-                    callback(null,'');
-                }
+                });
             }
         ], function (err, msg) {
             if(err){
@@ -298,19 +303,8 @@ const syncService = function () {
     }
 
     /**
-     * Live feed on gID for deletion performed
-     *
-     * @param socket
-     * @param gID
-     * @private
-     */
-    function _feedGroupOnDelete(socket, gID) {
-
-    }
-
-    /**
      * Live feed on user for name change
-     *
+     *todo
      * @param socket
      * @param uEmail
      * @private
@@ -321,12 +315,22 @@ const syncService = function () {
 
     /**
      * Live feed on user for password change
-     * 
+     * todo
      * @param socket
      * @param uEmail
      * @private
      */
     function _feedAccountOnPasswordChange(socket, uEmail) {
+
+    }
+
+    /**
+     * Live feed on user for group insert/delete
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnGroupChange(socket, uEmail) {
 
     }
 
