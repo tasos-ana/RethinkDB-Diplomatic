@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService', 'notify'];
-    function LoginController($rootScope, $location, loginService, httpService, notify) {
+    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'notify', '$cookies', 'socketService'];
+    function LoginController($rootScope, $location, httpService, notify, $cookies, socketService) {
         const vm = this;
 
         vm.login = login;
@@ -32,7 +32,8 @@
             // reset login status
             $rootScope.loginStatus = false;
             $rootScope.user = undefined;
-            loginService.clearCredentials();
+            socketService.disconnectSocket();
+            $cookies.remove('userCredentials');
         })();
 
         function login() {
