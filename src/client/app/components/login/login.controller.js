@@ -17,6 +17,7 @@
 
             vm.registerComplete = false;
             vm.loginCauseError = {enabled : false, msg : ''};
+            vm.loginCauseSuccess = {enabled : false, msg : '', title : ''};
 
             if($rootScope.registerComplete){
                 vm.registerComplete = true;
@@ -25,8 +26,15 @@
 
             if($rootScope.loginCauseError !== undefined && $rootScope.loginCauseError.enabled){
                 vm.loginCauseError.enabled = true;
-                vm.msg = $rootScope.loginCauseError.msg;
+                vm.loginCauseError.msg = $rootScope.loginCauseError.msg;
                 $rootScope.loginCauseError.enabled = false;
+            }
+
+            if($rootScope.loginCauseSuccess !== undefined && $rootScope.loginCauseSuccess.enabled){
+                vm.loginCauseSuccess.enabled = true;
+                vm.loginCauseSuccess.msg = $rootScope.loginCauseSuccess.msg;
+                vm.loginCauseSuccess.title = $rootScope.loginCauseSuccess.title;
+                $rootScope.loginCauseSuccess.enabled = false;
             }
 
             // reset login status

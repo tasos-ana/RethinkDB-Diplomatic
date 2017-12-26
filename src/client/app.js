@@ -56,6 +56,10 @@
             $rootScope.loginCauseError = {};
         }
 
+        if($rootScope.loginCauseSuccess === undefined){
+            $rootScope.loginCauseSuccess = {};
+        }
+
         $rootScope.$on('$locationChangeStart', function (event, next, current) {
             const loggedIn = $cookies.get('userCredentials');
             if(loggedIn !== undefined){

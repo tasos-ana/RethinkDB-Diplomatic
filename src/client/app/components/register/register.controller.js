@@ -14,7 +14,6 @@
         (function initController() {
             notify.config({duration:'5000', position:'center'});
             vm.dataLoading = false;
-            vm.registerComplete = false;
             vm.user = {};
             vm.alert = {enabled : false};
         })();
@@ -26,7 +25,10 @@
                     vm.alert.enabled = false;
                     httpService.accountCreate(vm.user).then(function (response) {
                             if (response.success) {
-                                $rootScope.registerComplete = true;
+                                $rootScope.loginCauseSuccess.title      = 'Register complete!';
+                                $rootScope.loginCauseSuccess.msg        = ' You can now login!';
+                                $rootScope.loginCauseSuccess.enabled    = true;
+
                                 $location.path('/login');
                             } else {
                                 vm.dataLoading = false;
