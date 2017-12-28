@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('homeService', homeService);
 
-    homeService.$inject = ['$rootScope', '$location', 'httpService', 'socketService'];
-    function homeService($rootScope, $location, httpService, socketService) {
+    homeService.$inject = ['$rootScope', '$location', 'httpService'];
+    function homeService($rootScope, $location, httpService) {
         const service = {};
 
         service.retrieveAccountDetails = retrieveAccountDetails;
@@ -20,7 +20,6 @@
                         if(response.success){
                             $rootScope.user = response.data;
                             $rootScope.user.activeGroup = undefined;
-                            socketService.connectSocket();
                             cb();
                         }else{
                             $rootScope.loginCauseError.enabled = true;

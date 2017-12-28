@@ -16,6 +16,14 @@
             vm.templateURL = $location.path();
             socketService.connectSocket();
 
+            ngNotify.config({
+                sticky   : false,
+                duration : 3000
+            });
+            ngNotify.addType('notice-success','bg-success text-dark');
+            ngNotify.addType('notice-danger','bg-danger text-light');
+            ngNotify.addType('notice-info','bg-info text-dark');
+
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
 

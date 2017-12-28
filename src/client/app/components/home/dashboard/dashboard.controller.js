@@ -19,6 +19,14 @@
         (function initController() {
             socketService.connectSocket();
 
+            ngNotify.config({
+                sticky   : false,
+                duration : 3000
+            });
+            ngNotify.addType('notice-success','bg-success text-dark');
+            ngNotify.addType('notice-danger','bg-danger text-light');
+            ngNotify.addType('notice-info','bg-info text-dark');
+
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
@@ -82,11 +90,11 @@
                                 if(response.success){
                                     if(!groupExists(response.data.gID)){
                                         $rootScope.user.groupsList.push(response.data.gID);
-                                        $rootScope.user.groupsNames[response.data.gID] = vm.group.name;
+                                        $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
                                         groupOpen(response.data.gID);
                                     }
                                     ngNotify.dismiss();
-                                    ngNotify.set("New group created successfully with name: " + vm.group.name, "notice-success");
+                                    ngNotify.set("New group created successfully with name: " + response.data.gName, "notice-success");
                                     vm.group.creating = false;
                                     vm.group.name = '';
                                     vm.createGroupFadeIn=false;

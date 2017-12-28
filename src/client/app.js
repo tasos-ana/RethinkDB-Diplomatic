@@ -49,15 +49,8 @@
             }).otherwise({redirectTo: '/home'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies", 'ngNotify'];
-    function run($rootScope, $location, $cookies, ngNotify) {
-        ngNotify.config({
-            sticky   : true,
-            button   : true
-        });
-        ngNotify.addType('notice-success','bg-success text-dark');
-        ngNotify.addType('notice-danger','bg-danger text-light');
-        ngNotify.addType('notice-info','bg-info text-dark');
+    run.$inject = ['$rootScope', '$location', "$cookies"];
+    function run($rootScope, $location, $cookies) {
 
         if($rootScope.loginCauseError === undefined){
             $rootScope.loginCauseError = {};

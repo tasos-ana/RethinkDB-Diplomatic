@@ -166,7 +166,6 @@ const groupService = function () {
                 }).run(connection, function (err, result) {
                     if (err) {
                         debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
-                        console.log(err);
                         connection.close();
                         return callback(true, 'Error happens while update user groups');
                     }

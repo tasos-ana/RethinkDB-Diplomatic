@@ -14,25 +14,23 @@
         (function initController() {
             vm.dataLoading = false;
 
-            vm.registerComplete = false;
-            vm.loginCauseError = {enabled : false, msg : ''};
-            vm.loginCauseSuccess = {enabled : false, msg : '', title : ''};
-
-            if($rootScope.registerComplete){
-                vm.registerComplete = true;
-                $rootScope.registerComplete = false;
-            }
+            ngNotify.config({
+                sticky   : false,
+                duration : 3000
+            });
+            ngNotify.addType('notice-success','bg-success text-dark');
+            ngNotify.addType('notice-danger','bg-danger text-light');
+            ngNotify.addType('notice-info','bg-info text-dark');
 
             if($rootScope.loginCauseError !== undefined && $rootScope.loginCauseError.enabled){
-                vm.loginCauseError.enabled = true;
-                vm.loginCauseError.msg = $rootScope.loginCauseError.msg;
+                ngNotify.dismiss();
+                ngNotify.set($rootScope.loginCauseError.msg, "notice-danger");
                 $rootScope.loginCauseError.enabled = false;
             }
 
             if($rootScope.loginCauseSuccess !== undefined && $rootScope.loginCauseSuccess.enabled){
-                vm.loginCauseSuccess.enabled = true;
-                vm.loginCauseSuccess.msg = $rootScope.loginCauseSuccess.msg;
-                vm.loginCauseSuccess.title = $rootScope.loginCauseSuccess.title;
+                ngNotify.dismiss();
+                ngNotify.set($rootScope.loginCauseSuccess.title + $rootScope.loginCauseError.msg, "notice-danger");
                 $rootScope.loginCauseSuccess.enabled = false;
             }
 

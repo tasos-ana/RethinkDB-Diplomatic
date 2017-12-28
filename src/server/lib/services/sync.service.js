@@ -35,56 +35,58 @@ const syncService = function () {
      * @private
      */
     function _connectAll(socket) {
-        socket.state = 'connecting';
-        debug.status('START SOCKET CONNECTION');
-        if(socket.request.cookies['userCredentials'] !== undefined){
-            accountService.info(undefined, socket.request.cookies['userCredentials'], function (err,responseData) {
-                if(!err){
-                    //INITIALIAZE STRUCTURE ON socket THAT WE WILL KEEP CONNECTION
-                    socket.feeds = {
-                        account : {
-                            password    : undefined,
-                            name        : undefined,
-                            insertGroup : undefined,
-                            deleteGroup : undefined
-                        },
-                        groupForBadgeNotification : {
-                            //gID : connection
-                        },
-                        groupOnDataChange : {
-                            //gID : connection
-                        },
-                        groupOnNameChange : {
-                            //gID : connection
-                        },
-                        groupOnDelete : {
-                            //gID : connection
-                        }
-                    };
+        if( socket.state !== 'ready' || socket.state !== 'connecting') {
+            socket.state = 'connecting';
+            debug.status('START SOCKET CONNECTION');
+            if (socket.request.cookies['userCredentials'] !== undefined) {
+                accountService.info(undefined, socket.request.cookies['userCredentials'], function (err, responseData) {
+                    if (!err) {
+                        //INITIALIAZE STRUCTURE ON socket THAT WE WILL KEEP CONNECTION
+                        socket.feeds = {
+                            account: {
+                                password    : undefined,
+                                name        : undefined,
+                                insertGroup : undefined,
+                                deleteGroup : undefined
+                            },
+                            groupForBadgeNotification: {
+                                //gID : connection
+                            },
+                            groupOnDataChange: {
+                                //gID : connection
+                            },
+                            groupOnNameChange: {
+                                //gID : connection
+                            },
+                            groupOnDelete: {
+                                //gID : connection
+                            }
+                        };
 
-                    //FEED ON ACCOUNT FOR CHANGES
-                    const uEmail = responseData.email;
-                    _feedAccountOnNameChange(socket, uEmail);
-                    _feedAccountOnPasswordChange(socket, uEmail);
-                    _feedAccountOnGroupCreate(socket, uEmail);
-                    _feedAccountOnGroupDelete(socket, uEmail);
+                        //FEED ON ACCOUNT FOR CHANGES
+                        const uEmail = responseData.email;
+                        _feedAccountOnNameChange(socket, uEmail);
+                        _feedAccountOnPasswordChange(socket, uEmail);
+                        _feedAccountOnGroupCreate(socket, uEmail);
+                        _feedAccountOnGroupDelete(socket, uEmail);
 
-                    //FEED ON ALL groupsList for badge notification,name change and delete perform
-                    //FEED ON ALL openedGroup for data
-                    const groupsList = responseData.groupsList;
-                    const openedList = responseData.openedGroupsList;
-                    while (groupsList.length > 0){
-                        const gID = groupsList.pop();
-                        if(_tryPop(openedList, gID) !== undefined ){
-                            _feedGroupOnDataChange(socket, gID);
+                        //FEED ON ALL groupsList for badge notification,name change and delete perform
+                        //FEED ON ALL openedGroup for data
+                        const groupsList = responseData.groupsList;
+                        const openedList = responseData.openedGroupsList;
+                        while (groupsList.length > 0) {
+                            const gID = groupsList.pop();
+                            if (_tryPop(openedList, gID) !== undefined) {
+                                _feedGroupOnDataChange(socket, gID);
+                            }
+                            _feedGroupOnNameChange(socket, gID);
+                            _feedGroupForBadgeNotification(socket, gID);
                         }
-                        _feedGroupOnNameChange(socket, gID);
-                        _feedGroupForBadgeNotification(socket, gID);
+                        socket.state = 'ready';
+                        debug.status('SOCKET CONNECTION ESTABLISHED');
                     }
-                    socket.state = 'ready';
-                    debug.status('SOCKET CONNECTION ESTABLISHED');
-                }
-            });
+                });
+            }
         }
     }
 
@@ -527,7 +529,7 @@ const syncService = function () {
                         if(row !== undefined){
                             if(Object.keys(row).length>0 && row.new_val !== null){
                                 const gID   = (row.new_val.groups.diff(row.old_val.groups))[0];
-                                rethinkdb.table('groups').get(gID)
+                                rethinkdb.table('groups').get(convertGroupID(gID, '-'))
                                     .run(connection, function (err, result) {
                                         if(err){
                                             debug.error('Sync.service@_feedAccountOnGroupCreate: error happen while retrieve name for group: ' + gID);
@@ -535,7 +537,7 @@ const syncService = function () {
                                             debug.status('Broadcast groupCreate for user <' + uEmail + '>');
                                             socket.emit('groupCreate',{
                                                 "uEmail"    : uEmail,
-                                                "gID"       : convertGroupID(gID, '_'),
+                                                "gID"       : gID,
                                                 "gName"     : result.name
                                             });
                                         }
