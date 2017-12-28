@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'cgNotify'])
+        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'ngNotify'])
         .config(config)
         .run(run);
 
@@ -49,9 +49,16 @@
             }).otherwise({redirectTo: '/home'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies", 'notify'];
-    function run($rootScope, $location, $cookies, notify) {
-        notify.config({duration:'10000', position:'center'});
+    run.$inject = ['$rootScope', '$location', "$cookies", 'ngNotify'];
+    function run($rootScope, $location, $cookies, ngNotify) {
+        ngNotify.config({
+            sticky   : true,
+            button   : true
+        });
+        ngNotify.addType('notice-success','bg-success text-dark');
+        ngNotify.addType('notice-danger','bg-danger text-light');
+        ngNotify.addType('notice-info','bg-info text-dark');
+
         if($rootScope.loginCauseError === undefined){
             $rootScope.loginCauseError = {};
         }

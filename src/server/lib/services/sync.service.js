@@ -277,10 +277,12 @@ const syncService = function () {
                                     debug.status('Broadcast groupDataChange for group <' + gID + '>');
                                     socket.emit('groupDataChange', {
                                         "gID"   : gID,
-                                        "data"  : row.new_val.data,
-                                        "id"    : row.new_val.id,
-                                        "time"  : row.new_val.time,
-                                        "type"  : row.new_val.type
+                                        "value" : {
+                                            "data": row.new_val.data,
+                                            "id": row.new_val.id,
+                                            "time": row.new_val.time,
+                                            "type": row.new_val.type
+                                        }
                                     });
                                 }
                             }
@@ -340,8 +342,8 @@ const syncService = function () {
                             if(Object.keys(row).length>0 && row.new_val !== null){
                                 debug.status('Broadcast groupNameChange for group <' + gID + '>');
                                 socket.emit('groupNameChange',{
-                                 "id"     : gID,
-                                 "name"   : row.new_val.name
+                                 "gID"     : gID,
+                                 "gName"   : row.new_val.name
                                 });
                             }
                         }
@@ -465,7 +467,7 @@ const syncService = function () {
                         if(row !== undefined){
                             if(Object.keys(row).length>0 && row.new_val !== null){
                                 debug.status('Broadcast accountPasswordChange for user <' + uEmail + '>');
-                                socket.emit('accountPasswordChange');
+                                socket.emit('accountPasswordChange',{password:row.new_val.password});
                             }
                         }
                     });
@@ -524,12 +526,20 @@ const syncService = function () {
                         }
                         if(row !== undefined){
                             if(Object.keys(row).length>0 && row.new_val !== null){
-                                debug.status('Broadcast groupCreate for user <' + uEmail + '>');
-                                const gID = convertGroupID((row.new_val.groups.diff(row.old_val.groups))[0], '_');
-                                socket.emit('groupCreate',{
-                                    "uEmail"  : uEmail,
-                                    "gID"     : gID
-                                });
+                                const gID   = (row.new_val.groups.diff(row.old_val.groups))[0];
+                                rethinkdb.table('groups').get(gID)
+                                    .run(connection, function (err, result) {
+                                        if(err){
+                                            debug.error('Sync.service@_feedAccountOnGroupCreate: error happen while retrieve name for group: ' + gID);
+                                        }else{
+                                            debug.status('Broadcast groupCreate for user <' + uEmail + '>');
+                                            socket.emit('groupCreate',{
+                                                "uEmail"    : uEmail,
+                                                "gID"       : convertGroupID(gID, '_'),
+                                                "gName"     : result.name
+                                            });
+                                        }
+                                    });
                             }
                         }
                     });

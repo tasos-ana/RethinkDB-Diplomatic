@@ -5,14 +5,13 @@
         .module('starterApp')
         .controller('RegisterController', RegisterController);
 
-    RegisterController.$inject = ['$rootScope', '$location', 'httpService', 'notify', '$timeout'];
-    function RegisterController($rootScope, $location, httpService, notify, $timeout) {
+    RegisterController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify'];
+    function RegisterController($rootScope, $location, httpService, ngNotify) {
         const vm = this;
 
         vm.register = register;
 
         (function initController() {
-            notify.config({duration:'5000', position:'center'});
             vm.dataLoading = false;
             vm.user = {};
             vm.alert = {enabled : false};
@@ -32,7 +31,8 @@
                                 $location.path('/login');
                             } else {
                                 vm.dataLoading = false;
-                                notify({ message:"Something goes wrong with registration, try again later", classes :'bg-dark border-danger text-danger'});
+                                ngNotify.dismiss();
+                                ngNotify.set("Something goes wrong with registration, try again later.", "notice-danger");
                             }
                         });
                 }

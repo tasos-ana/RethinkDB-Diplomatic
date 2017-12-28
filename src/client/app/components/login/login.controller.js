@@ -5,14 +5,13 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'notify', '$cookies', 'socketService'];
-    function LoginController($rootScope, $location, httpService, notify, $cookies, socketService) {
+    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService'];
+    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService) {
         const vm = this;
 
         vm.login = login;
 
         (function initController() {
-            notify.config({duration:'7000', position:'center'});
             vm.dataLoading = false;
 
             vm.registerComplete = false;
@@ -57,7 +56,8 @@
                         $location.path('/home');
                     } else {
                         vm.dataLoading = false;
-                        notify({ message:"Email or password do not matched.", classes :'bg-dark border-danger text-danger'});
+                        ngNotify.dismiss();
+                        ngNotify.set("Email or password do not matched.", "notice-danger");
                     }
                 });
         }

@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('SettingsAccountController', SettingsAccountController);
 
-    SettingsAccountController.$inject = ['$rootScope', '$scope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout', 'notify', '$window', 'settingsAccountService'];
-    function SettingsAccountController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, notify, $window, settingsAccountService) {
+    SettingsAccountController.$inject = ['$rootScope', '$scope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout', 'ngNotify', '$window', 'settingsAccountService'];
+    function SettingsAccountController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, ngNotify, $window, settingsAccountService) {
         const vm = this;
 
         vm.updateAccount                    = _updateAccount;
@@ -14,7 +14,6 @@
 
         (function initController() {
             vm.templateURL = $location.path();
-            notify.config({duration:'4000', position:'center'});
 
             socketService.connectSocket();
 
@@ -23,78 +22,13 @@
 
             homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
 
-            socketService.onAccountNameChange(function (newNickname) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        if($rootScope.user.nickname !== newNickname){
-                            $rootScope.user.nickname = newNickname;
-                            notify({ message:"Your nickname change to '" + newNickname +"' from another device.", classes :'bg-dark border-success text-success'});
-                        }
-                    });
-                });
-            });
+            socketService.onAccountNameChange();
+            socketService.onAccountPasswordChange();
 
-            socketService.onAccountPasswordChange(function (newPassword) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        if($rootScope.user.password !== newPassword){
-                            $rootScope.user.password = newPassword;
-                            $rootScope.loginCauseSuccess.title      = ' Password change ';
-                            $rootScope.loginCauseSuccess.msg        = ' from another device. Please login again!';
-                            $rootScope.loginCauseSuccess.enabled    = true;
-                            $location.path('/login');
-                        }
-                    });
-                });
-            });
-
-            socketService.onGroupCreate(function (gID, gName) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        const index = $rootScope.user.groupsList.indexOf(gID);
-                        if(index === -1){
-                            $rootScope.user.groupsList.push(gID);
-                            $rootScope.user.groupsNames[gID] = gName;
-                            notify({ message:"New group created with name '" + gName +"'.", classes :'bg-dark border-success text-success'});
-                        }
-                    });
-                });
-            });
-
-            socketService.onGroupDelete(function (gID) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        const index = $rootScope.user.groupsList.indexOf(gID);
-                        if(index >= -1){
-                            $rootScope.user.groupsList.splice(index, 1);
-                            delete $rootScope.user.groupsNames[gID];
-                            notify({ message:"The group with name '" + gName +"' deleted.", classes :'bg-dark border-success text-success'});
-                        }
-                    });
-                });
-            });
-
-            socketService.onGroupNameChange(function (gID, gName) {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        const index = $rootScope.user.groupsList.indexOf(gID);
-                        const prevName = $rootScope.user.groupsNames[gID];
-                        if(index === -1 && prevName!==gName){
-                            $rootScope.user.groupsList.push(gID);
-                            $rootScope.user.groupsNames[gID] = gName;
-                            notify({ message:"Group name change from '" + gName +"' to '" + prevName +"'.", classes :'bg-dark border-success text-success'});
-                        }
-                    });
-                });
-            });
-
-            socketService.onGroupDataBadge(function () {
-                $timeout(function () {
-                    $rootScope.$apply(function () {
-                        //todo
-                    });
-                });
-            });
+            socketService.onGroupCreate();
+            socketService.onGroupDelete();
+            socketService.onGroupNameChange();
+            socketService.onGroupDataBadge();
 
         })();
 
@@ -107,43 +41,45 @@
             let changeNickname  = false;
             let changePassword  = false;
             let error           = false;
+            ngNotify.dismiss();
             if($scope.accountSettingsForm.newNickname.$invalid){
-                notify({ message:"Invalid nickname. Please try again", classes :'bg-dark border-danger text-danger'});
+                ngNotify.set("Invalid nickname. Please try again", "notice-danger");
                 $window.document.getElementById('newNickname_input').focus();
                 error = true;
             }else if(newNickname!==undefined && newNickname.length>0){
                 if(curPassword!==undefined && curPassword.length>=8){
                     changeNickname = true;
                 }else if($scope.accountSettingsForm.curPassword.$valid){
-                    notify({ message:"Your current password is required", classes :'bg-dark border-danger text-danger'});
+                    ngNotify.set("Your current password is required", "notice-danger");
                     $window.document.getElementById('curPassword_input').focus();
                     error=true;
                 }else{
-                    notify({ message:"Your current password is invalid", classes :'bg-dark border-danger text-danger'});
+                    ngNotify.set("Your current password is invalid", "notice-danger");
                     $window.document.getElementById('curPassword_input').focus();
                     error=true
                 }
             }
 
             if($scope.accountSettingsForm.newPassword.$invalid){
-                notify({ message:"Invalid password. Please try again", classes :'bg-dark border-danger text-danger'});
+                ngNotify.set("Invalid password. Please try again", "notice-danger");
                 $window.document.getElementById('newPassword_input').focus();
                 error=true;
             }else if($scope.accountSettingsForm.confirmNewPassword.$invalid){
-                notify({ message:"Your passwords don't matched. Please try again", classes :'bg-dark border-danger text-danger'});
+                ngNotify.set("Your passwords don't matched. Please try again", "notice-danger");
                 $window.document.getElementById('confirmNewPassword_input').focus();
                 error=true;
             }else if(newPassword!==undefined && newPassword.length>0 && confirmNewPassword!==undefined && confirmNewPassword.length>0){
                 if(curPassword!==undefined && curPassword.length>0){
                     if(curPassword === newPassword){
-                        notify({ message:"New password can't be the same with your current password. Please try again", classes :'bg-dark border-danger text-danger'});
+                        ngNotify.set("New password can't be the same with your current password. Please try again", "notice-danger");
                         $window.document.getElementById('newPassword_input').focus();
                         error = true;
                     }else{
                         changePassword = true;
                     }
                 }else{
-                    notify({ message:"Your current password is required", classes :'bg-dark border-danger text-danger'});
+                    ngNotify.dismiss();
+                    ngNotify.set("Your current password is required", "notice-danger");
                     $window.document.getElementById('curPassword_input').focus();
                     error=true;
                 }
@@ -157,7 +93,8 @@
                 }else if(changePassword){
                     settingsAccountService.accountUpdatePassword(vm);
                 }else{
-                    notify({ message:"You are happy with your details. No changes was made on your account", classes :'bg-dark border-success text-success'});
+                    ngNotify.dismiss();
+                    ngNotify.set("You are happy with your details. No changes was made on your account", "notice-success");
                 }
             }
         }

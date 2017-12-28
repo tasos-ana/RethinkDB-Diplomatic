@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('socketService', socketService);
 
-    socketService.$inject = [];
-    function socketService() {
+    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location'];
+    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location) {
         let socket = null;
 
         return {
@@ -52,39 +52,150 @@
             socket.emit('deleteGroup', gID);
         }
 
-        function _onGroupNameChange(callback) {
+        function _onGroupNameChange() {
             socketValidate();
-            socket.on('groupNameChange', callback);
+            /**
+             * Data contains {gName, gID}
+             */
+            socket.on('groupNameChange', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        const index = $rootScope.user.groupsList.indexOf(data.gID);
+                        const prevName = $rootScope.user.groupsNames[data.gID];
+                        if(index !== -1 && prevName!==data.gName){
+                            $rootScope.user.groupsNames[data.gID] = data.gName;
+                            ngNotify.dismiss();
+                            ngNotify.set("Group name change from '" + prevName +"' to '" + data.gName  +"'.", "notice-success");
+                        }
+                    });
+                });
+            });
         }
 
-        function _onGroupDataChange(callback) {
+        function _onGroupDataChange() {
             socketValidate();
-            socket.on('groupDataChange', callback);
+            /**
+             * Data contains {gID , value:{data,time,date,type}}
+             */
+            socket.on('groupDataChange', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        data.value.date = dashboardService.configureDate(new Date(), new Date(data.value.time));
+                        if($rootScope.user.openedGroupsData[data.gID] !== undefined){
+                            $rootScope.user.openedGroupsData[data.gID].data[$rootScope.user.openedGroupsData[data.gID].data.length] = data.value;
+                        }
+                    });
+                });
+            });
         }
 
-        function _onGroupDataBadge(callback) {
+        function _onGroupDataBadge() {
             socketValidate();
-            socket.on('groupDataBadge', callback);
+            socket.on('groupDataBadge', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        //todo
+                    });
+                });
+            });
         }
 
-        function _onGroupCreate(callback) {
+        function _onGroupCreate() {
             socketValidate();
-            socket.on('groupCreate', callback);
+            /**
+             * Data contains {uEmail, id:gID, name:newName}
+             */
+            socket.on('groupCreate', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if(data.uEmail === $rootScope.user.email){
+                            const index = $rootScope.user.groupsList.indexOf(data.gID);
+                            if(index === -1){
+                                $rootScope.user.groupsList.push(data.gID);
+                                $rootScope.user.groupsNames[data.gID] = data.name;
+                                ngNotify.dismiss();
+                                ngNotify.set("New group created with name '" + data.name +"'.", "notice-success");
+                            }
+                        }
+                    });
+                });
+            });
         }
 
-        function _onGroupDelete(callback) {
+        function _onGroupDelete() {
             socketValidate();
-            socket.on('groupDelete', callback);
+            /**
+             * Data contains {uEmail, gID:gID}
+             */
+            socket.on('groupDelete', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if(data.uEmail !== $rootScope.user.email){
+                            const index = $rootScope.user.groupsList.indexOf(data.gID);
+                            if(index >= -1){
+                                $rootScope.user.groupsList.splice(index, 1);
+                                delete $rootScope.user.groupsNames[data.gID];
+
+                                if($location.path() === "/dashboard"){
+                                    const index = $rootScope.user.openedGroupsList.indexOf(data.gID);
+                                    if (index >= 0) {
+                                        $rootScope.user.openedGroupsList.splice(index, 1);
+                                    }
+                                    if(data.gID === $rootScope.user.activeGroup){
+                                        if(index >= $rootScope.user.openedGroupsList.length){
+                                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index-1];
+                                        }else{
+                                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
+                                        }
+                                    }
+                                }
+                                ngNotify.dismiss();
+                                ngNotify.set("The group with name '" + data.gName +"' deleted.", "notice-success");
+                            }
+                        }
+                    });
+                });
+            });
         }
 
-        function _onAccountNameChange(callback) {
+        function _onAccountNameChange() {
             socketValidate();
-            socket.on('accountNameChange', callback);
+            /**
+             * Data contains {uEmail, nickname:newNickname}
+             */
+            socket.on('accountNameChange', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if(data.uEmail !== $rootScope.user.email){
+                            if($rootScope.user.nickname !== data.nickname){
+                                $rootScope.user.nickname = data.nickname;
+                                ngNotify.dismiss();
+                                ngNotify.set("Your nickname change to '" + data.nickname +"' from another device.", "notice-success");
+                            }
+                        }
+                    });
+                });
+            });
         }
 
-        function _onAccountPasswordChange(callback) {
+        function _onAccountPasswordChange() {
             socketValidate();
-            socket.on('accountPasswordChange', callback);
+            /**
+             * Data contains {password:newPassword}
+             */
+            socket.on('accountPasswordChange', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if($rootScope.user.password !== data.password){
+                            $rootScope.user.password = data.password;
+                            $rootScope.loginCauseSuccess.title      = ' Password change ';
+                            $rootScope.loginCauseSuccess.msg        = ' from another device. Please login again!';
+                            $rootScope.loginCauseSuccess.enabled    = true;
+                            $location.path('/login');
+                        }
+                    });
+                });
+            });
         }
         
         function socketValidate() {

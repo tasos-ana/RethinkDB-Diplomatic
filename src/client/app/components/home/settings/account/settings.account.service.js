@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('settingsAccountService', settingsAccountService);
 
-    settingsAccountService.$inject = ['$rootScope', '$location', 'httpService', '$window', 'notify'];
-    function settingsAccountService($rootScope, $location, httpService, $window, notify) {
+    settingsAccountService.$inject = ['$rootScope', '$location', 'httpService', '$window', 'ngNotify'];
+    function settingsAccountService($rootScope, $location, httpService, $window, ngNotify) {
         const service = {};
 
         service.accountUpdateNickname   = _accountUpdateNickname;
@@ -17,17 +17,20 @@
 
         function _accountUpdateNickname(vm) {
             vm.applyChanges = true;
-            notify({ message:"We trying to update your account nickname, please wait!", classes :'bg-dark border-info text-info'});
+            ngNotify.dismiss();
+            ngNotify.set("We trying to update your account nickname, please wait!", "notice-info");
             httpService.accountUpdateNickname(vm.accountSettings.curPassword , vm.accountSettings.newNickname)
                 .then(function (response) {
                     if(response.success){
                         if(response.data.wrongPassword!==undefined && response.data.wrongPassword){
-                            notify({ message:"Your current password it's wrong, please try again.", classes :'bg-dark border-danger text-danger'});
+                            ngNotify.dismiss();
+                            ngNotify.set("Your current password it's wrong, please try again.", "notice-danger");
                             $window.document.getElementById('curPassword_input').focus();
                         }else{
                             $rootScope.user.nickname = response.data.nickname;
                             vm.accountSettingsFormReset();
-                            notify({ message:"Your nickname changed successful", classes :'bg-dark border-success text-success'});
+                            ngNotify.dismiss();
+                            ngNotify.set("Your nickname changed successful", "notice-success");
                         }
                     }else{
                         $rootScope.loginCauseError.enabled = true;
@@ -39,16 +42,19 @@
 
         function _accountUpdatePassword(vm) {
             vm.applyChanges = true;
-            notify({ message:"We trying to update your account password, please wait!", classes :'bg-dark border-info text-info'});
+            ngNotify.dismiss();
+            ngNotify.set("We trying to update your account password, please wait!", "notice-info");
             httpService.accountUpdatePassword(vm.accountSettings.curPassword, vm.accountSettings.newPassword)
                 .then(function (response) {
                     if(response.success){
                         if(response.data.wrongPassword!==undefined && response.data.wrongPassword){
-                            notify({ message:"Your current password it's wrong, please try again.", classes :'bg-dark border-danger text-danger'});
+                            ngNotify.dismiss();
+                            ngNotify.set("Your current password it's wrong, please try again.", "notice-danger");
                             $window.document.getElementById('curPassword_input').focus();
                         }else {
                             vm.accountSettingsFormReset();
-                            notify({message: "Your password changed successful", classes: 'bg-dark border-success text-success'});
+                            ngNotify.dismiss();
+                            ngNotify.set("Your password changed successful", "notice-success");
                         }
                     }else{
                         $rootScope.loginCauseError.enabled = true;
@@ -60,17 +66,20 @@
 
         function _accountUpdateAll(vm) {
             vm.applyChanges = true;
-            notify({ message:"We trying to update your account details, please wait!", classes :'bg-dark border-info text-info'});
+            ngNotify.dismiss();
+            ngNotify.set("We trying to update your account details, please wait!", "notice-info");
             httpService.accountUpdateAll(vm.accountSettings.curPassword, vm.accountSettings.newNickname, vm.accountSettings.newPassword)
                 .then(function (response) {
                     if(response.success) {
                         if(response.data.wrongPassword!==undefined && response.data.wrongPassword){
-                            notify({ message:"Your current password it's wrong, please try again.", classes :'bg-dark border-danger text-danger'});
+                            ngNotify.dismiss();
+                            ngNotify.set("Your current password it's wrong, please try again.", "notice-danger");
                             $window.document.getElementById('curPassword_input').focus();
                         }else {
                             $rootScope.user.nickname = response.data.nickname;
                             vm.accountSettingsFormReset();
-                            notify({message: "Your nickname and password changed successful",classes: 'bg-dark border-success text-success'});
+                            ngNotify.dismiss();
+                            ngNotify.set("Your nickname and password changed successful", "notice-success");
                         }
                     }else{
                         $rootScope.loginCauseError.enabled = true;
