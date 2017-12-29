@@ -20,6 +20,7 @@
                         if(response.success){
                             $rootScope.user = response.data;
                             $rootScope.user.activeGroup = undefined;
+                            $rootScope.user.notifications = {};
                             cb();
                         }else{
                             $rootScope.loginCauseError.enabled = true;

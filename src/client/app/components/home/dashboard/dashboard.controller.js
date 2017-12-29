@@ -129,7 +129,7 @@
                                 }
                             });
                     }
-                    $rootScope.user.activeGroup = gID;
+                    groupSetActive(gID);
                 });
             });
         }
@@ -165,6 +165,8 @@
 
         function groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
+            $rootScope.user.notifications.total -= $rootScope.user.notifications[gID];
+            $rootScope.user.notifications[gID] = 0;
         }
 
 

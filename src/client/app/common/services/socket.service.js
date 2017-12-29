@@ -91,10 +91,25 @@
 
         function _onGroupDataBadge() {
             socketValidate();
+            /**
+             * data contains gID
+             */
             socket.on('groupDataBadge', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        //todo
+                        if($rootScope.user.activeGroup !== data.gID) {
+                            if ($rootScope.user.notifications[data.gID] === undefined) {
+                                $rootScope.user.notifications[data.gID] = 1;
+                            } else {
+                                $rootScope.user.notifications[data.gID] += 1;
+                            }
+                            if($rootScope.user.notifications.total !== undefined){
+                                $rootScope.user.notifications.total+=1;
+                            }else{
+                                $rootScope.user.notifications.total = 1;
+                            }
+
+                        }
                     });
                 });
             });
