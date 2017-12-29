@@ -5,34 +5,44 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'loginService', 'httpService', 'notify'];
-    function LoginController($rootScope, $location, loginService, httpService, notify) {
+    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService'];
+    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService) {
         const vm = this;
 
         vm.login = login;
 
         (function initController() {
-            notify.config({duration:'7000', position:'center'});
             vm.dataLoading = false;
+            vm.loginCauseError ={};
+            vm.loginCauseSuccess ={};
 
-            vm.registerComplete = false;
-            vm.loginCauseError = {enabled : false, msg : ''};
-
-            if($rootScope.registerComplete){
-                vm.registerComplete = true;
-                $rootScope.registerComplete = false;
-            }
+            ngNotify.config({
+                sticky  : true,
+                button  : true
+            });
+            ngNotify.addType('notice-success','bg-success text-dark');
+            ngNotify.addType('notice-danger','bg-danger text-light');
+            ngNotify.addType('notice-info','bg-info text-dark');
 
             if($rootScope.loginCauseError !== undefined && $rootScope.loginCauseError.enabled){
-                vm.loginCauseError.enabled = true;
-                vm.msg = $rootScope.loginCauseError.msg;
+                vm.loginCauseError.title = $rootScope.loginCauseError.title;
+                vm.loginCauseError.msg = $rootScope.loginCauseError.msg;
+                vm.loginCauseError.enabled = $rootScope.loginCauseError.enabled;
                 $rootScope.loginCauseError.enabled = false;
+            }
+
+            if($rootScope.loginCauseSuccess !== undefined && $rootScope.loginCauseSuccess.enabled){
+                vm.loginCauseSuccess.title = $rootScope.loginCauseSuccess.title;
+                vm.loginCauseSuccess.msg = $rootScope.loginCauseSuccess.msg;
+                vm.loginCauseSuccess.enabled = $rootScope.loginCauseSuccess.enabled;
+                $rootScope.loginCauseSuccess.enabled = false;
             }
 
             // reset login status
             $rootScope.loginStatus = false;
             $rootScope.user = undefined;
-            loginService.clearCredentials();
+            socketService.disconnectSocket();
+            $cookies.remove('userCredentials');
         })();
 
         function login() {
@@ -48,7 +58,8 @@
                         $location.path('/home');
                     } else {
                         vm.dataLoading = false;
-                        notify({ message:"Email or password do not matched.", classes :'bg-dark border-danger text-danger'});
+                        ngNotify.dismiss();
+                        ngNotify.set("Email or password do not matched.", "notice-danger");
                     }
                 });
         }
