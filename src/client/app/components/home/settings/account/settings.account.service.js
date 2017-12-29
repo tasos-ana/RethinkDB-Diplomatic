@@ -70,10 +70,12 @@
             vm.applyChanges = true;
             ngNotify.dismiss();
             ngNotify.set("We trying to update your account details, please wait!", "notice-info");
+            $rootScope.user.password = md5.createHash(vm.accountSettings.newPassword || '');
             httpService.accountUpdateAll(vm.accountSettings.curPassword, vm.accountSettings.newNickname, vm.accountSettings.newPassword)
                 .then(function (response) {
                     if(response.success) {
                         if(response.data.wrongPassword!==undefined && response.data.wrongPassword){
+                            $rootScope.user.password = undefined;
                             ngNotify.dismiss();
                             ngNotify.set("Your current password it's wrong, please try again.", "notice-danger");
                             $window.document.getElementById('curPassword_input').focus();
