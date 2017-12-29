@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('settingsAccountService', settingsAccountService);
 
-    settingsAccountService.$inject = ['$rootScope', '$location', 'httpService', '$window', 'ngNotify'];
-    function settingsAccountService($rootScope, $location, httpService, $window, ngNotify) {
+    settingsAccountService.$inject = ['$rootScope', '$location', 'httpService', '$window', 'ngNotify', 'md5'];
+    function settingsAccountService($rootScope, $location, httpService, $window, ngNotify, md5) {
         const service = {};
 
         service.accountUpdateNickname   = _accountUpdateNickname;
@@ -44,7 +44,7 @@
             vm.applyChanges = true;
             ngNotify.dismiss();
             ngNotify.set("We trying to update your account password, please wait!", "notice-info");
-            $rootScope.user.password = vm.accountSettings.newPassword;
+            $rootScope.user.password = md5.createHash(vm.accountSettings.newPassword || '');
             httpService.accountUpdatePassword(vm.accountSettings.curPassword, vm.accountSettings.newPassword)
                 .then(function (response) {
                     if(response.success){
@@ -54,7 +54,6 @@
                             ngNotify.set("Your current password it's wrong, please try again.", "notice-danger");
                             $window.document.getElementById('curPassword_input').focus();
                         }else {
-                            $rootScope.user.password = undefined;
                             vm.accountSettingsFormReset();
                             ngNotify.dismiss();
                             ngNotify.set("Your password changed successful", "notice-success");

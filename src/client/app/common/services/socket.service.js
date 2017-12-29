@@ -166,7 +166,7 @@
             socket.on('accountNameChange', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        if(data.uEmail !== $rootScope.user.email){
+                        if(data.uEmail === $rootScope.user.email){
                             if($rootScope.user.nickname !== data.uNickname){
                                 $rootScope.user.nickname = data.uNickname;
                                 ngNotify.dismiss();
@@ -187,11 +187,12 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if($rootScope.user.password !== data.uPassword){
-                            $rootScope.user.password = data.uPassword;
                             $rootScope.loginCauseSuccess.title      = ' Password change ';
                             $rootScope.loginCauseSuccess.msg        = ' from another device. Please login again!';
                             $rootScope.loginCauseSuccess.enabled    = true;
                             $location.path('/login');
+                        }else{
+                            $rootScope.user.password = undefined;
                         }
                     });
                 });
