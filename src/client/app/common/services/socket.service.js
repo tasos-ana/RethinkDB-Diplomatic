@@ -112,9 +112,9 @@
                             const index = $rootScope.user.groupsList.indexOf(data.gID);
                             if(index === -1){
                                 $rootScope.user.groupsList.push(data.gID);
-                                $rootScope.user.groupsNames[data.gID] = data.name;
+                                $rootScope.user.groupsNames[data.gID] = data.gName;
                                 ngNotify.dismiss();
-                                ngNotify.set("New group created with name '" + data.name +"'.", "notice-success");
+                                ngNotify.set("New group created with name '" + data.gName +"'.", "notice-success");
                             }
                         }
                     });
@@ -130,13 +130,13 @@
             socket.on('groupDelete', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        if(data.uEmail !== $rootScope.user.email){
+                        if(data.uEmail === $rootScope.user.email){
                             const index = $rootScope.user.groupsList.indexOf(data.gID);
                             if(index >= -1){
                                 $rootScope.user.groupsList.splice(index, 1);
                                 delete $rootScope.user.groupsNames[data.gID];
 
-                                if($location.path() === "/dashboard"){
+                                if($location.path() === "/home/dashboard"){
                                     const index = $rootScope.user.openedGroupsList.indexOf(data.gID);
                                     if (index >= 0) {
                                         $rootScope.user.openedGroupsList.splice(index, 1);
@@ -167,10 +167,10 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if(data.uEmail !== $rootScope.user.email){
-                            if($rootScope.user.nickname !== data.nickname){
-                                $rootScope.user.nickname = data.nickname;
+                            if($rootScope.user.nickname !== data.uNickname){
+                                $rootScope.user.nickname = data.uNickname;
                                 ngNotify.dismiss();
-                                ngNotify.set("Your nickname change to '" + data.nickname +"' from another device.", "notice-success");
+                                ngNotify.set("Your nickname change to '" + data.uNickname +"' from another device.", "notice-success");
                             }
                         }
                     });
@@ -186,8 +186,8 @@
             socket.on('accountPasswordChange', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        if($rootScope.user.password !== data.password){
-                            $rootScope.user.password = data.password;
+                        if($rootScope.user.password !== data.uPassword){
+                            $rootScope.user.password = data.uPassword;
                             $rootScope.loginCauseSuccess.title      = ' Password change ';
                             $rootScope.loginCauseSuccess.msg        = ' from another device. Please login again!';
                             $rootScope.loginCauseSuccess.enabled    = true;

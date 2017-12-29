@@ -54,7 +54,7 @@ router.route('/update/name')
 
 router.route('/delete')
     .get(function (req,res) {
-        groupService.deleteGroup(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
+        groupService.deleteGroup({gID : req.query.gID, gName : req.query.gName}, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

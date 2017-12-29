@@ -407,8 +407,8 @@ const syncService = function () {
                                 if(Object.keys(row).length>0 && row.new_val !== null){
                                     debug.status('Broadcast accountNameChange for user <' + uEmail + '>');
                                     socket.emit('accountNameChange',{
-                                        "email"       : uEmail,
-                                        "nickname"    : row.new_val.nickname
+                                        "uEmail"       : uEmail,
+                                        "uNickname"    : row.new_val.nickname
                                     });
                                 }
                             }
@@ -469,7 +469,9 @@ const syncService = function () {
                         if(row !== undefined){
                             if(Object.keys(row).length>0 && row.new_val !== null){
                                 debug.status('Broadcast accountPasswordChange for user <' + uEmail + '>');
-                                socket.emit('accountPasswordChange',{password:row.new_val.password});
+                                socket.emit('accountPasswordChange',{
+                                    "uPassword" : row.new_val.password
+                                });
                             }
                         }
                     });
@@ -600,12 +602,21 @@ const syncService = function () {
                         }
                         if(row !== undefined){
                             if(Object.keys(row).length>0 && row.new_val !== null){
-                                debug.status('Broadcast groupDelete for user <' + uEmail + '>');
-                                const gID = convertGroupID((row.old_val.groups.diff(row.new_val.groups))[0], '_');
-                                socket.emit('groupDelete',{
-                                    "uEmail"  : uEmail,
-                                    "gID"     : gID
-                                });
+
+                                const gID   = (row.old_val.groups.diff(row.new_val.groups))[0];
+                                rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                    .run(connection, function (err, result) {
+                                        if(err){
+                                            debug.error('Sync.service@_feedAccountOnGroupDelete: error happen while retrieve name for group: ' + gID);
+                                        }else{
+                                            debug.status('Broadcast groupDelete for user <' + uEmail + '>');
+                                            socket.emit('groupDelete',{
+                                                "uEmail"    : uEmail,
+                                                "gID"       : gID,
+                                                "gName"     : result.name
+                                            });
+                                        }
+                                    });
                             }
                         }
                     });

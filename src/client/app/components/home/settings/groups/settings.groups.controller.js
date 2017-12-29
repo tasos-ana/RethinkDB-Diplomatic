@@ -59,13 +59,13 @@
         function _deleteGroup(gID) {
             socketService.emitDeleteGroup(gID);
 
-            httpService.groupDelete(gID)
+            httpService.groupDelete(gID, $rootScope.user.groupsNames[gID])
                 .then(function (response) {
                     if(response.success){
                         ngNotify.dismiss();
-                        ngNotify.set("Group \"" + $rootScope.user.groupsNames[gID] + "\" deleted successful", "notice-success");
-                        removeGroup(gID);
-                        delete $rootScope.user.groupsNames[gID];
+                        ngNotify.set("Group \"" + response.data.gName + "\" deleted successful", "notice-success");
+                        removeGroup(response.data.gID);
+                        delete $rootScope.user.groupsNames[response.data.gID];
                     }else{
                         $rootScope.loginCauseError.enabled = true;
                         $rootScope.loginCauseError.msg = response.msg;

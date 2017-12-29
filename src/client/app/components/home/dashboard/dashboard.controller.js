@@ -91,8 +91,8 @@
                                     if(!groupExists(response.data.gID)){
                                         $rootScope.user.groupsList.push(response.data.gID);
                                         $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
-                                        groupOpen(response.data.gID);
                                     }
+                                    groupOpen(response.data.gID);
                                     ngNotify.dismiss();
                                     ngNotify.set("New group created successfully with name: " + response.data.gName, "notice-success");
                                     vm.group.creating = false;
@@ -116,7 +116,7 @@
             $timeout(function () {
                 $rootScope.$apply(function () {
                     const index = $rootScope.user.openedGroupsList.indexOf(gID);
-                    if (index < 0) {
+                    if (index === -1) {
                         httpService.groupInsertToOpenedList(gID)
                             .then(function (response) {
                                 if(response.success){
