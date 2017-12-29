@@ -187,8 +187,8 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if($rootScope.user.password !== data.uPassword){
-                            $rootScope.loginCauseSuccess.title      = ' Password change ';
-                            $rootScope.loginCauseSuccess.msg        = ' from another device. Please login again!';
+                            $rootScope.loginCauseSuccess.title      = ' Password change from another device. ';
+                            $rootScope.loginCauseSuccess.msg        = 'Please login again!';
                             $rootScope.loginCauseSuccess.enabled    = true;
                             $location.path('/login');
                         }else{
