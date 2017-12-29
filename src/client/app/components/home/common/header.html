@@ -1,11 +1,11 @@
-<nav class="navbar navbar-expand-lg">
+<nav id="navBar" class="navbar navbar-expand-lg">
     <!-- CREATE GROUP PANEL BEGIN -->
     <div ng-show="vm.createGroupFadeIn">
         <div class="search-inner d-flex align-items-center justify-content-center">
             <div class="close-btn" ng-click="vm.createGroupFadeIn=false">Close <i class="fa fa-close"></i></div>
             <form id="searchForm" name="createForm" ng-submit="vm.groupCreate(!createForm.$invalid)" role="form" novalidate>
                 <div class="form-group">
-                    <input type="search" name="create" placeholder="Group name is..." ng-model="vm.group.name"
+                    <input id='createGroupInput' type="search" name="create" placeholder="Group name is..." ng-model="vm.group.name"
                            required ng-minlength="3" title="Group name should have more than 3 characters">
                     <button type="submit" class="submit" ng-hide="createForm.$invalid">Create</button>
                 </div>

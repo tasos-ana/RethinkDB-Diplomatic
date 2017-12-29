@@ -157,12 +157,13 @@
             }).then(handleSuccess,handleError('Cant create group \'' + gName + '\''));
         }
 
-        function _groupDelete(gID) {
+        function _groupDelete(gID, gName) {
             return $http({
                 method          : 'GET',
                 url             : '/group/delete',
                 params          : {
-                                    gID : gID
+                                    gID     : gID,
+                                    gName   : gName
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'

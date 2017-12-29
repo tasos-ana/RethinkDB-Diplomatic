@@ -166,7 +166,6 @@ const groupService = function () {
                 }).run(connection, function (err, result) {
                     if (err) {
                         debug.error('Group.service@create: cant update user <' + details.uEmail + '> groups');
-                        console.log(err);
                         connection.close();
                         return callback(true, 'Error happens while update user groups');
                     }
@@ -178,7 +177,6 @@ const groupService = function () {
             callback(err !== null, data);
         });
     }
-
 
     /**
      * Retrieve group data from database
@@ -442,7 +440,6 @@ const groupService = function () {
         });
     }
 
-
     /**
      * Update the group name
      *
@@ -523,15 +520,14 @@ const groupService = function () {
         });
     }
 
-
     /**
      * Delete the group table from database
-     * @param gID       id of the group
+     * @param details   contains gID,gName
      * @param cookie    Authorization field from request, required for validation
      * @param callback
      * @private
      */
-    function _deleteGroup(gID, cookie, callback) {
+    function _deleteGroup(details, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -567,7 +563,7 @@ const groupService = function () {
                                 return callback(true,'Email do not exists');
                             }
 
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(gID) === -1){
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
                                 debug.error('Account.service@delete: user details and cookie isnt match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -588,10 +584,10 @@ const groupService = function () {
              * @param callback
              */
             function (connection, uEmail, callback) {
-                rethinkdb.table(gID).get('settings').update({lastLogin : Date.now()})
+                rethinkdb.table(details.gID).get('settings').update({lastLogin : Date.now()})
                     .run(connection, function (err, result) {
                         if(err){
-                            debug.error('Group.service@delete: cant update group <' + gID + '> lastLogin field');
+                            debug.error('Group.service@delete: cant update group <' + details.gID + '> lastLogin field');
                             connection.close();
                             return callback(true, 'Cant update group lastLogin field');
                         }
@@ -606,10 +602,10 @@ const groupService = function () {
              */
             function (connection, uEmail, callback) {
                 rethinkdb.table('accounts').get(uEmail).update({
-                  groups : rethinkdb.row('groups').deleteAt(rethinkdb.row('groups').offsetsOf(gID)(0))
+                  groups : rethinkdb.row('groups').deleteAt(rethinkdb.row('groups').offsetsOf(details.gID)(0))
                 }).run(connection,function (err,results) {
                         if(err){
-                            debug.error('Group.service@delete: cant delete group <' + gID + '> from user <' + uEmail + '>');
+                            debug.error('Group.service@delete: cant delete group <' + details.gID + '> from user <' + uEmail + '>');
                             connection.close();
                             return callback(true, 'Error happens while deleting group from user');
                         }
@@ -624,10 +620,10 @@ const groupService = function () {
              */
             function (connection, uEmail, callback) {
                 rethinkdb.table('accounts').get(uEmail).update({
-                    openedGroups : rethinkdb.row('openedGroups').deleteAt(rethinkdb.row('openedGroups').offsetsOf(gID)(0))
+                    openedGroups : rethinkdb.row('openedGroups').deleteAt(rethinkdb.row('openedGroups').offsetsOf(details.gID)(0))
                 }).run(connection,function (err,results) {
                     if(err){
-                        debug.error('Group.service@delete: cant delete openedGroups <' + gID + '> from user <' + uEmail + '>');
+                        debug.error('Group.service@delete: cant delete openedGroups <' + details.gID + '> from user <' + uEmail + '>');
                         connection.close();
                         return callback(true, 'Error happens while deleting group from user');
                     }
@@ -640,10 +636,10 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('groups').get(convertGroupID(gID,'-')).delete()
+                rethinkdb.table('groups').get(convertGroupID(details.gID,'-')).delete()
                     .run(connection, function (err, result) {
                         if(err){
-                            debug.error('Group.service@delete: cant delete group <' + gID + '> from groups table');
+                            debug.error('Group.service@delete: cant delete group <' + details.gID + '> from groups table');
                             connection.close();
                             return callback(true, 'Error happens while deleting group from groups table');
                         }
@@ -656,15 +652,15 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.tableDrop(gID)
+                rethinkdb.tableDrop(details.gID)
                     .run(connection,function (err, results) {
                         connection.close();
                         if(err){
-                            debug.error('Group.service@delete: cant delete group <' + gID + '> ');
+                            debug.error('Group.service@delete: cant delete group <' + details.gID + '> ');
                             return callback(true, 'Error happens while deleting group');
                         }
-                        debug.correct('Table <' + gID + '> dropped successful');
-                        callback(null, results);
+                        debug.correct('Table <' + details.gID + '> dropped successful');
+                        callback(null, details);
                     });
             }
         ],function (err,data) {

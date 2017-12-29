@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'cgNotify'])
+        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'ngNotify'])
         .config(config)
         .run(run);
 
@@ -23,13 +23,13 @@
                 controllerAs: 'vm'
             })
             .when('/home/account/settings',{
-                controller: 'SettingsController',
-                templateUrl: './app/components/home/settings/account.settings.view.html',
+                controller: 'SettingsAccountController',
+                templateUrl: './app/components/home/settings/account/account.settings.view.html',
                 controllerAs: 'vm'
             })
             .when('/home/groups/settings',{
-                controller: 'SettingsController',
-                templateUrl: './app/components/home/settings/groups.settings.view.html',
+                controller: 'SettingsGroupsController',
+                templateUrl: './app/components/home/settings/groups/groups.settings.view.html',
                 controllerAs: 'vm'
             })
             .when('/home/about',{
@@ -49,11 +49,15 @@
             }).otherwise({redirectTo: '/home'});
     }
 
-    run.$inject = ['$rootScope', '$location', "$cookies", 'notify'];
-    function run($rootScope, $location, $cookies, notify) {
-        notify.config({duration:'10000', position:'center'});
+    run.$inject = ['$rootScope', '$location', "$cookies"];
+    function run($rootScope, $location, $cookies) {
+
         if($rootScope.loginCauseError === undefined){
             $rootScope.loginCauseError = {};
+        }
+
+        if($rootScope.loginCauseSuccess === undefined){
+            $rootScope.loginCauseSuccess = {};
         }
 
         $rootScope.$on('$locationChangeStart', function (event, next, current) {

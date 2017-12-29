@@ -89,25 +89,29 @@ const syncService = require('../lib/services/sync.service');
 io.use(cookieParser());
 
 io.on('connection',function (socket) {
-    syncService.connect(socket);
+    syncService.connectAll(socket);
 
-    socket.on('sync', function (gID){
-        syncService.feedGroupData(socket, gID);
-        syncService.feedGroupName(socket, gID);
+    //ACTION FOR GROUP
+    socket.on('openGroup', function (gID){
+        syncService.connectSingleGroup(socket, gID);
     });
 
+    socket.on('closeGroup', function (gID) {
+       syncService.disconnectSingleGroup(socket, gID);
+    });
+
+    socket.on('deleteGroup', function (gID) {
+        syncService.deleteSingleGroup(socket, gID);
+    });
+
+    //ACTION FOR USER
     socket.on('disconnect',function () {
-        syncService.disconnect(socket);
+        syncService.disconnectAll(socket);
     });
 
     socket.on('logout', function () {
-        syncService.disconnect(socket);
+        syncService.disconnectAll(socket);
     });
-
-    socket.on('deleteGroup',function (gID) {
-        syncService.disconnectGroup(socket, gID);
-    });
-
 });
 
 /**
