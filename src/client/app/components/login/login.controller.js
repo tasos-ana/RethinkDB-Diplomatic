@@ -17,8 +17,8 @@
             vm.loginCauseSuccess ={};
 
             ngNotify.config({
-                sticky  : true,
-                button  : true
+                sticky  : false,
+                duration : 5000
             });
             ngNotify.addType('notice-success','bg-success text-dark');
             ngNotify.addType('notice-danger','bg-danger text-light');
