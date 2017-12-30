@@ -144,7 +144,7 @@ const groupService = function () {
             function (details, connection, callback) {
                 rethinkdb.table(details.gID).insert({
                     id              : 'created',
-                    data            : 'Group created by ' + details.uNickname + " (" + details.uEmail + ')',
+                    data            : 'Group created by ' + details.uEmail + ')',
                     type            : 'text',
                     time            : Date.now()
                 }).run(connection,function (err,result) {
@@ -578,23 +578,6 @@ const groupService = function () {
                     connection.close();
                     return callback(true,'Invalid cookie');
                 }
-            },
-            /**
-             * Update lastlogin field on table, that fire change and after that feed on group close
-             * @param connection
-             * @param uEmail
-             * @param callback
-             */
-            function (connection, uEmail, callback) {
-                rethinkdb.table(details.gID).get('settings').update({lastLogin : Date.now()})
-                    .run(connection, function (err, result) {
-                        if(err){
-                            debug.error('Group.service@delete: cant update group <' + details.gID + '> lastLogin field');
-                            connection.close();
-                            return callback(true, 'Cant update group lastLogin field');
-                        }
-                        callback(null, connection, uEmail);
-                    });
             },
             /**
              * Delete from user the gID
