@@ -208,7 +208,7 @@
             }).then(handleSuccess, handleError('Cant remove on opened group list'));
         }
 
-        function _groupUpdateUnreadMessages(gID,newVal) {
+        function _groupUpdateUnreadMessages(gID, newVal) {
             return $http({
                 method          : 'POST',
                 url             : '/group/update/unreadMessages',

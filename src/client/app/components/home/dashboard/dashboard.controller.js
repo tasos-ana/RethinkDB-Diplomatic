@@ -92,6 +92,7 @@
                                         $rootScope.user.groupsList.push(response.data.gID);
                                         $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
                                     }
+                                    $rootScope.user.unreadMessages[response.data.gID] = 0;
                                     groupOpen(response.data.gID);
                                     ngNotify.dismiss();
                                     ngNotify.set("New group created successfully with name: " + response.data.gName, "notice-success");
@@ -122,16 +123,6 @@
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(gID);
                                     dashboardService.retrieveSingleGroupData(gID);
-
-                                    const prevVal = $rootScope.user.unreadMessages[gID];
-                                    $rootScope.user.unreadMessages.total -= prevVal;
-                                    if(prevVal!==0) {
-                                        httpService.groupUpdateUnreadMessages(gID, $rootScope.user.unreadMessages[gID]).then(function () {
-                                        });
-                                    }
-                                    $timeout(function () {
-                                        $rootScope.user.unreadMessages[gID] = 0;
-                                    },4000);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.msg;
@@ -175,6 +166,17 @@
 
         function groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
+
+            const prevVal = $rootScope.user.unreadMessages[gID];
+            $rootScope.user.unreadMessages.total -= prevVal;
+            if(prevVal!==0) {
+                httpService.groupUpdateUnreadMessages(gID, $rootScope.user.unreadMessages[gID]).then(function () {
+                });
+            }
+            $timeout(function () {
+                $rootScope.user.unreadMessages[gID] = 0;
+            },4000);
+
         }
 
         function groupExists(gID) {

@@ -732,6 +732,28 @@ const groupService = function () {
                 }
             },
             /**
+             * Checking if group already exist on the openedGroupsList
+             * @param details
+             * @param connection
+             * @param callback
+             */
+            function (details, connection, callback) {
+                rethinkdb.table('accounts').get(details.uEmail)('openedGroups').offsetsOf(details.gID)
+                    .run(connection, function (err, result) {
+                       if(err){
+                           connection.close();
+                           debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
+                           return callback(true, 'Error happens while update user groups');
+                       }
+                       if(result.length!==0){
+                           connection.close();
+                           debug.correct('Group <' + details.gID + '> already opened for user <' + details.uEmail + '>');
+                           return callback(null,{});
+                       }
+                        callback(null, details, connection);
+                    });
+            },
+            /**
              * Update the opened groups list with the gID
              * @param details       contains gID, uEmail, uNickname
              * @param connection
@@ -827,10 +849,10 @@ const groupService = function () {
                 }).run(connection, function (err, result) {
                     connection.close();
                     if (err) {
-                        debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
-                        return callback(true, 'Error happens while update user groups');
+                        debug.correct('Group <' + details.gID + '> already closed for user <' + details.uEmail + '>');
+                    }else {
+                        debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
                     }
-                    debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
                     callback(null, {});
                 });
             }
