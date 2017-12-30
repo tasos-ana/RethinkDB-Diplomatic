@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('socketService', socketService);
 
-    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location'];
-    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location) {
+    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location', 'httpService'];
+    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location, httpService) {
         let socket = null;
 
         return {
@@ -91,10 +91,26 @@
 
         function _onGroupDataBadge() {
             socketValidate();
+            /**
+             * data contains gID
+             */
             socket.on('groupDataBadge', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        //todo
+                        if($rootScope.user.activeGroup !== data.gID) {
+                            if ($rootScope.user.unreadMessages[data.gID] === undefined) {
+                                $rootScope.user.unreadMessages[data.gID] = 1;
+                            } else {
+                                $rootScope.user.unreadMessages[data.gID] += 1;
+                            }
+
+                            httpService.groupUpdateUnreadMessages(data.gID,$rootScope.user.unreadMessages[data.gID]).then(function () {});
+                            if($rootScope.user.unreadMessages.total !== undefined){
+                                $rootScope.user.unreadMessages.total+=1;
+                            }else{
+                                $rootScope.user.unreadMessages.total = 1;
+                            }
+                        }
                     });
                 });
             });

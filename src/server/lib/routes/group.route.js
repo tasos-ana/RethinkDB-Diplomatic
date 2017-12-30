@@ -82,4 +82,15 @@ router.route('/openedList/remove')
         });
     });
 
+
+router.route('/update/unreadMessages')
+    .post(function (req,res) {
+        groupService.messageNotification(req.body, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 module.exports = router;

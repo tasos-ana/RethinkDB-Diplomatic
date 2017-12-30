@@ -11,14 +11,12 @@
 
         service.retrieveGroupsData      = _retrieveGroupsData;
         service.retrieveSingleGroupData = _retrieveSingleGroupData;
-        service.retrieveGroupsName      = _retrieveGroupsName;
         service.retrieveSingleGroupName = _retrieveSingleGroupName;
         service.configureDate           = configureDate;
 
         return service;
 
         function _retrieveGroupsData() {
-            _retrieveGroupsName();
             for(let i = 0; i<$rootScope.user.openedGroupsList.length; ++i){
                 const gID  = $rootScope.user.openedGroupsList[i];
                 _retrieveSingleGroupData(gID);
@@ -56,14 +54,6 @@
                             $location.path('/login');
                         }
                     });
-            }
-        }
-
-        function _retrieveGroupsName() {
-            $rootScope.user.groupsNames = {};
-            for(let i=0; i<$rootScope.user.groupsList.length; ++i){
-                const gID = $rootScope.user.groupsList[i];
-                _retrieveSingleGroupName(gID);
             }
         }
 

@@ -28,7 +28,9 @@
             vm.accountSettings = {};
             vm.accountSettings.applyChanges = false;
 
-            homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
+            homeService.retrieveAccountDetails(function () {
+
+            });
 
             socketService.onAccountNameChange();
             socketService.onAccountPasswordChange();

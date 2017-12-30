@@ -24,6 +24,7 @@
         service.groupUpdateName             = _groupUpdateName;
         service.groupInsertToOpenedList     = _groupInsertToOpenedList;
         service.groupRemoveFromOpenedList   = _groupRemoveFromOpenedList;
+        service.groupUpdateUnreadMessages      = _groupUpdateUnreadMessages;
 
         return service;
 
@@ -205,6 +206,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Cant remove on opened group list'));
+        }
+
+        function _groupUpdateUnreadMessages(gID, newVal) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/update/unreadMessages',
+                data            : {
+                    gID     : gID,
+                    unread  : newVal
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
         }
 
         function handleSuccess(res) {

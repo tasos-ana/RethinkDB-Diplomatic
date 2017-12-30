@@ -11,7 +11,9 @@
 
         (function initController() {
             vm.templateURL = $location.path();
-            homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
+            homeService.retrieveAccountDetails(function () {
+
+            });
 
             ngNotify.config({
                 sticky   : false,
