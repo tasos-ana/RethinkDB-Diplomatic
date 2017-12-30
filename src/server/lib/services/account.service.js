@@ -194,7 +194,7 @@ const accountService = function () {
                                     "groupsList"        : [ ],
                                     "groupsNames"       : { },
                                     "openedGroupsData"  : { },
-                                    "notifications"     : { },
+                                    "unreadMessages"    : { },
                                     "openedGroupsList"  : result.openedGroups
                                 });
                             }
@@ -231,7 +231,7 @@ const accountService = function () {
                                 if(data.tmpGroupsList.indexOf(gID) !== -1){
                                     data.groupsList.push(gID);
                                     data.groupsNames[gID] = arr[i].name;
-                                    // data.notifications[gID] = arr[i].unreadMessages;
+                                    data.unreadMessages[gID] = arr[i].unreadMessages;
                                 }else{
                                     debug.error('Account.service@accountInfo: group with id <' + gID + '> not belong to user');
                                     return callback(true, 'Error happens while getting user details');

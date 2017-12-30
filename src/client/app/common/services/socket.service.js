@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('socketService', socketService);
 
-    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location'];
-    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location) {
+    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location', 'httpService'];
+    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location, httpService) {
         let socket = null;
 
         return {
@@ -98,16 +98,17 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if($rootScope.user.activeGroup !== data.gID) {
-                            if ($rootScope.user.notifications[data.gID] === undefined) {
-                                $rootScope.user.notifications[data.gID] = 1;
+                            if ($rootScope.user.unreadMessages[data.gID] === undefined) {
+                                $rootScope.user.unreadMessages[data.gID] = 1;
                             } else {
-                                $rootScope.user.notifications[data.gID] += 1;
+                                $rootScope.user.unreadMessages[data.gID] += 1;
                             }
 
-                            if($rootScope.user.notifications.total !== undefined){
-                                $rootScope.user.notifications.total+=1;
+                            httpService.groupUpdateUnreadMessages(data.gID,$rootScope.user.unreadMessages[data.gID]).then(function () {});
+                            if($rootScope.user.unreadMessages.total !== undefined){
+                                $rootScope.user.unreadMessages.total+=1;
                             }else{
-                                $rootScope.user.notifications.total = 1;
+                                $rootScope.user.unreadMessages.total = 1;
                             }
                         }
                     });

@@ -15,7 +15,7 @@
     <li ng-class="{'active' : vm.templateURL==='/home/dashboard'}">
         <a href="/home/dashboard" ng-class="{'collapse' : vm.templateURL==='/home/dashboard'}">
             <i class="icon-cloud"></i>
-                <span class="badge bg-primary text-dark" ng-show="user.notifications.total>0">{{user.notifications.total}}</span> Dashboard
+                <span class="badge bg-primary text-dark" ng-show="user.unreadMessages.total>0">{{user.unreadMessages.total}}</span> Dashboard
         </a>
         <ul id="dashboardList" class="collapse list-unstyled" ng-class="{'show' : vm.templateURL==='/home/dashboard'}">
             <li>
@@ -26,7 +26,7 @@
                 <ul id="groupsList" class="collapse list-unstyled">
                     <li ng-repeat="gID in user.groupsList">
                         <a href="" ng-click="vm.groupOpen(gID)">
-                            <span class="badge bg-primary text-dark" ng-show="user.notifications[gID]>0">{{user.notifications[gID]}}</span> {{user.groupsNames[gID]}}
+                            <span class="badge bg-primary text-dark" ng-show="user.unreadMessages[gID]>0">{{user.unreadMessages[gID]}}</span> {{user.groupsNames[gID]}}
                         </a>
                     </li>
                 </ul>

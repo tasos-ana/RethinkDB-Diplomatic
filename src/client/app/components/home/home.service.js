@@ -20,8 +20,8 @@
                         if(response.success){
                             $rootScope.user = response.data;
                             $rootScope.user.activeGroup = undefined;
-                            if($rootScope.user.notifications === undefined){
-                                $rootScope.user.notifications = {};
+                            if($rootScope.user.unreadMessages === undefined){
+                                $rootScope.user.unreadMessages = {};
                             }
                             _calculateTotalNotifications();
 
@@ -37,12 +37,12 @@
         
         function _calculateTotalNotifications() {
             let total = 0;
-            for(const id in $rootScope.user.notifications){
+            for(const id in $rootScope.user.unreadMessages){
                 if(id !== 'total'){
-                    total+= $rootScope.user.notifications[id];
+                    total+= $rootScope.user.unreadMessages[id];
                 }
             }
-            $rootScope.user.notifications.total = total;
+            $rootScope.user.unreadMessages.total = total;
         }
     }
 })();

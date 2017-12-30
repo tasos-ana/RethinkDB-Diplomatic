@@ -21,7 +21,8 @@ const groupService = function () {
         deleteGroup         : _deleteGroup,
         updateGroupName     : _updateGroupName,
         insertOpenedGroup   : _insertOpenedGroup,
-        removeOpenedGroup   : _removeOpenedGroup
+        removeOpenedGroup   : _removeOpenedGroup,
+        messageNotification : _messageNotification
     };
 
     /**
@@ -97,8 +98,9 @@ const groupService = function () {
              */
             function (details, connection, callback) {
                 rethinkdb.table('groups').insert({
-                    'name': gName,
-                    'user': details.uEmail
+                    'name'              : gName,
+                    'user'              : details.uEmail,
+                    'unreadMessages'    : 0
                 }).run(connection, function (err, result) {
                     if (err) {
                         debug.error('Group.service@create: can\'t insert <' + gName + '> on table \'groups\'');
@@ -829,6 +831,86 @@ const groupService = function () {
                         return callback(true, 'Error happens while update user groups');
                     }
                     debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
+                    callback(null, {});
+                });
+            }
+        ], function (err, data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Update how much message user received and he didnt read it yet
+     * @param details
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _messageNotification(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err,connection) {
+                    if(err){
+                        debug.error('Group.service@_messageNotification: can\'t connect to database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Stage 0:
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Group.service@_messageNotification: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password){
+                                debug.error('Group.service@_messageNotification:: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }
+                            callback(null, connection);
+                        });
+
+                }catch (e){
+                    debug.error('Group.service@_messageNotification: user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Update the group unreadMessages with new value
+             * @param connection
+             * @param callback
+             */
+            function(connection, callback) {
+                rethinkdb.table('groups').get(convertGroupID(details.gID, '-')).update({
+                    unreadMessages : details.unread
+                }).run(connection, function (err, result) {
+                    connection.close();
+                    if (err) {
+                        debug.error('Group.service@_messageNotification: cant update group <' + details.gID + '> unread messages');
+                        return callback(true, 'Error happens while update user groups');
+                    }
+                    debug.correct('Unread messages for group <' + details.gID + '> updated successful');
                     callback(null, {});
                 });
             }

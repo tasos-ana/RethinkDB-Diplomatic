@@ -24,13 +24,10 @@
         }
 
         function _retrieveSingleGroupData(id) {
-            $rootScope.user.notifications[id] = 0;
+            $rootScope.user.unreadMessages[id] = 0;
             let retrieveData = false;
             if($rootScope.user.openedGroupsData[id] === undefined){
                 $rootScope.user.openedGroupsData[id] = { };
-                if($rootScope.user.notifications[id] !== undefined){
-                    $rootScope.user.openedGroupsData[id].newMsg = $rootScope.user.notifications[id];
-                }
                 if($rootScope.user.activeGroup === undefined){
                     $rootScope.user.activeGroup = id;
                 }
