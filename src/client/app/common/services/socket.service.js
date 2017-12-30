@@ -103,12 +103,12 @@
                             } else {
                                 $rootScope.user.notifications[data.gID] += 1;
                             }
+
                             if($rootScope.user.notifications.total !== undefined){
                                 $rootScope.user.notifications.total+=1;
                             }else{
                                 $rootScope.user.notifications.total = 1;
                             }
-
                         }
                     });
                 });

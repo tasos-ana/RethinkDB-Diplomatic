@@ -122,6 +122,10 @@
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(gID);
                                     dashboardService.retrieveSingleGroupData(gID);
+                                    $timeout(function () {
+                                        $rootScope.user.openedGroupsData[gID].newMsg = 0;
+                                        $rootScope.user.notifications[gID] = 0;
+                                    },10000);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.msg;
@@ -136,6 +140,8 @@
 
         function groupClose(gID) {
             socketService.emitCloseGroup(gID);
+            $rootScope.user.openedGroupsData[gID].newMsg = 0;
+            $rootScope.user.notifications[gID] = 0;
 
             $timeout(function () {
                 $rootScope.$apply(function () {
@@ -168,7 +174,6 @@
             $rootScope.user.notifications.total -= $rootScope.user.notifications[gID];
             $rootScope.user.notifications[gID] = 0;
         }
-
 
         function groupExists(gID) {
             const index = $rootScope.user.groupsList.indexOf(gID);

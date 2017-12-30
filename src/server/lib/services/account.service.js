@@ -171,33 +171,78 @@ const accountService = function () {
 
                     rethinkdb.table('accounts').get(uEmail)
                         .run(connection,function (err,result) {
-                            connection.close();
                             if(err){
+                                connection.close();
                                 debug.error('Account.service@accountInfo: cant get user <' + uEmail + '> info');
                                 return callback(true, 'Error happens while getting user details');
                             }
                             if(result === null){
+                                connection.close();
                                 debug.status('User <' + uEmail + '> do not exists');
                                 return callback(true,'Email do not exists');
                             }
                             if(validate && cookieDetails.uPassword !== result.password){
+                                connection.close();
                                 debug.error('Account.service@accountInfo: user details and cookie do not matched');
                                 return callback(true,'Invalid cookie');
                             }else{
-                                debug.correct('Account info for <' + uEmail + '> retrieved');
-                                callback(null,{
+                                debug.status('Retrieved info for user <' + result.email +'>');
+                                callback(null, connection, {
                                     "email"             : result.email,
                                     "nickname"          : result.nickname,
-                                    "groupsList"        : result.groups,
+                                    "tmpGroupsList"     : result.groups,
+                                    "groupsList"        : [ ],
+                                    "groupsNames"       : { },
                                     "openedGroupsData"  : { },
+                                    "notifications"     : { },
                                     "openedGroupsList"  : result.openedGroups
                                 });
                             }
                         });
                 }catch (e){
+                    connection.close();
                     debug.error('Account.service@accountInfo (catch): user details and cookie isnt match');
                     return callback(true,'Invalid cookie');
                 }
+            },
+            /**
+             * Retrieve data from groups
+             * @param connection
+             * @param data
+             * @param callback
+             */
+            function (connection, data, callback) {
+                rethinkdb.table('groups').orderBy({index : 'userAndName'}).filter({user : data.email})
+                    .run(connection,function (err, result) {
+                        connection.close();
+                        if(err){
+                            debug.error('Account.service@accountInfo: cant get for user <' + uEmail + '> the groups details');
+                            return callback(true, 'Error happens while getting user details');
+                        }
+
+                        result.toArray(function (err,arr) {
+                            if(err){
+                                debug.error('Account.service@accountInfo: cant convert result to array');
+                                return callback(true, 'Error happens while getting user details');
+                            }
+
+                            for(let i=0; i<arr.length; ++i){
+                                const gID = convertGroupID(arr[i].id,'_');
+                                if(data.tmpGroupsList.indexOf(gID) !== -1){
+                                    data.groupsList.push(gID);
+                                    data.groupsNames[gID] = arr[i].name;
+                                    // data.notifications[gID] = arr[i].unreadMessages;
+                                }else{
+                                    debug.error('Account.service@accountInfo: group with id <' + gID + '> not belong to user');
+                                    return callback(true, 'Error happens while getting user details');
+                                }
+                            }
+
+                            delete data.tmpGroupsList;
+                            debug.correct('Data for user <' + uEmail + '> retrieved successful');
+                            callback(null,data);
+                        });
+                    });
             }
         ], function (err,data) {
             callback(err !== null, data);
@@ -469,6 +514,24 @@ const accountService = function () {
         ], function (err,data) {
             callback(err !== null, data);
         });
+    }
+
+    /**
+     * Convert on group id the _ to - and reverse,
+     * depends on to variable
+     *
+     * @param id
+     * @param to
+     * @returns {*}
+     */
+    function convertGroupID(id, to){
+        let retID;
+        if(to === '-'){
+            retID = id.replace(/_/g, '-');
+        }else{
+            retID = id.replace(/-/g, '_');
+        }
+        return retID;
     }
 }();
 

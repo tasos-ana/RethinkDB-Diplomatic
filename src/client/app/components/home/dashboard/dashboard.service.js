@@ -11,14 +11,12 @@
 
         service.retrieveGroupsData      = _retrieveGroupsData;
         service.retrieveSingleGroupData = _retrieveSingleGroupData;
-        service.retrieveGroupsName      = _retrieveGroupsName;
         service.retrieveSingleGroupName = _retrieveSingleGroupName;
         service.configureDate           = configureDate;
 
         return service;
 
         function _retrieveGroupsData() {
-            _retrieveGroupsName();
             for(let i = 0; i<$rootScope.user.openedGroupsList.length; ++i){
                 const gID  = $rootScope.user.openedGroupsList[i];
                 _retrieveSingleGroupData(gID);
@@ -26,9 +24,13 @@
         }
 
         function _retrieveSingleGroupData(id) {
+            $rootScope.user.notifications[id] = 0;
             let retrieveData = false;
             if($rootScope.user.openedGroupsData[id] === undefined){
                 $rootScope.user.openedGroupsData[id] = { };
+                if($rootScope.user.notifications[id] !== undefined){
+                    $rootScope.user.openedGroupsData[id].newMsg = $rootScope.user.notifications[id];
+                }
                 if($rootScope.user.activeGroup === undefined){
                     $rootScope.user.activeGroup = id;
                 }
@@ -56,14 +58,6 @@
                             $location.path('/login');
                         }
                     });
-            }
-        }
-
-        function _retrieveGroupsName() {
-            $rootScope.user.groupsNames = {};
-            for(let i=0; i<$rootScope.user.groupsList.length; ++i){
-                const gID = $rootScope.user.groupsList[i];
-                _retrieveSingleGroupName(gID);
             }
         }
 

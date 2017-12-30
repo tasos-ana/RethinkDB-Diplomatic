@@ -61,6 +61,7 @@ const databaseService = function () {
                     const table = tablesList.pop();
                     _createTable(table.name, table.key);
                 }
+                _createGroupsIndex();
             }
         ], function(){});
     }
@@ -74,7 +75,7 @@ const databaseService = function () {
             function(callback) {
                 _connectToDb(function(err, connection) {
                     if (err) {
-                        debug.error('Database.service@initDb: cant connect to database');
+                        debug.error('Database.service@_createTable: cant connect to database');
                         return callback(true, "Error in connecting RethinkDB");
                     }
                     callback(null, connection);
@@ -95,6 +96,42 @@ const databaseService = function () {
                         connection.close();
                         callback(null,'');
                     });
+            }
+        ], function() {});
+    }
+
+    function _createGroupsIndex() {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function(callback) {
+                _connectToDb(function(err, connection) {
+                    if (err) {
+                        debug.error('Database.service@_createGroupsIndex: cant connect to database');
+                        return callback(true, "Error in connecting RethinkDB");
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Create index
+             * @param connection
+             * @param callback
+             */
+            function(connection, callback) {
+                rethinkdb.db(config.db.defaultName).table('groups').indexCreate(
+                    'userAndName', [rethinkdb.row('user'), rethinkdb.row('name')]
+                ).run(connection, function (err, result) {
+                    if (err) {
+                        debug.status('Index "userAndName" for table "groups" already created');
+                    }else{
+                        debug.status('Index "userAndName" for table "groups" created successful');
+                    }
+                    connection.close();
+                    callback(null,'');
+                });
             }
         ], function() {});
     }

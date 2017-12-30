@@ -20,7 +20,11 @@
                         if(response.success){
                             $rootScope.user = response.data;
                             $rootScope.user.activeGroup = undefined;
-                            $rootScope.user.notifications = {};
+                            if($rootScope.user.notifications === undefined){
+                                $rootScope.user.notifications = {};
+                            }
+                            _calculateTotalNotifications();
+
                             cb();
                         }else{
                             $rootScope.loginCauseError.enabled = true;
@@ -29,6 +33,16 @@
                         }
                     });
             }
+        }
+        
+        function _calculateTotalNotifications() {
+            let total = 0;
+            for(const id in $rootScope.user.notifications){
+                if(id !== 'total'){
+                    total+= $rootScope.user.notifications[id];
+                }
+            }
+            $rootScope.user.notifications.total = total;
         }
     }
 })();

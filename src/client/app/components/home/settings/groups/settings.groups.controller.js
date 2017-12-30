@@ -27,7 +27,9 @@
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
 
-            homeService.retrieveAccountDetails(dashboardService.retrieveGroupsName);
+            homeService.retrieveAccountDetails(function () {
+
+            });
 
             socketService.onAccountNameChange();
             socketService.onAccountPasswordChange();
