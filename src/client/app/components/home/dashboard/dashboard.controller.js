@@ -122,14 +122,16 @@
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(gID);
                                     dashboardService.retrieveSingleGroupData(gID);
+
+                                    const prevVal = $rootScope.user.unreadMessages[gID];
+                                    $rootScope.user.unreadMessages.total -= prevVal;
+                                    if(prevVal!==0) {
+                                        httpService.groupUpdateUnreadMessages(gID, $rootScope.user.unreadMessages[gID]).then(function () {
+                                        });
+                                    }
                                     $timeout(function () {
-                                        const prevVal = $rootScope.user.unreadMessages[id];
-                                        $rootScope.user.unreadMessages.total -= prevVal;
-                                        $rootScope.user.unreadMessages[id] = 0;
-                                        if(prevVal !== 0){
-                                            httpService.groupUpdateUnreadMessages(data.gID,$rootScope.user.unreadMessages[data.gID]).then(function () {});
-                                        }
-                                    },7000);
+                                        $rootScope.user.unreadMessages[gID] = 0;
+                                    },4000);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.msg;
@@ -144,8 +146,6 @@
 
         function groupClose(gID) {
             socketService.emitCloseGroup(gID);
-            $rootScope.user.openedGroupsData[gID].newMsg = 0;
-            $rootScope.user.unreadMessages[gID] = 0;
 
             $timeout(function () {
                 $rootScope.$apply(function () {
@@ -175,8 +175,6 @@
 
         function groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
-            $rootScope.user.unreadMessages.total -= $rootScope.user.unreadMessages[gID];
-            $rootScope.user.unreadMessages[gID] = 0;
         }
 
         function groupExists(gID) {

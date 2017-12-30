@@ -119,8 +119,6 @@ const syncService = function () {
      */
     function _connectSingleGroup(socket, gID) {
         _feedGroupOnDataChange(socket, gID);
-        _feedGroupOnNameChange(socket, gID);
-        _feedGroupForBadgeNotification(socket, gID);
     }
 
     /**

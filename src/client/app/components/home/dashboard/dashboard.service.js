@@ -24,7 +24,6 @@
         }
 
         function _retrieveSingleGroupData(id) {
-            $rootScope.user.unreadMessages[id] = 0;
             let retrieveData = false;
             if($rootScope.user.openedGroupsData[id] === undefined){
                 $rootScope.user.openedGroupsData[id] = { };

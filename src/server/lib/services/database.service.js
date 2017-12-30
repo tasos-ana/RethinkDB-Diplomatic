@@ -61,7 +61,6 @@ const databaseService = function () {
                     const table = tablesList.pop();
                     _createTable(table.name, table.key);
                 }
-                _createGroupsIndex();
             }
         ], function(){});
     }
@@ -92,6 +91,9 @@ const databaseService = function () {
                             debug.status('Table:key <' + name + ' : ' + key + '> for database <' + config.db.defaultName + '> already created');
                         }else{
                             debug.status('Table:key <' + name + ' : ' + key + '> created for database <' + config.db.defaultName + '> successful');
+                            if(name==='groups'){
+                                _createGroupsIndex();
+                            }
                         }
                         connection.close();
                         callback(null,'');
