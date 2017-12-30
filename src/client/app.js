@@ -9,6 +9,9 @@
     function config($routeProvider, $locationProvider) {
         $locationProvider.html5Mode(true);
         $routeProvider
+            .when('/',{
+                templateUrl: './app/components/welcome/welcome.view.html'
+            })
             .when('/about',{
                 templateUrl: './app/components/about/about.view.html'
             })
@@ -46,7 +49,7 @@
                 controller: 'RegisterController',
                 templateUrl: './app/components/register/register.view.html',
                 controllerAs: 'vm'
-            }).otherwise({redirectTo: '/home'});
+            }).otherwise({redirectTo: '/'});
     }
 
     run.$inject = ['$rootScope', '$location', "$cookies"];
