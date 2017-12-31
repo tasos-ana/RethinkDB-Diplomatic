@@ -20,6 +20,11 @@
                         if(response.success){
                             $rootScope.user = response.data;
                             $rootScope.user.activeGroup = undefined;
+                            if($rootScope.user.unreadMessages === undefined){
+                                $rootScope.user.unreadMessages = {};
+                            }
+                            _calculateTotalNotifications();
+
                             cb();
                         }else{
                             $rootScope.loginCauseError.enabled = true;
@@ -28,6 +33,16 @@
                         }
                     });
             }
+        }
+        
+        function _calculateTotalNotifications() {
+            let total = 0;
+            for(const id in $rootScope.user.unreadMessages){
+                if(id !== 'total'){
+                    total+= $rootScope.user.unreadMessages[id];
+                }
+            }
+            $rootScope.user.unreadMessages.total = total;
         }
     }
 })();

@@ -8,25 +8,26 @@
                         <div class="content">
                             <div class="logo row">
                                 <div class="col-sm-2"></div>
-                                <img class="col-sm-8" src="./assets/img/logo.png" alt="">
+                                <img class="col-sm-8 logo-size " src="./assets/img/Login/login_dark.png" alt="">
                                 <div class="col-sm-2"></div>
                             </div><br>
-                            <p class="text-center">Welcome on pushUP</p>
-                            <p>Login or Sign up now and start sharing data between your devices.</p>
+                            <h4 class="h5 text-center text-dark"><strong>Welcome</strong> on pushUP</h4>
+                            <strong class="text-center text-dark">Login or Sign up now and start sharing data between your devices.</strong>
                         </div>
                     </div>
                 </div>
-                <!-- Form Panel    -->
+                <!-- Form Panel -->
                 <div class="col-lg-6 bg-white">
                     <div class="form d-flex align-items-center">
                         <div class="content">
-                            <div class="alert alert-success alert-dismissible" role="alert" ng-show="vm.registerComplete">
+
+                            <div class="alert alert-success alert-dismissible" role="alert" ng-show="vm.loginCauseSuccess.enabled">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                <strong>Register complete!</strong> You can now login!
+                                <strong>{{vm.loginCauseSuccess.title}}</strong><br> {{vm.loginCauseSuccess.msg}}
                             </div>
                             <div class="alert alert-danger alert-dismissible" role="alert" ng-show="vm.loginCauseError.enabled">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                <strong>Logout cause error!</strong> {{vm.loginCauseError.msg}}
+                                <strong>Logout cause error!</strong><br>{{vm.loginCauseError.msg}}
                                 <small>If error continues please contact us!</small>
                             </div>
 
@@ -48,8 +49,17 @@
                                     <label for="login-password" class="label-material"
                                            ng-class="{'active' : loginForm.loginPassword.focus}">Password</label>
                                 </div>
-                                <button id="login" type="submit" class="btn btn-primary"
-                                        ng-disabled="vm.dataLoading">Login</button>
+                                <div class="row form-group">
+                                    <div class="col-sm-8"></div>
+                                    <div class="col-sm-4">
+                                        <input id="option" type="checkbox" value="false" ng-model="vm.user.rememberMe">
+                                        <label for="option">Remember me</label>
+                                    </div>
+                                </div>
+                                <button id="login" type="submit" class="btn btn-primary items-align-right"
+                                        ng-disabled="vm.dataLoading">Login
+                                </button>
+
                             </form>
                             <small>Do not have an account? </small><a href="/register" class="signup">Sign up</a>
                         </div>
@@ -59,7 +69,7 @@
         </div>
     </div>
     <div class="copyrights text-center">
-        <span><a href="/login" class="external"> Login </a> | </span>
+        <span><a href="/" class="external"> Home </a> | </span>
         <span><a href="/register" class="external"> Sign up </a> | </span>
         <a href="/about" class="external"> About </a>
         <p>2017 &copy; <a href="/home" class="external">Push UP.</a></p>

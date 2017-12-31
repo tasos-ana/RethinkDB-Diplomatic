@@ -1,3 +1,6 @@
+/**
+ * Angular module that send http request on server
+ */
 (function () {
     'use strict';
 
@@ -6,6 +9,7 @@
         .factory('httpService', httpService);
 
     httpService.$inject = ['$http', 'md5'];
+
     function httpService($http, md5) {
         const service = {};
 
@@ -24,10 +28,13 @@
         service.groupUpdateName             = _groupUpdateName;
         service.groupInsertToOpenedList     = _groupInsertToOpenedList;
         service.groupRemoveFromOpenedList   = _groupRemoveFromOpenedList;
+        service.groupUpdateUnreadMessages      = _groupUpdateUnreadMessages;
 
         return service;
 
         // private functions
+
+        //Functions for account managing
         function _accountGetUserInfo(uEmail) {
             return $http({
                 method          : 'GET',
@@ -58,7 +65,8 @@
                 url             : '/account/authenticate',
                 params          : {
                                     uEmail      : user.uEmail,
-                                    uPassword   : md5.createHash(user.uPassword)
+                                    uPassword   : md5.createHash(user.uPassword),
+                                    rememberMe  : user.rememberMe
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -105,7 +113,7 @@
             }).then(handleSuccess, handleError('Error updating nickname and password'));
         }
 
-
+        //Functions for group managing
         function _groupAddData(data) {
             return $http({
                 method          : 'POST',
@@ -121,12 +129,14 @@
             }).then(handleSuccess,handleError('Cant push data'));
         }
 
-        function _groupRetrieveData(gID) {
+        function _groupRetrieveData(gID, afterFrom, limitVal) {
             return $http({
                 method          : 'GET',
                 url             : '/group/retrieve/data',
                 params          : {
-                                    gID : gID
+                                    gID         : gID,
+                                    afterFrom   : afterFrom,
+                                    limitVal    : limitVal
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -157,12 +167,13 @@
             }).then(handleSuccess,handleError('Cant create group \'' + gName + '\''));
         }
 
-        function _groupDelete(gID) {
+        function _groupDelete(gID, gName) {
             return $http({
                 method          : 'GET',
                 url             : '/group/delete',
                 params          : {
-                                    gID : gID
+                                    gID     : gID,
+                                    gName   : gName
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -204,6 +215,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Cant remove on opened group list'));
+        }
+
+        function _groupUpdateUnreadMessages(gID, newVal) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/update/unreadMessages',
+                data            : {
+                    gID     : gID,
+                    unread  : newVal
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
         }
 
         function handleSuccess(res) {

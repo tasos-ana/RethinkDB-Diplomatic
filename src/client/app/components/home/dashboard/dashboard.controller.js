@@ -5,29 +5,48 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout', 'notify'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout, notify) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout', 'ngNotify', '$window'];
+    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout, ngNotify, $window) {
         const vm = this;
 
         vm.uploadData       = uploadData;
         vm.groupCreate      = groupCreate;
+        vm.openGroupCreate  = openGroupCreate;
         vm.groupOpen        = groupOpen;
         vm.groupClose       = groupClose;
         vm.groupSetActive   = groupSetActive;
+        vm.loadMoreData     = loadMoreData;
 
         (function initController() {
-            notify.config({duration:'5000', position:'center'});
-            socketService.connect();
+            socketService.connectSocket();
+
+            ngNotify.config({
+                sticky   : false,
+                duration : 5000
+            });
+            ngNotify.addType('notice-success','bg-success text-dark');
+            ngNotify.addType('notice-danger','bg-danger text-light');
+            ngNotify.addType('notice-info','bg-info text-dark');
+
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
             vm.myGroupsExpand = false;
-            $rootScope.alert = {};
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
                 dashboardService.retrieveGroupsData();
             }
+
+            socketService.onAccountNameChange();
+            socketService.onAccountPasswordChange();
+
+            socketService.onGroupCreate();
+            socketService.onGroupDelete();
+            socketService.onGroupNameChange();
+            socketService.onGroupDataBadge();
+            socketService.onGroupDataChange();
+
         })();
 
         function uploadData(group) {
@@ -61,7 +80,8 @@
 
         function groupCreate(isValid) {
             if(isValid){
-                notify({ message:"Group creating, please wait...", classes :'bg-dark border-info text-info', duration:'3000'});
+                ngNotify.dismiss();
+                ngNotify.set("Group creating, please wait...", "notice-info");
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         vm.group.creating = true;
@@ -70,10 +90,12 @@
                                 if(response.success){
                                     if(!groupExists(response.data.gID)){
                                         $rootScope.user.groupsList.push(response.data.gID);
-                                        $rootScope.user.groupsNames[response.data.gID] = vm.group.name;
-                                        groupOpen(response.data.gID);
+                                        $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
                                     }
-                                    notify({ message:"New group created successfully with name: "+ vm.group.name, classes :'bg-dark border-success text-success'});
+                                    $rootScope.user.unreadMessages[response.data.gID] = 0;
+                                    groupOpen(response.data.gID);
+                                    ngNotify.dismiss();
+                                    ngNotify.set("New group created successfully with name: " + response.data.gName, "notice-success");
                                     vm.group.creating = false;
                                     vm.group.name = '';
                                     vm.createGroupFadeIn=false;
@@ -83,17 +105,24 @@
                 });
             }
         }
+        
+        function openGroupCreate() {
+            vm.createGroupFadeIn=true;
+            $window.document.getElementById('createGroupInput').focus();
+        }
 
         function groupOpen(gID) {
+            socketService.emitOpenGroup(gID);
+
             $timeout(function () {
                 $rootScope.$apply(function () {
                     const index = $rootScope.user.openedGroupsList.indexOf(gID);
-                    if (index < 0) {
+                    if (index === -1) {
                         httpService.groupInsertToOpenedList(gID)
                             .then(function (response) {
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(gID);
-                                    dashboardService.retrieveSingleGroupData(gID);
+                                    dashboardService.retrieveSingleGroupData(gID, Date.now(), 10);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.msg;
@@ -101,12 +130,14 @@
                                 }
                             });
                     }
-                    $rootScope.user.activeGroup = gID;
+                    groupSetActive(gID);
                 });
             });
         }
 
         function groupClose(gID) {
+            socketService.emitCloseGroup(gID);
+
             $timeout(function () {
                 $rootScope.$apply(function () {
                     httpService.groupRemoveFromOpenedList(gID)
@@ -135,8 +166,28 @@
 
         function groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
-        }
+            if($rootScope.user.unreadMessages[gID] === undefined){
+                $rootScope.user.unreadMessages[gID] = 0;
+            }
+            const prevVal = $rootScope.user.unreadMessages[gID];
+            $rootScope.user.unreadMessages.total -= prevVal;
+            if(prevVal!==0) {
+                httpService.groupUpdateUnreadMessages(gID, $rootScope.user.unreadMessages[gID]).then(function () {
+                });
+            }
+            $timeout(function () {
+                $rootScope.user.unreadMessages[gID] = 0;
+            },4000);
 
+        }
+        
+        function loadMoreData(gID) {
+            let afterFrom, limitVal;
+            limitVal = $rootScope.user.openedGroupsData[gID].data.length;
+            afterFrom = $rootScope.user.openedGroupsData[gID].data[0].time;
+
+            dashboardService.retrieveMoreGroupData(gID, afterFrom, limitVal+limitVal/2);
+        }
 
         function groupExists(gID) {
             const index = $rootScope.user.groupsList.indexOf(gID);

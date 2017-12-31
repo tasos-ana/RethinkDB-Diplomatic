@@ -11,14 +11,11 @@
                     <li class="breadcrumb-item active text-secondary h5">Dashboard</li>
                 </ol>
             </div>
-        </div><br><br>
-        <section class="no-padding-top no-padding-bottom">
+        </div><br>
+        <section class="no-padding no-margin">
             <!--DASHBOARD SECTION-->
             <div class="container-fluid">
-                <div class="block" >
-                    <div class="bg-success border-primary text-dark fade show text-center" ng-show="alert.enabled">
-                        <strong>Success!</strong> {{alert.msg}} <strong>{{alert.name}}</strong>
-                    </div>
+                <div class="block">
                     <div class="title" ng-show="user.openedGroupsList.length === 0">
                         <p class="text-center text-danger"><strong>No group opened yet.</strong></p>
                     </div>
@@ -27,7 +24,8 @@
                         <ul class="nav nav-tabs">
                             <li class="nav-item" ng-repeat="gID in user.openedGroupsList" ng-click="vm.groupSetActive(gID)">
                                 <a class="nav-link" ng-class="{'active' : user.activeGroup === gID}" data-toggle="tab" ng-href="#{{gID}}">
-                                    <button class="close closeTab" type="button" ng-click="vm.groupClose(gID)">×</button>{{user.openedGroupsData[gID].name}}
+                                    <button class="close closeTab" type="button" ng-click="vm.groupClose(gID)">×</button>
+                                    {{user.openedGroupsData[gID].name}}
                                 </a>
                             </li>
                         </ul>
@@ -47,7 +45,8 @@
                                 </div>
                                 <div class="messages-block block">
                                     <div class="messages">
-                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse">
+                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
+                                                ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}">
                                             <div class="content">
                                                 <strong class="d-block">{{user.nickname}}</strong>
                                                 <span class="d-block">{{gData.data}}</span>
@@ -55,6 +54,11 @@
                                             </div>
                                         </a>
                                     </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5"></div>
+                                    <a href="" class="col-sm-3 border-primary text-primary" ng-click="vm.loadMoreData(gID)" ng-hide="user.openedGroupsData[gID].noMoreData"> Load more messages ...</a>
+                                    <div class="col-sm-4"></div>
                                 </div>
                             </div>
                         </div>
