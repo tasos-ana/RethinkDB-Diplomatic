@@ -122,7 +122,7 @@
                             .then(function (response) {
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(gID);
-                                    dashboardService.retrieveSingleGroupData(gID);
+                                    dashboardService.retrieveSingleGroupData(gID, Date.now(), 10);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.msg;
@@ -166,7 +166,9 @@
 
         function groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
-
+            if($rootScope.user.unreadMessages[gID] === undefined){
+                $rootScope.user.unreadMessages[gID] = 0;
+            }
             const prevVal = $rootScope.user.unreadMessages[gID];
             $rootScope.user.unreadMessages.total -= prevVal;
             if(prevVal!==0) {
