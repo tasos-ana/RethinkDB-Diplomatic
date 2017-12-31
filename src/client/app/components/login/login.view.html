@@ -49,8 +49,17 @@
                                     <label for="login-password" class="label-material"
                                            ng-class="{'active' : loginForm.loginPassword.focus}">Password</label>
                                 </div>
-                                <button id="login" type="submit" class="btn btn-primary"
-                                        ng-disabled="vm.dataLoading">Login</button>
+                                <div class="row form-group">
+                                    <div class="col-sm-8"></div>
+                                    <div class="col-sm-4">
+                                        <input id="option" type="checkbox" value="false" ng-model="vm.user.rememberMe">
+                                        <label for="option">Remember me</label>
+                                    </div>
+                                </div>
+                                <button id="login" type="submit" class="btn btn-primary items-align-right"
+                                        ng-disabled="vm.dataLoading">Login
+                                </button>
+
                             </form>
                             <small>Do not have an account? </small><a href="/register" class="signup">Sign up</a>
                         </div>

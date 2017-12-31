@@ -59,7 +59,8 @@
                 url             : '/account/authenticate',
                 params          : {
                                     uEmail      : user.uEmail,
-                                    uPassword   : md5.createHash(user.uPassword)
+                                    uPassword   : md5.createHash(user.uPassword),
+                                    rememberMe  : user.rememberMe
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'

@@ -46,6 +46,9 @@
         })();
 
         function login() {
+            if(vm.user.rememberMe === undefined){
+                vm.user.rememberMe = false;
+            }
             vm.dataLoading = true;
             httpService.accountAuthenticate(vm.user)
                 .then(function (response) {

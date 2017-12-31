@@ -28,7 +28,13 @@ router.route('/authenticate')
                 uEmail      : req.query.uEmail,
                 uPassword   : req.query.uPassword
             }));
-            res.cookie('userCredentials', cookie);
+            if(req.query.rememberMe){
+                let cookieExp = new Date();
+                cookieExp.setDate(cookieExp.getDate() + 7);
+                res.cookie('userCredentials', cookie, { maxAge : cookieExp});
+            }else{
+                res.cookie('userCredentials', cookie);
+            }
             res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
         });
     });
