@@ -171,9 +171,23 @@ const groupService = function () {
                         connection.close();
                         return callback(true, 'Error happens while update user groups');
                     }
-                    debug.correct('New group <' + details.gID + '> added successful on user <' + details.uEmail + '>');
-                    callback(null, {gID : details.gID, gName : gName});
+                    callback(null, details, connection);
                 });
+            },
+            /**
+             * Stage 5:
+             * Create index for group on field time
+             * @param details
+             * @param connection
+             * @param callback
+             */
+            function (details, connection, callback) {
+                rethinkdb.table(details.gID).indexCreate('time')
+                    .run(connection, function (err,result) {
+                        connection.close();
+                        debug.correct('New group <' + details.gID + '> added successful on user <' + details.uEmail + '>');
+                        callback(null, {gID : details.gID, gName : gName});
+                    });
             }
         ], function (err, data) {
             callback(err !== null, data);
@@ -183,12 +197,12 @@ const groupService = function () {
     /**
      * Retrieve group data from database
      *
-     * @param gID       id of group
+     * @param details   contains gID, afterFrom, limitVal
      * @param cookie    Authorization field from request, required for validation
      * @param callback
      * @private
      */
-    function _retrieveGroupData(gID, cookie, callback) {
+    function _retrieveGroupData(details, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -223,7 +237,7 @@ const groupService = function () {
                                 connection.close();
                                 return callback(true,'Email do not exists');
                             }
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(gID) === -1){
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
                                 debug.error('Account.service@_retrieveGroupData: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -243,10 +257,10 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('groups').get(convertGroupID(gID, '-'))('name')
+                rethinkdb.table('groups').get(convertGroupID(details.gID, '-'))('name')
                     .run(connection, function (err, gName) {
                         if(err){
-                            debug.error('Account.service@_retrieveGroupData: cant retrieve group <' + gID + '> name');
+                            debug.error('Account.service@_retrieveGroupData: cant retrieve group <' + details.gID + '> name');
                             connection.close();
                             return callback(true, 'Error happens while retrieving group name');
                         }
@@ -260,20 +274,20 @@ const groupService = function () {
              * @param callback
              */
             function (connection, gName, callback) {
-                rethinkdb.table(gID).orderBy("time")
+                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).filter(rethinkdb.row('time').lt(Number(details.afterFrom))).limit(Number(details.limitVal))
                     .run(connection,function (err,cursor) {
                         connection.close();
                         if(err){
-                            debug.error('Group.service@_retrieveGroupData: cant retrieve group <' + gID + '> data');
+                            debug.error('Group.service@_retrieveGroupData: cant retrieve group <' + details.gID + '> data');
                             return callback(true, 'Error happens while getting group data');
                         }
                         cursor.toArray(function(err, results) {
                             if (err){
-                                debug.error('Group.service@_retrieveGroupData: cant convert group <' + gID + '> data to array');
+                                debug.error('Group.service@_retrieveGroupData: cant convert group <' + details.gID + '> data to array');
                                 return callback(true, 'Error happens while converting data to array');
                             }
-                            debug.correct('Retrieve data from group <' + gID + '> successful');
-                            callback(null,{id : gID, name : gName, value: results});
+                            debug.correct('Retrieve data from group <' + details.gID + '> successful');
+                            callback(null,{id : details.gID, name : gName, value: results});
                         });
                     });
             }

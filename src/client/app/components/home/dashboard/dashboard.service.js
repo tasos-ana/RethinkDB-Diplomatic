@@ -11,6 +11,7 @@
 
         service.retrieveGroupsData      = _retrieveGroupsData;
         service.retrieveSingleGroupData = _retrieveSingleGroupData;
+        service.retrieveMoreGroupData   = _retrieveMoreGroupData;
         service.retrieveSingleGroupName = _retrieveSingleGroupName;
         service.configureDate           = configureDate;
 
@@ -19,11 +20,11 @@
         function _retrieveGroupsData() {
             for(let i = 0; i<$rootScope.user.openedGroupsList.length; ++i){
                 const gID  = $rootScope.user.openedGroupsList[i];
-                _retrieveSingleGroupData(gID);
+                _retrieveSingleGroupData(gID, Date.now(), 10);
             }
         }
 
-        function _retrieveSingleGroupData(id) {
+        function _retrieveSingleGroupData(id, afterFrom, limitVal) {
             let retrieveData = false;
             if($rootScope.user.openedGroupsData[id] === undefined){
                 $rootScope.user.openedGroupsData[id] = { };
@@ -39,22 +40,36 @@
             }
 
             if(retrieveData){
-                $rootScope.user.openedGroupsData[id].dataLoading = true;
-                httpService.groupRetrieveData(id)
-                    .then(function (response) {
-                        if(response.success){
-                            $rootScope.user.openedGroupsData[response.data.id].id = response.data.id;
-                            $rootScope.user.openedGroupsData[response.data.id].name = response.data.name;
-                            $rootScope.user.openedGroupsData[response.data.id].data = response.data.value;
-                            prepareGroup(response.data.id);
-                            $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
-                        }else{
-                            $rootScope.loginCauseError.enabled = true;
-                            $rootScope.loginCauseError.msg = response.msg;
-                            $location.path('/login');
-                        }
-                    });
+                _retrieveMoreGroupData(id,afterFrom,limitVal);
             }
+        }
+
+        function _retrieveMoreGroupData(id, afterFrom, limitVal) {
+            $rootScope.user.openedGroupsData[id].dataLoading = true;
+            httpService.groupRetrieveData(id, afterFrom, limitVal)
+                .then(function (response) {
+                    if(response.success){
+                        $rootScope.user.openedGroupsData[response.data.id].id = response.data.id;
+                        $rootScope.user.openedGroupsData[response.data.id].name = response.data.name
+                        let limitVal = 0;
+                        if($rootScope.user.openedGroupsData[response.data.id].data === undefined){
+                            $rootScope.user.openedGroupsData[response.data.id].data = [];
+                        }else{
+                            limitVal = $rootScope.user.openedGroupsData[response.data.id].data.length;
+                            limitVal += limitVal/2;
+                        }
+                        $rootScope.user.openedGroupsData[response.data.id].data = $rootScope.user.openedGroupsData[response.data.id].data.concat(response.data.value);
+                        if(response.data.value.length < limitVal){
+                            $rootScope.user.openedGroupsData[response.data.id].noMoreData = true;
+                        }
+                        prepareGroup(response.data.id);
+                        $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
+                    }else{
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.msg;
+                        $location.path('/login');
+                    }
+                });
         }
 
         function _retrieveSingleGroupName(id) {

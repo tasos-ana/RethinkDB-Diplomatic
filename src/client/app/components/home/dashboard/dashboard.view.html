@@ -15,10 +15,7 @@
         <section class="no-padding no-margin">
             <!--DASHBOARD SECTION-->
             <div class="container-fluid">
-                <div class="block" >
-                    <div class="bg-success border-primary text-dark fade show text-center" ng-show="alert.enabled">
-                        <strong>Success!</strong> {{alert.msg}} <strong>{{alert.name}}</strong>
-                    </div>
+                <div class="block">
                     <div class="title" ng-show="user.openedGroupsList.length === 0">
                         <p class="text-center text-danger"><strong>No group opened yet.</strong></p>
                     </div>
@@ -48,7 +45,7 @@
                                 </div>
                                 <div class="messages-block block">
                                     <div class="messages">
-                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
+                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data"
                                                 ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}">
                                             <div class="content">
                                                 <strong class="d-block">{{user.nickname}}</strong>
@@ -57,6 +54,11 @@
                                             </div>
                                         </a>
                                     </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5"></div>
+                                    <a href="" class="col-sm-3 border-primary text-primary" ng-click="vm.loadMoreData(gID)" ng-hide="user.openedGroupsData[gID].noMoreData"> Load more messages ...</a>
+                                    <div class="col-sm-4"></div>
                                 </div>
                             </div>
                         </div>

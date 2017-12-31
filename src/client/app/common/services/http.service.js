@@ -122,12 +122,14 @@
             }).then(handleSuccess,handleError('Cant push data'));
         }
 
-        function _groupRetrieveData(gID) {
+        function _groupRetrieveData(gID, afterFrom, limitVal) {
             return $http({
                 method          : 'GET',
                 url             : '/group/retrieve/data',
                 params          : {
-                                    gID : gID
+                                    gID         : gID,
+                                    afterFrom   : afterFrom,
+                                    limitVal    : limitVal
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'

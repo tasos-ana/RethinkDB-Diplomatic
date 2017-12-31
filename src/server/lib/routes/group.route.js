@@ -14,7 +14,7 @@ router.route('/create')
 
 router.route('/retrieve/data')
     .get(function (req,res) {
-        groupService.retrieveGroupData(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
+        groupService.retrieveGroupData({gID : req.query.gID, afterFrom : req.query.afterFrom, limitVal : req.query.limitVal}, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

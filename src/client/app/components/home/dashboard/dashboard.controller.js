@@ -15,6 +15,7 @@
         vm.groupOpen        = groupOpen;
         vm.groupClose       = groupClose;
         vm.groupSetActive   = groupSetActive;
+        vm.loadMoreData     = loadMoreData;
 
         (function initController() {
             socketService.connectSocket();
@@ -31,7 +32,6 @@
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
             vm.myGroupsExpand = false;
-            $rootScope.alert = {};
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
@@ -177,6 +177,14 @@
                 $rootScope.user.unreadMessages[gID] = 0;
             },4000);
 
+        }
+        
+        function loadMoreData(gID) {
+            let afterFrom, limitVal;
+            limitVal = $rootScope.user.openedGroupsData[gID].data.length;
+            afterFrom = $rootScope.user.openedGroupsData[gID].data[limitVal-1].time;
+
+            dashboardService.retrieveMoreGroupData(gID, afterFrom, limitVal);
         }
 
         function groupExists(gID) {

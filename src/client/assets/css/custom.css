@@ -16,7 +16,7 @@ body{
 }
 
 .tab-pane-scrollable{
-    max-height:450px;
+    max-height:520px;
     overflow-y: auto;
     width:100%;
 }
