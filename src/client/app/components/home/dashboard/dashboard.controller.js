@@ -184,9 +184,9 @@
         function loadMoreData(gID) {
             let afterFrom, limitVal;
             limitVal = $rootScope.user.openedGroupsData[gID].data.length;
-            afterFrom = $rootScope.user.openedGroupsData[gID].data[limitVal-1].time;
+            afterFrom = $rootScope.user.openedGroupsData[gID].data[0].time;
 
-            dashboardService.retrieveMoreGroupData(gID, afterFrom, limitVal);
+            dashboardService.retrieveMoreGroupData(gID, afterFrom, limitVal+limitVal/2);
         }
 
         function groupExists(gID) {

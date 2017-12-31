@@ -82,8 +82,7 @@
                     $rootScope.$apply(function () {
                         data.value.date = dashboardService.configureDate(new Date(), new Date(data.value.time));
                         if($rootScope.user.openedGroupsData[data.gID] !== undefined){
-                            // $rootScope.user.openedGroupsData[data.gID].data[$rootScope.user.openedGroupsData[data.gID].data.length] = data.value;
-                            $rootScope.user.openedGroupsData[data.gID].data.unshift(data.value);
+                            $rootScope.user.openedGroupsData[data.gID].data[$rootScope.user.openedGroupsData[data.gID].data.length] = data.value;
                         }
                     });
                 });

@@ -45,7 +45,7 @@
                                 </div>
                                 <div class="messages-block block">
                                     <div class="messages">
-                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data"
+                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
                                                 ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}">
                                             <div class="content">
                                                 <strong class="d-block">{{user.nickname}}</strong>

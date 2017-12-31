@@ -46,19 +46,22 @@
 
         function _retrieveMoreGroupData(id, afterFrom, limitVal) {
             $rootScope.user.openedGroupsData[id].dataLoading = true;
-            httpService.groupRetrieveData(id, afterFrom, limitVal)
+            httpService.groupRetrieveData(id, afterFrom, Math.floor(limitVal))
                 .then(function (response) {
                     if(response.success){
                         $rootScope.user.openedGroupsData[response.data.id].id = response.data.id;
-                        $rootScope.user.openedGroupsData[response.data.id].name = response.data.name
+                        $rootScope.user.openedGroupsData[response.data.id].name = response.data.name;
                         let limitVal = 0;
+                        response.data.value.reverse();
                         if($rootScope.user.openedGroupsData[response.data.id].data === undefined){
                             $rootScope.user.openedGroupsData[response.data.id].data = [];
+                            $rootScope.user.openedGroupsData[response.data.id].data = response.data.value;
                         }else{
                             limitVal = $rootScope.user.openedGroupsData[response.data.id].data.length;
                             limitVal += limitVal/2;
+                            $rootScope.user.openedGroupsData[response.data.id].data = response.data.value.concat($rootScope.user.openedGroupsData[response.data.id].data);
                         }
-                        $rootScope.user.openedGroupsData[response.data.id].data = $rootScope.user.openedGroupsData[response.data.id].data.concat(response.data.value);
+                        limitVal = Math.floor(limitVal);
                         if(response.data.value.length < limitVal){
                             $rootScope.user.openedGroupsData[response.data.id].noMoreData = true;
                         }
