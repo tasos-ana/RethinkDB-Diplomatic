@@ -938,6 +938,12 @@ const groupService = function () {
         });
     }
 
+    /**
+     * Converting in a give ID the - with _ and reverse
+     * @param id
+     * @param to
+     * @returns {*}
+     */
     function convertGroupID(id, to){
         let retID;
         if(to === '-'){

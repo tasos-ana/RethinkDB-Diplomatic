@@ -65,6 +65,12 @@ const databaseService = function () {
         ], function(){});
     }
 
+    /**
+     * Create a basic table that record in config file
+     * @param name  group name
+     * @param key   primary key name
+     * @private
+     */
     function _createTable(name, key) {
         async.waterfall([
             /**
@@ -102,6 +108,10 @@ const databaseService = function () {
         ], function() {});
     }
 
+    /**
+     * Create index on groups for user and name field
+     * @private
+     */
     function _createGroupsIndex() {
         async.waterfall([
             /**

@@ -1,3 +1,6 @@
+/**
+ * Angular module that handle event from socket and render it on client
+ */
 (function () {
     'use strict';
 

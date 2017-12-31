@@ -1,3 +1,6 @@
+/**
+ * Angular module that send http request on server
+ */
 (function () {
     'use strict';
 
@@ -6,6 +9,7 @@
         .factory('httpService', httpService);
 
     httpService.$inject = ['$http', 'md5'];
+
     function httpService($http, md5) {
         const service = {};
 
@@ -29,6 +33,8 @@
         return service;
 
         // private functions
+
+        //Functions for account managing
         function _accountGetUserInfo(uEmail) {
             return $http({
                 method          : 'GET',
@@ -107,7 +113,7 @@
             }).then(handleSuccess, handleError('Error updating nickname and password'));
         }
 
-
+        //Functions for group managing
         function _groupAddData(data) {
             return $http({
                 method          : 'POST',

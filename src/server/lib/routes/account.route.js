@@ -28,11 +28,12 @@ router.route('/authenticate')
                 uEmail      : req.query.uEmail,
                 uPassword   : req.query.uPassword
             }));
+            //If rememberMe is true we add 7days on cookie Expired
             if(req.query.rememberMe){
                 let cookieExp = new Date();
                 cookieExp.setDate(cookieExp.getDate() + 7);
                 res.cookie('userCredentials', cookie, { maxAge : cookieExp});
-            }else{
+            }else{//else we dont add time, this cookie will expired when browser close
                 res.cookie('userCredentials', cookie);
             }
             res.json({'success' : true, 'message' : 'Success', 'data' : responseData});

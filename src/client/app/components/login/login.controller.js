@@ -1,3 +1,6 @@
+/**
+ * Module with functions that required on login Page
+ */
 (function () {
     'use strict';
 

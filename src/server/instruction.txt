@@ -1,5 +1,6 @@
    install dependencies:
      $ cd server && npm install
+     $ cd client/assets && npm install
 
    run the app:
-     $ DEBUG=pushup:* npm start
+     $ sudo DEBUG=pushup:* npm start

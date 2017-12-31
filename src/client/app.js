@@ -55,10 +55,11 @@
     run.$inject = ['$rootScope', '$location', "$cookies"];
     function run($rootScope, $location, $cookies) {
 
+        //Define struct that used when navigated to login page cause of error
         if($rootScope.loginCauseError === undefined){
             $rootScope.loginCauseError = {};
         }
-
+        //Define struct that used when navigated to login page cause of success, like register
         if($rootScope.loginCauseSuccess === undefined){
             $rootScope.loginCauseSuccess = {};
         }
@@ -67,6 +68,7 @@
             const loggedIn = $cookies.get('userCredentials');
             if(loggedIn !== undefined){
                 $rootScope.loginStatus = true;
+                //if user having cookie we navigate him to home if he is trying to access register page
                 let restrictedPage = $.inArray($location.path(), ['/register']) !==  -1;
                 if(restrictedPage) {
                     $location.path('/home');

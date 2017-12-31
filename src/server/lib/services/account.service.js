@@ -249,6 +249,7 @@ const accountService = function () {
     }
 
     /**
+     * We update account nickname with new
      *
      * @param details   contains {curPassword, nickname:newNickname}
      * @param cookie    Authorization field from request, required for validation
@@ -335,7 +336,7 @@ const accountService = function () {
     }
 
     /**
-     *
+     * Update account password with new
      * @param details   contains {curPassword, password : newPassword}
      * @param cookie    Authorization field from request, required for validation
      * @param callback
@@ -425,6 +426,7 @@ const accountService = function () {
     }
 
     /**
+     * Update nickname and password
      *
      * @param details   contains {curPassword, nickname : newNickname, password : newPassword}
      * @param cookie    Authorization field from request, required for validation
