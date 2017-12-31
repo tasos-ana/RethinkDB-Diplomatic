@@ -72,12 +72,11 @@ const accountService = function () {
 
     /**
      * Authenticate user details providing with database user details
-     * @param uEmail     user email
-     * @param uPassword  user password
+     * @param details    contains uEmail and uPassword
      * @param callback
      * @private
      */
-    function _authenticate(uEmail, uPassword, callback) {
+    function _authenticate(details, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -98,23 +97,23 @@ const accountService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('accounts').get(uEmail)
+                rethinkdb.table('accounts').get(details.uEmail)
                     .run(connection,function (err,result) {
                         connection.close();
                         if(err){
-                            debug.error('Account.service@authenticate: cant found on database the user <' + uEmail + '>');
+                            debug.error('Account.service@authenticate: cant found on database the user <' + details.uEmail + '>');
                             return callback(true, 'Error happens while getting user details');
                         }
 
                         if(result === null){
-                            debug.status('User <' + uEmail + '> not found on database');
+                            debug.status('User <' + details.uEmail + '> not found on database');
                             return callback(true, 'User not found');
                         }else{
-                            if(result.password !== uPassword){
-                                debug.status('User <' + uEmail + '> and password not matching');
+                            if(result.password !== details.uPassword){
+                                debug.status('User <' + details.uEmail + '> and password not matching');
                                 return callback(true, 'Email or password its wrong');
                             }else{
-                                debug.correct('User <' + uEmail + '> authenticated');
+                                debug.correct('User <' + details.uEmail + '> authenticated');
                                 callback(null, {
                                         email       : result.email,
                                         nickname    : result.nickname,

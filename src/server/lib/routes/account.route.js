@@ -17,7 +17,7 @@ router.route('/create')
 
 router.route('/authenticate')
     .get(function (req,res) {
-        accountService.authenticate(req.query.uEmail, req.query.uPassword, function (err,responseData) {
+        accountService.authenticate({uEmail : req.query.uEmail, uPassword : req.query.uPassword}, function (err,responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
