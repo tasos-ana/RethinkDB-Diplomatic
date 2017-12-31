@@ -6,6 +6,7 @@
         .directive('compareTo', compareTo)
         .directive('emailExists', emailExists);
 
+    //Comparing two password that user give
     compareTo.$inject = [];
     function compareTo() {
         return {
@@ -28,6 +29,7 @@
         };
     }
 
+    //Checking if email that user type it's exists
     emailExists.$inject = ['httpService', '$timeout'];
     function emailExists(httpService, $timeout) {
         return{

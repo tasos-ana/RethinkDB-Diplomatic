@@ -16,8 +16,8 @@
 
         (function initController() {
             vm.dataLoading = false;
-            vm.loginCauseError ={};
-            vm.loginCauseSuccess ={};
+            vm.loginCauseError = {};
+            vm.loginCauseSuccess = {};
 
             ngNotify.config({
                 sticky  : false,
