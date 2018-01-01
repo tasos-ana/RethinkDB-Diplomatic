@@ -45,9 +45,9 @@
                 templateUrl: './app/components/login/login.view.html',
                 controllerAs: 'vm'
             })
-            .when('/register',{
-                controller: 'RegisterController',
-                templateUrl: './app/components/register/register.view.html',
+            .when('/signup',{
+                controller: 'SignupController',
+                templateUrl: './app/components/signup/signup.view.html',
                 controllerAs: 'vm'
             }).otherwise({redirectTo: '/'});
     }
@@ -69,7 +69,7 @@
             if(loggedIn !== undefined){
                 $rootScope.loginStatus = true;
                 //if user having cookie we navigate him to home if he is trying to access register page
-                let restrictedPage = $.inArray($location.path(), ['/register']) !==  -1;
+                let restrictedPage = $.inArray($location.path(), ['/signup']) !==  -1;
                 if(restrictedPage) {
                     $location.path('/home');
                 }
