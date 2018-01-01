@@ -21,8 +21,10 @@ body{
     width:100%;
 }
 
-.logo-size{
-    max-height: 160px;
+@media (max-width: 320px) {
+    .logo-size{
+        max-height: 120px;
+    }
 }
 
 .bg-transparent{
