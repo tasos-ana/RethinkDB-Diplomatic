@@ -38,7 +38,11 @@
                                         <input type="text" class="form-control" placeholder="Type something..."
                                                ng-model="user.openedGroupsData[gID].upload.data">
                                         <span class="input-group-btn">
-                                            <button type="button" class="btn btn-primary" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
+                                            <button type="button" class="btn btn-primary"
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData">
+                                                    <i class="fa fa-paperclip"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
                                                     ng-disabled="user.openedGroupsData[gID].upload.uploadData">UP</button>
                                         </span>
                                     </div>

@@ -107,7 +107,7 @@
                                 $rootScope.user.unreadMessages[data.gID] += 1;
                             }
 
-                            httpService.groupUpdateUnreadMessages(data.gID,$rootScope.user.unreadMessages[data.gID]).then(function () {});
+                            httpService.groupUpdateUnreadMessages(data.gID, $rootScope.user.unreadMessages[data.gID]).then(function () {});
                             if($rootScope.user.unreadMessages.total !== undefined){
                                 $rootScope.user.unreadMessages.total+=1;
                             }else{

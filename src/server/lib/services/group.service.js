@@ -711,7 +711,7 @@ const groupService = function () {
                                 return callback(true,'Email do not exists');
                             }
                             if(cookieDetails.uPassword !== result.password){
-                                debug.error('Group.service@insertOpenedGroup:: user details and cookie isnt match');
+                                debug.error('Group.service@insertOpenedGroup:: user details and cookie isnt match (pw dont matched) ');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -723,7 +723,7 @@ const groupService = function () {
                         });
 
                 }catch (e){
-                    debug.error('Group.service@insertOpenedGroup: user details and cookie isnt match');
+                    debug.error('Group.service@insertOpenedGroup: user details and cookie isnt match (catch)');
                     connection.close();
                     return callback(true,'Invalid cookie');
                 }
@@ -737,17 +737,17 @@ const groupService = function () {
             function (details, connection, callback) {
                 rethinkdb.table('accounts').get(details.uEmail)('openedGroups').offsetsOf(details.gID)
                     .run(connection, function (err, result) {
+                        details.insertGroup = true;
                        if(err){
                            connection.close();
                            debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
                            return callback(true, 'Error happens while update user groups');
                        }
                        if(result.length!==0){
-                           connection.close();
+                           details.insertGroup = false;
                            debug.correct('Group <' + details.gID + '> already opened for user <' + details.uEmail + '>');
-                           return callback(null,{});
                        }
-                        callback(null, details, connection);
+                       callback(null, details, connection);
                     });
             },
             /**
@@ -757,17 +757,21 @@ const groupService = function () {
              * @param callback
              */
             function(details, connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail).update({
-                    openedGroups: rethinkdb.row('openedGroups').append(details.gID)
-                }).run(connection, function (err, result) {
-                    connection.close();
-                    if (err) {
-                        debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
-                        return callback(true, 'Error happens while update user groups');
-                    }
-                    debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
-                    callback(null, {});
-                });
+                if(details.insertGroup) {
+                    rethinkdb.table('accounts').get(details.uEmail).update({
+                        openedGroups: rethinkdb.row('openedGroups').append(details.gID)
+                    }).run(connection, function (err, result) {
+                        connection.close();
+                        if (err) {
+                            debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
+                            return callback(true, 'Error happens while update user groups');
+                        }
+                        debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
+                        callback(null, {gID: details.gID});
+                    });
+                }else{
+                    callback(null, {gID: details.gID});
+                }
             }
         ], function (err, data) {
             callback(err !== null, data);
@@ -848,7 +852,7 @@ const groupService = function () {
                     if (err) {
                         debug.correct('Group <' + details.gID + '> already closed for user <' + details.uEmail + '>');
                     }else {
-                        debug.correct('Group <' + details.gID + '> opened successful on user <' + details.uEmail + '>');
+                        debug.correct('Group <' + details.gID + '> closed successful on user <' + details.uEmail + '>');
                     }
                     callback(null, {});
                 });
