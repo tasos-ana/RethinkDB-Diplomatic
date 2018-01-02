@@ -437,19 +437,36 @@ const groupService = function () {
              * @param callback
              */
             function(connection,callback) {
-                rethinkdb.table(details.gID).insert({
-                    'data' : details.data,
-                    'type' : details.type,
-                    'time' : details.time,
-                }).run(connection,function(err,result){
-                    connection.close();
-                    if(err){
-                        debug.error('Group.service@add: cant insert new data on group <' + details.gID + '>');
-                        return callback(true, 'Error happens while adding new data');
-                    }
-                    debug.correct('New data added on group <' + details.gID + '> successful');
-                    callback(null, result);
-                });
+                if(details.type === 'text'){
+                    rethinkdb.table(details.gID).insert({
+                        'data' : details.data,
+                        'type' : details.type,
+                        'time' : details.time,
+                    }).run(connection,function(err,result){
+                        connection.close();
+                        if(err){
+                            debug.error('Group.service@add: cant insert new data (text) on group <' + details.gID + '>');
+                            return callback(true, 'Error happens while adding new data');
+                        }
+                        debug.correct('New data (text) added on group <' + details.gID + '> successful');
+                        callback(null, result);
+                    });
+                }else{
+                    rethinkdb.table(details.gID).insert({
+                        'data' : details.data,
+                        'type' : details.type,
+                        'time' : details.time,
+                        'name' : details.name
+                    }).run(connection,function(err,result){
+                        connection.close();
+                        if(err){
+                            debug.error('Group.service@add: cant insert new data (file) on group <' + details.gID + '>');
+                            return callback(true, 'Error happens while adding new data');
+                        }
+                        debug.correct('New data (file) added on group <' + details.gID + '> successful');
+                        callback(null, result);
+                    });
+                }
             }
         ],function (err,data) {
             callback(err !== null, data);

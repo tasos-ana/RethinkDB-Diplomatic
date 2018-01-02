@@ -278,10 +278,11 @@ const syncService = function () {
                                     socket.emit('groupDataChange', {
                                         "gID"   : gID,
                                         "value" : {
-                                            "data": row.new_val.data,
-                                            "id": row.new_val.id,
-                                            "time": row.new_val.time,
-                                            "type": row.new_val.type
+                                            "data"  : row.new_val.data,
+                                            "id"    : row.new_val.id,
+                                            "time"  : row.new_val.time,
+                                            "type"  : row.new_val.type,
+                                            "name"  : row.new_val.name
                                         }
                                     });
                                 }
