@@ -110,7 +110,7 @@
                         return function(e) {
                             group.upload.uploadJobs += 1;
                             httpService.groupAddData({
-                                gID   : group.id,
+                                gID   : gID,
                                 type  : theFile.type,
                                 value : e.target.result,
                                 name  : theFile.name,
