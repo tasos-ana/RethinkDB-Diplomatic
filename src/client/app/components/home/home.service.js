@@ -28,7 +28,7 @@
                             cb();
                         }else{
                             $rootScope.loginCauseError.enabled = true;
-                            $rootScope.loginCauseError.msg = response.msg;
+                            $rootScope.loginCauseError.msg = response.message;
                             $location.path('/login');
                         }
                     });

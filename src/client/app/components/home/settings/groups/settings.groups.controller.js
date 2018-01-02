@@ -51,7 +51,7 @@
                             ngNotify.set("Group name changed successful to \""+ group.newName +"\"", "notice-success");
                         }else{
                             $rootScope.loginCauseError.enabled = true;
-                            $rootScope.loginCauseError.msg = response.msg;
+                            $rootScope.loginCauseError.msg = response.message;
                             $location.path('/login');
                         }
                     });
@@ -70,7 +70,7 @@
                         delete $rootScope.user.groupsNames[response.data.gID];
                     }else{
                         $rootScope.loginCauseError.enabled = true;
-                        $rootScope.loginCauseError.msg = response.msg;
+                        $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
                 });

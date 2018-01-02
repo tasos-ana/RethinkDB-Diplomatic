@@ -142,7 +142,7 @@
                                                        }
                                                    } else{
                                                        $rootScope.loginCauseError.enabled = true;
-                                                       $rootScope.loginCauseError.msg = response.msg;
+                                                       $rootScope.loginCauseError.msg = response.message;
                                                        $location.path('/login');
                                                    }
                                                });
@@ -151,8 +151,9 @@
                                            }
                                        }
                                    }else{
+                                       console.log(response);
                                        $rootScope.loginCauseError.enabled = true;
-                                       $rootScope.loginCauseError.msg = response.msg;
+                                       $rootScope.loginCauseError.msg = response.message;
                                        $location.path('/login');
                                    }
                                 });
@@ -221,7 +222,7 @@
                                     dashboardService.retrieveSingleGroupData(response.data.gID, Date.now(), 10);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
-                                    $rootScope.loginCauseError.msg = response.msg;
+                                    $rootScope.loginCauseError.msg = response.message;
                                     $location.path('/login');
                                 }
                             });
@@ -251,7 +252,7 @@
                                 }
                             } else{
                                 $rootScope.loginCauseError.enabled = true;
-                                $rootScope.loginCauseError.msg = response.msg;
+                                $rootScope.loginCauseError.msg = response.message;
                                 $location.path('/login');
                             }
                         });

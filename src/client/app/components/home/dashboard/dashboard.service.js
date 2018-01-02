@@ -69,7 +69,7 @@
                         $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
                     }else{
                         $rootScope.loginCauseError.enabled = true;
-                        $rootScope.loginCauseError.msg = response.msg;
+                        $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
                 });
@@ -82,7 +82,7 @@
                         $rootScope.user.groupsNames[response.data.id] = response.data.name;
                     }else{
                         $rootScope.loginCauseError.enabled = true;
-                        $rootScope.loginCauseError.msg = response.msg;
+                        $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
                 });
