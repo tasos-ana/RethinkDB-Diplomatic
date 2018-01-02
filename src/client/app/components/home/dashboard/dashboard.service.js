@@ -97,7 +97,8 @@
                 data    : '',
                 type    : '',
                 time    : '',
-                table   : ''
+                table   : '',
+                files   : []
             };
 
         }

@@ -19,7 +19,6 @@
         vm.loadMoreData     = loadMoreData;
 
         vm.openFileLoader   = openFileLoader;
-        vm.handleFileSelect = handleFileSelect;
 
         (function initController() {
             socketService.connectSocket();
@@ -35,6 +34,7 @@
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
+            vm.eventListener = {};
             vm.myGroupsExpand = false;
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
@@ -50,27 +50,34 @@
             socketService.onGroupNameChange();
             socketService.onGroupDataBadge();
             socketService.onGroupDataChange();
-
-            $timeout(function () {
-                $window.document.getElementById('files').addEventListener('change', handleFileSelect, false);
-            },2000);
-
         })();
 
-        function openFileLoader() {
+        function openFileLoader(gID) {
             $window.document.getElementById('files').click();
-        }
-        
-        function handleFileSelect(evt) {
-            const files = evt.target.files; // FileList object
 
-            // files is a FileList of File objects. List some properties.
-            let output = [];
-            for (let i = 0, f; f = files[i]; i++) {
-                output.push('<li><strong>', escape(f.name), '</strong> - ',
-                    parseFloat(Number(f.size/1000000)).toFixed(2), ' mb', '</li>');
+            if(vm.eventListener[gID] === undefined){
+                vm.eventListener[gID] = true;
+                $window.document.getElementById('files').addEventListener('change', function (evt) {
+                    handleFileSelect(evt,gID);
+                }, false);
             }
-            $window.document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+
+        }
+
+        function handleFileSelect(evt, gID) {
+            const files = evt.target.files;
+            // files is a FileList of File objects. List some properties.
+            $rootScope.user.openedGroupsData[gID].upload.files = [];
+            $timeout(function () {
+                $rootScope.$apply(function () {
+                    for (let i = 0, f; f = files[i]; i++) {
+                        $rootScope.user.openedGroupsData[gID].upload.files.push({
+                            name : escape(f.name),
+                            size : parseFloat(Number(f.size/1000000)).toFixed(2)
+                        });
+                    }
+                });
+            });
         }
 
         function uploadData(group) {
@@ -88,7 +95,8 @@
                                 data    : '',
                                 type    : '',
                                 time    : '',
-                                table   : ''
+                                table   : '',
+                                files   : []
                             };
                             group.upload.uploadData = false;
                         } else{
@@ -103,6 +111,9 @@
         }
         
         function clearUploadData(gID) {
+
+            $rootScope.user.openedGroupsData[gID].upload.files = [];
+
             $rootScope.user.openedGroupsData[gID].upload = {
                 data    : '',
                 type    : '',
