@@ -56,8 +56,8 @@
             $window.document.getElementById('files').click();
 
             if(vm.eventListener[gID] === undefined){
-                vm.eventListener[gID] = true;
                 $window.document.getElementById('files').addEventListener('change', function (evt) {
+                    vm.eventListener[gID] = evt;
                     handleFileSelect(evt,gID);
                 }, false);
             }
@@ -82,6 +82,29 @@
 
         function uploadData(group) {
             group.upload.uploadData = true;
+
+            if(group.upload.files.length>0){
+                const evt = vm.eventListener[group.id];
+                const files = evt.target.files; // FileList object
+
+                for (let i = 0, f; f = files[i]; i++) {
+                    var reader = new FileReader();
+
+                    // Closure to capture the file information.
+                    reader.onload = (function(theFile) {
+                        return function(e) {
+                            // Render thumbnail.
+                            console.log(escape(theFile.name));
+                            console.log(e.target.result);
+                        };
+                    })(f);
+
+                    // Read in the image file as a data URL.
+                    reader.readAsBinaryString(f);
+
+
+                }
+            }
 
             if(group.upload.data.length>0){
                 group.upload.gID = group.id;
