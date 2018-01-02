@@ -32,7 +32,7 @@ router.route('/retrieve/name')
         });
     });
 
-router.route('/add')
+router.route('/add/data')
     .post(function (req,res) {
         groupService.addData(req.body, req.cookies.userCredentials, function (err, responseData) {
             if(err){

@@ -5,8 +5,10 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout', 'ngNotify', '$window'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout, ngNotify, $window) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService',
+                                'homeService', 'socketService', '$timeout', 'ngNotify', '$window', 'FileSaver', 'Blob'];
+    function DashboardController($rootScope, $location, httpService, dashboardService,
+                                 homeService, socketService, $timeout, ngNotify, $window, FileSaver, Blob) {
         const vm = this;
 
         vm.uploadData       = uploadData;
@@ -19,6 +21,7 @@
         vm.loadMoreData     = loadMoreData;
 
         vm.openFileLoader   = openFileLoader;
+        vm.saveAs           = saveAs;
 
         (function initController() {
             socketService.connectSocket();
@@ -61,7 +64,11 @@
                     handleFileSelect(evt,gID);
                 }, false);
             }
+        }
 
+        function saveAs(name, type, value) {
+            var data = new Blob([value], { type: type + ';charset=utf-8' });
+            FileSaver.saveAs(data, ''+name);
         }
 
         function handleFileSelect(evt, gID) {
@@ -71,10 +78,17 @@
             $timeout(function () {
                 $rootScope.$apply(function () {
                     for (let i = 0, f; f = files[i]; i++) {
-                        $rootScope.user.openedGroupsData[gID].upload.files.push({
+                        let file = {
                             name : escape(f.name),
-                            size : parseFloat(Number(f.size/1000000)).toFixed(2)
-                        });
+                        };
+                        if(f.size >= 1000000){
+                            file.size = parseFloat(Number(f.size/1000000));
+                            file.type = ' mb';
+                        }else{
+                            file.size = parseFloat(Number(f.size/1000));
+                            file.type = ' kb';
+                        }
+                        $rootScope.user.openedGroupsData[gID].upload.files.push(file);
                     }
                 });
             });
@@ -82,46 +96,70 @@
 
         function uploadData(group) {
             group.upload.uploadData = true;
+            group.upload.uploadJobs = 0;
 
             if(group.upload.files.length>0){
                 const evt = vm.eventListener[group.id];
                 const files = evt.target.files; // FileList object
 
                 for (let i = 0, f; f = files[i]; i++) {
-                    var reader = new FileReader();
+                    const reader = new FileReader();
 
                     // Closure to capture the file information.
-                    reader.onload = (function(theFile) {
+                    reader.onload = (function(theFile, gID) {
                         return function(e) {
-                            // Render thumbnail.
-                            console.log(escape(theFile.name));
-                            console.log(e.target.result);
+                            group.upload.uploadJobs += 1;
+                            httpService.groupAddData({
+                                gID   : group.id,
+                                type  : theFile.type,
+                                value : e.target.result,
+                                name  : theFile.name,
+                                time  : Date.now()
+                            }).then(function (response) {
+                                   if(response.success){
+                                       group.upload.uploadJobs -= 1;
+                                       if(group.upload.uploadJobs <= 0){
+                                        $timeout(function () {
+                                            $rootScope.$apply(function () {
+                                                 group.upload.files = [];
+                                            });
+                                        });
+                                       }
+                                   }else{
+                                       $rootScope.loginCauseError.enabled = true;
+                                       $rootScope.loginCauseError.msg = response.msg;
+                                       $location.path('/login');
+                                   }
+                                });
                         };
-                    })(f);
+                    })(f, group.id);
 
                     // Read in the image file as a data URL.
                     reader.readAsBinaryString(f);
-
-
                 }
             }
 
-            if(group.upload.data.length>0){
-                group.upload.gID = group.id;
-                group.upload.type = 'text';
-                group.upload.time = Date.now();
-
-                httpService.groupAddData(group.upload)
-                    .then(function (response) {
+            if(group.upload.textData.length>0){
+                group.upload.uploadJobs += 1;
+                httpService.groupAddData({
+                    gID     : group.id,
+                    type    : 'text',
+                    value   : group.upload.textData,
+                    time    : Date.now()
+                }).then(function (response) {
                         if(response.success){
-                            group.upload = {
-                                data    : '',
-                                type    : '',
-                                time    : '',
-                                table   : '',
-                                files   : []
-                            };
-                            group.upload.uploadData = false;
+                            group.upload.uploadJobs -= 1;
+                            if(group.upload.uploadJobs <= 0){
+                                $timeout(function () {
+                                    $rootScope.$apply(function () {
+                                        group.upload = {
+                                            textData    : '',
+                                            files       : [],
+                                            uploadData  : false
+                                        };
+                                    });
+                                });
+                            }
                         } else{
                             $rootScope.loginCauseError.enabled = true;
                             $rootScope.loginCauseError.msg = response.msg;
@@ -134,16 +172,11 @@
         }
         
         function clearUploadData(gID) {
-
-            $rootScope.user.openedGroupsData[gID].upload.files = [];
-
             $rootScope.user.openedGroupsData[gID].upload = {
-                data    : '',
-                type    : '',
-                time    : '',
-                table   : ''
+                textData    : '',
+                files       : [],
+                uploadData  : false
             };
-            $rootScope.user.openedGroupsData[gID].upload.uploadData = false;
         }
 
         function groupCreate(isValid) {

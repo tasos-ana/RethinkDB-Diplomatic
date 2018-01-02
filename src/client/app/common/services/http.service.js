@@ -115,15 +115,20 @@
 
         //Functions for group managing
         function _groupAddData(data) {
+            let data2send = {
+                gID     : data.gID,
+                data    : data.value,
+                time    : data.time,
+                type    : data.type
+            };
+            if(data.type !== 'text'){
+                data2send.name = data.name;
+            }
+
             return $http({
                 method          : 'POST',
-                url             : '/group/add',
-                data            : {
-                                    gID     : data.gID,
-                                    data    : data.data,
-                                    time    : data.time,
-                                    type    : data.type
-                },
+                url             : '/group/add/data',
+                data            : data2send,
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant push data'));

@@ -94,11 +94,8 @@
 
             //INIT upload fields
             $rootScope.user.openedGroupsData[id].upload = {
-                data    : '',
-                type    : '',
-                time    : '',
-                table   : '',
-                files   : []
+                textData    : '',
+                files       : []
             };
 
         }
