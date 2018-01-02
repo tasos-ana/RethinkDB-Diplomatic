@@ -67,7 +67,7 @@
         }
 
         function saveAs(name, type, data) {
-            var dataFile = new Blob([data], { type: type + ';charset=utf-8' });
+            var dataFile = new Blob([data], { type: type });
             FileSaver.saveAs(dataFile, '' + name);
         }
 
@@ -151,7 +151,6 @@
                                            }
                                        }
                                    }else{
-                                       console.log(response);
                                        $rootScope.loginCauseError.enabled = true;
                                        $rootScope.loginCauseError.msg = response.message;
                                        $location.path('/login');

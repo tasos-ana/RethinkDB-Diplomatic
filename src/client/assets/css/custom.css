@@ -21,7 +21,7 @@ body{
     width:100%;
 }
 
-@media (max-width: 320px) {
+@media (max-width: 321px) {
     .logo-size{
         max-height: 120px;
     }
@@ -69,4 +69,8 @@ textarea {
 }
 #first {
     font-size: 30px;
+}
+
+.text-overflow{
+    overflow-wrap:break-word;
 }
