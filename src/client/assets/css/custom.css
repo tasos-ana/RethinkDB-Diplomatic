@@ -70,3 +70,13 @@ textarea {
 #first {
     font-size: 30px;
 }
+
+.input-btn-maxSize{
+    max-height: 64px;
+    max-width: 45px;
+}
+
+.btn-corner{
+    position: absolute;
+    bottom: 0px;
+}
