@@ -144,7 +144,7 @@ const groupService = function () {
             function (details, connection, callback) {
                 rethinkdb.table(details.gID).insert({
                     id              : 'created',
-                    data            : 'Group created by ' + details.uEmail + ')',
+                    data            : 'Group created by (' + details.uEmail + ')',
                     type            : 'text',
                     time            : Date.now()
                 }).run(connection,function (err,result) {
