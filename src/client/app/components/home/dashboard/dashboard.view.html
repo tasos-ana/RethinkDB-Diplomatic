@@ -36,8 +36,11 @@
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-btn">
+                                            <div style="height: 0; width: 0; overflow: hidden;"><input type="file" id="files" name="file[]" multiple/></div>
+                                            <label for="files"></label>
                                             <button type="button" class="btn btn-outline-secondary btn-xs"
-                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData" title="Attach file">
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData" title="Attach file"
+                                                    ng-click="vm.openFileLoader()">
                                                     <i class="fa fa-paperclip"></i>
                                             </button>
                                         </span>
@@ -45,9 +48,13 @@
                                                   ng-model="user.openedGroupsData[gID].upload.data"></textarea>
                                         <span class="input-group-btn">
                                             <button type="button" class="btn btn-outline-primary btn-xs" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
-                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData"><small>UP</small></button>
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData"><small>UP</small></button><br>
+                                            <button type="button" class="btn btn-outline-danger btn-xs" ng-click="vm.clearUploadData(gID)"
+                                                    ng-show="user.openedGroupsData[gID].upload.data.length>0"
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData"><small>Clear</small></button>
                                         </span>
                                     </div>
+                                    <output id="list"></output>
                                 </div>
                                 <div class="messages-block block">
                                     <div class="messages">

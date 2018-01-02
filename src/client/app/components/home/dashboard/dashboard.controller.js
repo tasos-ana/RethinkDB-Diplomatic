@@ -10,12 +10,16 @@
         const vm = this;
 
         vm.uploadData       = uploadData;
+        vm.clearUploadData  = clearUploadData;
         vm.groupCreate      = groupCreate;
         vm.openGroupCreate  = openGroupCreate;
         vm.groupOpen        = groupOpen;
         vm.groupClose       = groupClose;
         vm.groupSetActive   = groupSetActive;
         vm.loadMoreData     = loadMoreData;
+
+        vm.openFileLoader   = openFileLoader;
+        vm.handleFileSelect = handleFileSelect;
 
         (function initController() {
             socketService.connectSocket();
@@ -47,7 +51,27 @@
             socketService.onGroupDataBadge();
             socketService.onGroupDataChange();
 
+            $timeout(function () {
+                $window.document.getElementById('files').addEventListener('change', handleFileSelect, false);
+            },2000);
+
         })();
+
+        function openFileLoader() {
+            $window.document.getElementById('files').click();
+        }
+        
+        function handleFileSelect(evt) {
+            const files = evt.target.files; // FileList object
+
+            // files is a FileList of File objects. List some properties.
+            let output = [];
+            for (let i = 0, f; f = files[i]; i++) {
+                output.push('<li><strong>', escape(f.name), '</strong> - ',
+                    parseFloat(Number(f.size/1000000)).toFixed(2), ' mb', '</li>');
+            }
+            $window.document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+        }
 
         function uploadData(group) {
             group.upload.uploadData = true;
@@ -76,6 +100,16 @@
             }else{
                 group.upload.uploadData = false;
             }
+        }
+        
+        function clearUploadData(gID) {
+            $rootScope.user.openedGroupsData[gID].upload = {
+                data    : '',
+                type    : '',
+                time    : '',
+                table   : ''
+            };
+            $rootScope.user.openedGroupsData[gID].upload.uploadData = false;
         }
 
         function groupCreate(isValid) {
