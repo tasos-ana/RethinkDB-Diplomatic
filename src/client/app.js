@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'ngNotify', 'monospaced.elastic'])
+        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'ngNotify', 'monospaced.elastic', 'ngFileSaver'])
         .config(config)
         .run(run);
 
