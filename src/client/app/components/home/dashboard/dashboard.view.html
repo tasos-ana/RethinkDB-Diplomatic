@@ -63,9 +63,10 @@
                                 <div class="messages-block block">
                                     <div class="messages" style="overflow-x: hidden;">
                                         <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
-                                                ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}">
+                                                ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}"
+                                                ng-mouseover="vm.deleteButton[gData.id]=true;" ng-mouseleave="vm.deleteButton[gData.id]=false;">
                                             <div class="content" ng-if="gData.type === 'text'">
-                                                <span class="d-block"><strong>{{user.nickname}}</strong></span>
+                                                <span class="d-block"><strong>{{user.nickname}}</strong>                                                </span>
                                                 <span class="d-block text-overflow">{{gData.data}}</span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
@@ -78,6 +79,8 @@
                                                 </span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
+                                            <button class="close closeTab text-danger" type="button" style="position : relative; right: 3px;"
+                                                    ng-show="vm.deleteButton[gData.id]" ng-click="vm.deleteMessage(gID, gData.id)">×</button>
                                         </a>
                                     </div>
                                 </div>

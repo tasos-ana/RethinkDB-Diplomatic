@@ -23,6 +23,8 @@
         vm.openFileLoader   = openFileLoader;
         vm.saveAs           = saveAs;
 
+        vm.deleteMessage    = deleteMessage;
+
         (function initController() {
             socketService.connectSocket();
 
@@ -39,6 +41,7 @@
             vm.templateURL = $location.path();
             vm.eventListener = {};
             vm.myGroupsExpand = false;
+            vm.deleteButton = {};
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
@@ -69,6 +72,11 @@
         function saveAs(name, type, data) {
             var dataFile = new Blob([data], { type: type });
             FileSaver.saveAs(dataFile, '' + name);
+        }
+
+        function deleteMessage(gID, mID) {
+            console.log(gID);
+            console.log(mID);
         }
 
         function handleFileSelect(evt, gID) {
