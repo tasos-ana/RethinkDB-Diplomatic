@@ -147,6 +147,8 @@
                             if(index === -1){
                                 $rootScope.user.groupsList.push(data.gID);
                                 $rootScope.user.groupsNames[data.gID] = data.gName;
+                                $rootScope.user.unreadMessages[data.gID] = 0;
+                                dashboardService.groupOpen(data.gID);
                                 ngNotify.dismiss();
                                 ngNotify.set("New group created with name '" + data.gName +"'.", "notice-success");
                             }
@@ -169,6 +171,9 @@
                             if(index >= -1){
                                 $rootScope.user.groupsList.splice(index, 1);
                                 delete $rootScope.user.groupsNames[data.gID];
+
+                                $rootScope.user.unreadMessages.total -= $rootScope.user.unreadMessages[data.gID];
+                                delete $rootScope.user.unreadMessages[data.gID];
 
                                 if($location.path() === "/home/dashboard"){
                                     const index = $rootScope.user.openedGroupsList.indexOf(data.gID);
