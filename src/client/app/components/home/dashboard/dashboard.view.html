@@ -86,18 +86,20 @@
                                                 ng-click="vm.deleteMsg.gID=gID; vm.deleteMsg.mID=gData.id;" ng-show="vm.deleteButton[gData.id] && gData.id !=='created' ">×</button>
                                         <a class="message d-flex align-items-center">
                                             <div class="content" ng-if="gData.type === 'text'">
-                                                <span class="d-block"><strong>{{user.nickname}}</strong></span>
-                                                <span class="d-block text-overflow"
-                                                      ng-class="{'text-info' : $index <= user.unreadMessages[gID]-1}">{{gData.data}}</span>
+                                                <span class="d-block"><strong>{{user.nickname}}</strong>
+                                                <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
+                                                </span>
+                                                <span class="d-block text-overflow">{{gData.data}}</span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
                                             <div class="content" ng-if="gData.type !== 'text'">
-                                                <span class="d-block"><strong>{{user.nickname}}</strong></span>
+                                                <span class="d-block"><strong>{{user.nickname}}</strong>
+                                                      <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
+                                                </span>
                                                 <span class="d-block text-primary"
                                                       ng-click="vm.saveAs(gData.name, gData.type, gData.data)" style="cursor: pointer;">
                                                     <i class="fa fa-download" style="font-size:20px;"></i>
-                                                    <span class="text-overflow"
-                                                          ng-class="{'text-info' : $index <= user.unreadMessages[gID]-1}">{{gData.name}}</span>
+                                                    <span class="text-overflow">{{gData.name}}</span>
                                                 </span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
