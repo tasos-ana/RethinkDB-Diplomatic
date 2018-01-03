@@ -22,7 +22,8 @@ const groupService = function () {
         updateGroupName     : _updateGroupName,
         insertOpenedGroup   : _insertOpenedGroup,
         removeOpenedGroup   : _removeOpenedGroup,
-        messageNotification : _messageNotification
+        messageNotification : _messageNotification,
+        deleteMessage       : _deleteMessage
     };
 
     /**
@@ -955,6 +956,83 @@ const groupService = function () {
                 });
             }
         ], function (err, data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Delete a message from a group
+     * @param details   contains gID, mID
+     * @param cookie
+     * @param callback
+     */
+    function _deleteMessage(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function(err,connection) {
+                    if(err){
+                        debug.error('Group.service@_deleteMessage: cant connect on database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null,connection);
+                });
+            },
+            /**
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@_deleteMessage: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details that required for validation');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                                debug.error('Account.service@_deleteMessage: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@_deleteMessage (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Delete the message from group
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table(details.gID).get(details.mID).delete()
+                    .run(connection, function (err, result) {
+                        if(err){
+                            debug.error('Group.service@delete: cant delete group <' + details.gID + '> from groups table');
+                            connection.close();
+                            return callback(true, 'Error happens while deleting group from groups table');
+                        }
+                        callback(null, {});
+                    });
+            }
+        ],function (err,data) {
             callback(err !== null, data);
         });
     }

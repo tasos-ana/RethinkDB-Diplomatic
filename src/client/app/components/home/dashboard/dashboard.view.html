@@ -31,6 +31,24 @@
                         </ul>
                         <!-- Tab panes -->
                         <div class="tab-content">
+                            <!--CONFIRM DELETION OF GROUP-->
+                            <div class="modal fade" id="deleteConfirmModal">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title h5 text-light">Delete message.</h4>
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h1 class="text-secondary text-center">Are you sure you want<br> to delete the message?</h1>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" ng-click="vm.deleteMessage(vm.deleteMsg.gID, vm.deleteMsg.mID)" data-dismiss="modal">Delete</button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="tab-pane fade tab-pane-scrollable container" ng-repeat="gID in user.openedGroupsList"
                                  ng-class="{'active show' : user.activeGroup === gID}"  id={{gID}}><br>
                                 <div class="form-group">
@@ -61,12 +79,15 @@
                                     </ul>
                                 </div>
                                 <div class="messages-block block">
-                                    <div class="messages" style="overflow-x: hidden;">
-                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
-                                                ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}"
-                                                ng-mouseover="vm.deleteButton[gData.id]=true;" ng-mouseleave="vm.deleteButton[gData.id]=false;">
+                                    <div class="messages" style="overflow-x: hidden;" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
+                                         ng-mouseover="vm.deleteButton[gData.id]=true;" ng-mouseleave="vm.deleteButton[gData.id]=false;">
+                                        <button class="close closeTab text-danger" type="button" style="position:relative; right: 20px;"
+                                                data-toggle="modal" data-target="#deleteConfirmModal"
+                                                ng-click="vm.deleteMsg.gID=gID; vm.deleteMsg.mID=gData.id;" ng-show="vm.deleteButton[gData.id] && gData.id !=='created' ">×</button>
+                                        <a class="message d-flex align-items-center"
+                                                ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}">
                                             <div class="content" ng-if="gData.type === 'text'">
-                                                <span class="d-block"><strong>{{user.nickname}}</strong>                                                </span>
+                                                <span class="d-block"><strong>{{user.nickname}}</strong></span>
                                                 <span class="d-block text-overflow">{{gData.data}}</span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
@@ -79,8 +100,6 @@
                                                 </span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
-                                            <button class="close closeTab text-danger" type="button" style="position : relative; right: 3px;"
-                                                    ng-show="vm.deleteButton[gData.id]" ng-click="vm.deleteMessage(gID, gData.id)">×</button>
                                         </a>
                                     </div>
                                 </div>
