@@ -21,7 +21,8 @@
             emitDeleteGroup         : _emitDeleteGroup,
 
             onGroupNameChange       : _onGroupNameChange,
-            onGroupDataChange       : _onGroupDataChange,
+            onGroupDataAdd          : _onGroupDataAdd,
+            onGroupDataRemove       : _onGroupDataRemove,
             onGroupDataBadge        : _onGroupDataBadge,
             onGroupCreate           : _onGroupCreate,
             onGroupDelete           : _onGroupDelete,
@@ -75,18 +76,32 @@
             });
         }
 
-        function _onGroupDataChange() {
+        function _onGroupDataAdd() {
             socketValidate();
             /**
              * Data contains {gID , value:{data,time,date,type}}
              */
-            socket.on('groupDataChange', function (data) {
+            socket.on('groupDataAdd', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         data.value.date = dashboardService.configureDate(new Date(), new Date(data.value.time));
                         if($rootScope.user.openedGroupsData[data.gID] !== undefined){
                             $rootScope.user.openedGroupsData[data.gID].data[$rootScope.user.openedGroupsData[data.gID].data.length] = data.value;
                         }
+                    });
+                });
+            });
+        }
+        
+        function _onGroupDataRemove() {
+            socketValidate();
+            /**
+             * Data contains {gID , value:{data,time,date,type}}
+             */
+            socket.on('groupDataRemove', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        tryDeleteMessage(data.gID, data.value);
                     });
                 });
             });
@@ -107,7 +122,7 @@
                                 $rootScope.user.unreadMessages[data.gID] += 1;
                             }
 
-                            httpService.groupUpdateUnreadMessages(data.gID,$rootScope.user.unreadMessages[data.gID]).then(function () {});
+                            httpService.groupUpdateUnreadMessages(data.gID, $rootScope.user.unreadMessages[data.gID]).then(function () {});
                             if($rootScope.user.unreadMessages.total !== undefined){
                                 $rootScope.user.unreadMessages.total+=1;
                             }else{
@@ -132,6 +147,8 @@
                             if(index === -1){
                                 $rootScope.user.groupsList.push(data.gID);
                                 $rootScope.user.groupsNames[data.gID] = data.gName;
+                                $rootScope.user.unreadMessages[data.gID] = 0;
+                                dashboardService.groupOpen(data.gID);
                                 ngNotify.dismiss();
                                 ngNotify.set("New group created with name '" + data.gName +"'.", "notice-success");
                             }
@@ -154,6 +171,9 @@
                             if(index >= -1){
                                 $rootScope.user.groupsList.splice(index, 1);
                                 delete $rootScope.user.groupsNames[data.gID];
+
+                                $rootScope.user.unreadMessages.total -= $rootScope.user.unreadMessages[data.gID];
+                                delete $rootScope.user.unreadMessages[data.gID];
 
                                 if($location.path() === "/home/dashboard"){
                                     const index = $rootScope.user.openedGroupsList.indexOf(data.gID);
@@ -221,6 +241,19 @@
         function socketValidate() {
             if(socket === null){
                 _connectSocket();
+            }
+        }
+
+        function tryDeleteMessage(gID, mID) {
+            for(let i=0; i<$rootScope.user.openedGroupsData[gID].data.length; ++i){
+                if($rootScope.user.openedGroupsData[gID].data[i].id === mID){
+                    $timeout(function () {
+                        $rootScope.$apply(function () {
+                            $rootScope.user.openedGroupsData[gID].data.splice(i,1);
+                        });
+                    });
+                    break;
+                }
             }
         }
     }

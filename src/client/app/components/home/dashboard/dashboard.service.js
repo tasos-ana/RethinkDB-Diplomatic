@@ -5,15 +5,18 @@
         .module('starterApp')
         .factory('dashboardService', dashboardService);
 
-    dashboardService.$inject = ['$rootScope', '$location', 'httpService'];
-    function dashboardService($rootScope, $location, httpService) {
+    dashboardService.$inject = ['$rootScope', '$location', 'httpService', '$timeout'];
+    function dashboardService($rootScope, $location, httpService, $timeout) {
         const service = {};
 
         service.retrieveGroupsData      = _retrieveGroupsData;
         service.retrieveSingleGroupData = _retrieveSingleGroupData;
         service.retrieveMoreGroupData   = _retrieveMoreGroupData;
         service.retrieveSingleGroupName = _retrieveSingleGroupName;
-        service.configureDate           = configureDate;
+        service.configureDate           = _configureDate;
+
+        service.groupOpen               = _groupOpen;
+        service.groupSetActive          = _groupSetActive;
 
         return service;
 
@@ -69,7 +72,7 @@
                         $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
                     }else{
                         $rootScope.loginCauseError.enabled = true;
-                        $rootScope.loginCauseError.msg = response.msg;
+                        $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
                 });
@@ -82,7 +85,7 @@
                         $rootScope.user.groupsNames[response.data.id] = response.data.name;
                     }else{
                         $rootScope.loginCauseError.enabled = true;
-                        $rootScope.loginCauseError.msg = response.msg;
+                        $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
                 });
@@ -94,10 +97,8 @@
 
             //INIT upload fields
             $rootScope.user.openedGroupsData[id].upload = {
-                data    : '',
-                type    : '',
-                time    : '',
-                table   : ''
+                textData    : '',
+                files       : []
             };
 
         }
@@ -106,11 +107,11 @@
             const now = new Date();
             for(let i = 0; i<$rootScope.user.openedGroupsData[index].data.length; ++i){
                 const date = new Date($rootScope.user.openedGroupsData[index].data[i].time);
-                $rootScope.user.openedGroupsData[index].data[i].date = configureDate(now,date);
+                $rootScope.user.openedGroupsData[index].data[i].date = _configureDate(now,date);
             }
         }
 
-        function configureDate(now,date) {
+        function _configureDate(now,date) {
             let dateAsString = 'Today';
             const _dd = now.getDate(),
                 _mm = now.getMonth() + 1,
@@ -130,6 +131,46 @@
             dateAsString += " @ " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
             return dateAsString;
+        }
+
+        function _groupOpen(gID) {
+            $timeout(function () {
+                $rootScope.$apply(function () {
+                    const index = $rootScope.user.openedGroupsList.indexOf(gID);
+                    if (index === -1) {
+                        httpService.groupInsertToOpenedList(gID)
+                            .then(function (response) {
+                                if(response.success){
+                                    $rootScope.user.openedGroupsList.push(response.data.gID);
+                                    _groupSetActive(response.data.gID);
+                                    _retrieveSingleGroupData(response.data.gID, Date.now(), 10);
+                                } else{
+                                    $rootScope.loginCauseError.enabled = true;
+                                    $rootScope.loginCauseError.msg = response.message;
+                                    $location.path('/login');
+                                }
+                            });
+                    }
+                });
+            });
+        }
+
+        function _groupSetActive(gID) {
+            $rootScope.user.activeGroup = gID;
+            if($rootScope.user.unreadMessages[gID] === undefined){
+                $rootScope.user.unreadMessages[gID] = 0;
+            }
+            const prevVal = $rootScope.user.unreadMessages[gID];
+            $rootScope.user.unreadMessages.total -= prevVal;
+            if(prevVal!==0) {
+                httpService.groupUpdateUnreadMessages(gID, 0).then(function () {
+                });
+            }
+            $timeout(function () {
+                if($location.path() === '/home/dashboard'){
+                    $rootScope.user.unreadMessages[gID] = 0;
+                }
+            },4000);
         }
     }
 })();

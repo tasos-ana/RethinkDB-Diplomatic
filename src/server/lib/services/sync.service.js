@@ -274,15 +274,22 @@ const syncService = function () {
                             }
                             if(row !== undefined){
                                 if(Object.keys(row).length>0 && row.type === 'add'){
-                                    debug.status('Broadcast groupDataChange for group <' + gID + '>');
-                                    socket.emit('groupDataChange', {
+                                    debug.status('Broadcast groupDataChange (add) for group <' + gID + '>');
+                                    socket.emit('groupDataAdd', {
                                         "gID"   : gID,
                                         "value" : {
-                                            "data": row.new_val.data,
-                                            "id": row.new_val.id,
-                                            "time": row.new_val.time,
-                                            "type": row.new_val.type
+                                            "data"  : row.new_val.data,
+                                            "id"    : row.new_val.id,
+                                            "time"  : row.new_val.time,
+                                            "type"  : row.new_val.type,
+                                            "name"  : row.new_val.name
                                         }
+                                    });
+                                }else if(Object.keys(row).length>0 && row.type === 'remove'){
+                                    debug.status('Broadcast groupDataChange (remove) for group <' + gID + '>');
+                                    socket.emit('groupDataRemove', {
+                                        "gID"   : gID,
+                                        "value" : row.old_val.id
                                     });
                                 }
                             }

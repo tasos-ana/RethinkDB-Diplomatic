@@ -5,17 +5,25 @@
         .module('starterApp')
         .controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService', 'homeService', 'socketService', '$timeout', 'ngNotify', '$window'];
-    function DashboardController($rootScope, $location, httpService, dashboardService, homeService, socketService, $timeout, ngNotify, $window) {
+    DashboardController.$inject = ['$rootScope', '$location', 'httpService','dashboardService',
+                                'homeService', 'socketService', '$timeout', 'ngNotify', '$window', 'FileSaver', 'Blob'];
+    function DashboardController($rootScope, $location, httpService, dashboardService,
+                                 homeService, socketService, $timeout, ngNotify, $window, FileSaver, Blob) {
         const vm = this;
 
         vm.uploadData       = uploadData;
+        vm.clearUploadData  = clearUploadData;
         vm.groupCreate      = groupCreate;
         vm.openGroupCreate  = openGroupCreate;
         vm.groupOpen        = groupOpen;
         vm.groupClose       = groupClose;
-        vm.groupSetActive   = groupSetActive;
+        vm.groupSetActive   = dashboardService.groupSetActive;
         vm.loadMoreData     = loadMoreData;
+
+        vm.openFileLoader   = openFileLoader;
+        vm.saveAs           = saveAs;
+
+        vm.deleteMessage    = deleteMessage;
 
         (function initController() {
             socketService.connectSocket();
@@ -31,7 +39,10 @@
             vm.createGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
+            vm.eventListener = {};
             vm.myGroupsExpand = false;
+            vm.deleteButton = {};
+            vm.deleteMsg    = {};
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
@@ -45,37 +56,169 @@
             socketService.onGroupDelete();
             socketService.onGroupNameChange();
             socketService.onGroupDataBadge();
-            socketService.onGroupDataChange();
-
+            socketService.onGroupDataAdd();
+            socketService.onGroupDataRemove();
         })();
+
+        function openFileLoader(gID) {
+            $window.document.getElementById('files').click();
+
+            if(vm.eventListener[gID] === undefined){
+                $window.document.getElementById('files').addEventListener('change', function (evt) {
+                    vm.eventListener[gID] = evt;
+                    handleFileSelect(evt,gID);
+                }, false);
+            }
+        }
+
+        function saveAs(name, type, data) {
+            var dataFile = new Blob([convertDataURIToBinary(data)], { type: type + ';charset=utf-8' });
+            FileSaver.saveAs(dataFile, '' + name);
+        }
+
+        function deleteMessage(gID, mID) {
+            httpService.groupDeleteMessage(gID,mID)
+                .then(function (response) {
+                if(response.success){
+                    tryDeleteMessage(gID,mID);
+                }else{
+                    $rootScope.loginCauseError.enabled = true;
+                    $rootScope.loginCauseError.msg = response.message;
+                    $location.path('/login');
+                }
+            });
+        }
+
+        function tryDeleteMessage(gID, mID) {
+            for(let i=0; i<$rootScope.user.openedGroupsData[gID].data.length; ++i){
+                if($rootScope.user.openedGroupsData[gID].data[i].id === mID){
+                    $timeout(function () {
+                       $rootScope.$apply(function () {
+                           $rootScope.user.openedGroupsData[gID].data.splice(i,1);
+                       });
+                    });
+                    break;
+                }
+            }
+        }
+
+        function handleFileSelect(evt, gID) {
+            const files = evt.target.files;
+            // files is a FileList of File objects. List some properties.
+            $rootScope.user.openedGroupsData[gID].upload.files = [];
+            $timeout(function () {
+                $rootScope.$apply(function () {
+                    for (let i = 0, f; f = files[i]; i++) {
+                        let file = {
+                            name : escape(f.name),
+                        };
+                        if(f.size >= 1000000){
+                            file.size = parseFloat(Number(f.size/1000000));
+                            file.type = ' mb';
+                        }else{
+                            file.size = parseFloat(Number(f.size/1000));
+                            file.type = ' kb';
+                        }
+                        $rootScope.user.openedGroupsData[gID].upload.files.push(file);
+                    }
+                });
+            });
+        }
 
         function uploadData(group) {
             group.upload.uploadData = true;
+            group.upload.uploadJobs = 0;
 
-            if(group.upload.data.length>0){
-                group.upload.gID = group.id;
-                group.upload.type = 'text';
-                group.upload.time = Date.now();
+            if(group.upload.files.length>0){
+                const evt = vm.eventListener[group.id];
+                const files = evt.target.files; // FileList object
 
-                httpService.groupAddData(group.upload)
-                    .then(function (response) {
+                for (let i = 0, f; f = files[i]; i++) {
+                    const reader = new FileReader();
+
+                    // Closure to capture the file information.
+                    reader.onload = (function(theFile, gID) {
+                        return function(e) {
+                            //console.log(convertDataURIToBinary(e.target.result));
+                            group.upload.uploadJobs += 1;
+                            httpService.groupAddData({
+                                gID   : gID,
+                                type  : theFile.type,
+                                value : e.target.result,
+                                name  : theFile.name,
+                                time  : Date.now()
+                            }).then(function (response) {
+                                   if(response.success){
+                                       group.upload.uploadJobs -= 1;
+                                       uploadText(group);
+                                   }else{
+                                       $rootScope.loginCauseError.enabled = true;
+                                       $rootScope.loginCauseError.msg = response.message;
+                                       $location.path('/login');
+                                   }
+                                });
+                        };
+                    })(f, group.id);
+
+                    // Read in the image file as a data URL.
+                    reader.readAsDataURL(f);
+                }
+            }else{
+                uploadText(group);
+            }
+        }
+
+        function uploadText(group) {
+            if(group.upload.uploadJobs <= 0){
+                if(group.upload.textData.length>0){
+                    group.upload.uploadJobs += 1;
+                    httpService.groupAddData({
+                        gID     : group.id,
+                        type    : 'text',
+                        value   : group.upload.textData,
+                        time    : Date.now()
+                    }).then(function (response) {
                         if(response.success){
-                            group.upload = {
-                                data    : '',
-                                type    : '',
-                                time    : '',
-                                table   : ''
-                            };
-                            group.upload.uploadData = false;
+                            group.upload.uploadJobs -= 1;
+                            if(group.upload.uploadJobs <= 0){
+                                $timeout(function () {
+                                    $rootScope.$apply(function () {
+                                        group.upload = {
+                                            textData    : '',
+                                            files       : [],
+                                            uploadData  : false
+                                        };
+                                    });
+                                });
+                            }
                         } else{
                             $rootScope.loginCauseError.enabled = true;
-                            $rootScope.loginCauseError.msg = response.msg;
+                            $rootScope.loginCauseError.msg = response.message;
                             $location.path('/login');
                         }
                     });
-            }else{
-                group.upload.uploadData = false;
+                }else{
+                    if(group.upload.uploadJobs <= 0) {
+                        $timeout(function () {
+                            $rootScope.$apply(function () {
+                                group.upload = {
+                                    textData: '',
+                                    files: [],
+                                    uploadData: false
+                                };
+                            });
+                        });
+                    }
+                }
             }
+        }
+        
+        function clearUploadData(gID) {
+            $rootScope.user.openedGroupsData[gID].upload = {
+                textData    : '',
+                files       : [],
+                uploadData  : false
+            };
         }
 
         function groupCreate(isValid) {
@@ -112,27 +255,12 @@
         }
 
         function groupOpen(gID) {
-            socketService.emitOpenGroup(gID);
-
-            $timeout(function () {
-                $rootScope.$apply(function () {
-                    const index = $rootScope.user.openedGroupsList.indexOf(gID);
-                    if (index === -1) {
-                        httpService.groupInsertToOpenedList(gID)
-                            .then(function (response) {
-                                if(response.success){
-                                    $rootScope.user.openedGroupsList.push(gID);
-                                    dashboardService.retrieveSingleGroupData(gID, Date.now(), 10);
-                                } else{
-                                    $rootScope.loginCauseError.enabled = true;
-                                    $rootScope.loginCauseError.msg = response.msg;
-                                    $location.path('/login');
-                                }
-                            });
-                    }
-                    groupSetActive(gID);
-                });
-            });
+            if ($rootScope.user.openedGroupsList.indexOf(gID) !== -1) {
+                dashboardService.groupSetActive(gID);
+            } else {
+                socketService.emitOpenGroup(gID);
+                dashboardService.groupOpen(gID);
+            }
         }
 
         function groupClose(gID) {
@@ -147,6 +275,8 @@
                                 if (index >= 0) {
                                     $rootScope.user.openedGroupsList.splice(index, 1);
                                 }
+
+                                delete $rootScope.user.openedGroupsData[gID];
                                 if(gID === $rootScope.user.activeGroup){
                                     if(index >= $rootScope.user.openedGroupsList.length){
                                         $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index-1];
@@ -156,29 +286,12 @@
                                 }
                             } else{
                                 $rootScope.loginCauseError.enabled = true;
-                                $rootScope.loginCauseError.msg = response.msg;
+                                $rootScope.loginCauseError.msg = response.message;
                                 $location.path('/login');
                             }
                         });
                 });
             });
-        }
-
-        function groupSetActive(gID) {
-            $rootScope.user.activeGroup = gID;
-            if($rootScope.user.unreadMessages[gID] === undefined){
-                $rootScope.user.unreadMessages[gID] = 0;
-            }
-            const prevVal = $rootScope.user.unreadMessages[gID];
-            $rootScope.user.unreadMessages.total -= prevVal;
-            if(prevVal!==0) {
-                httpService.groupUpdateUnreadMessages(gID, $rootScope.user.unreadMessages[gID]).then(function () {
-                });
-            }
-            $timeout(function () {
-                $rootScope.user.unreadMessages[gID] = 0;
-            },4000);
-
         }
         
         function loadMoreData(gID) {
@@ -192,6 +305,20 @@
         function groupExists(gID) {
             const index = $rootScope.user.groupsList.indexOf(gID);
             return index !== -1;
+        }
+
+        function convertDataURIToBinary(dataURI) {
+            const BASE64_MARKER = ';base64,';
+            var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+            var base64 = dataURI.substring(base64Index);
+            var raw = window.atob(base64);
+            var rawLength = raw.length;
+            var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+            for(var i = 0; i < rawLength; i++) {
+                array[i] = raw.charCodeAt(i);
+            }
+            return array;
         }
     }
 })();

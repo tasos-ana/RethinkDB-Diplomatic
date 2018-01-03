@@ -15,7 +15,7 @@
         <section class="no-padding no-margin">
             <!--DASHBOARD SECTION-->
             <div class="container-fluid">
-                <div class="block">
+                <div class="block col-lg-12">
                     <div class="title" ng-show="user.openedGroupsList.length === 0">
                         <p class="text-center text-danger"><strong>No group opened yet.</strong></p>
                     </div>
@@ -31,25 +31,76 @@
                         </ul>
                         <!-- Tab panes -->
                         <div class="tab-content">
+                            <!--CONFIRM DELETION OF GROUP-->
+                            <div class="modal fade" id="deleteConfirmModal">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title h5 text-light">Delete message.</h4>
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h1 class="text-secondary text-center">Are you sure you want<br> to delete the message?</h1>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" ng-click="vm.deleteMessage(vm.deleteMsg.gID, vm.deleteMsg.mID)" data-dismiss="modal">Delete</button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="tab-pane fade tab-pane-scrollable container" ng-repeat="gID in user.openedGroupsList"
                                  ng-class="{'active show' : user.activeGroup === gID}"  id={{gID}}><br>
                                 <div class="form-group">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Type something..."
-                                               ng-model="user.openedGroupsData[gID].upload.data">
                                         <span class="input-group-btn">
-                                            <button type="button" class="btn btn-primary" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
-                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData">UP</button>
+                                            <span style="height: 0; width: 0; overflow: hidden;"><input type="file" id="files" name="file[]" multiple/></span>
+                                            <label for="files"></label>
+                                            <button type="button" class="btn btn-outline-secondary btn-xs"
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData" title="Attach file"
+                                                    ng-click="vm.openFileLoader(gID)">
+                                                    <i class="fa fa-paperclip"></i>
+                                            </button>
+                                        </span>
+                                        <textarea class="form-control form-control-sm animate msd-elastic: \n;" placeholder="Your text..."
+                                                  ng-model="user.openedGroupsData[gID].upload.textData"></textarea>
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-outline-primary btn-xs" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData"><small>UP</small></button><br>
+                                            <button type="button" class="btn btn-outline-danger btn-xs" ng-click="vm.clearUploadData(gID)"
+                                                    ng-show="user.openedGroupsData[gID].upload.textData.length>0 || user.openedGroupsData[gID].upload.files.length>0"
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData"><small>Clear</small></button>
                                         </span>
                                     </div>
+                                    <ul>
+                                        <li ng-repeat="file in user.openedGroupsData[gID].upload.files">
+                                            <strong>{{file.name}}</strong> - {{file.size}} {{file.type}}
+                                        </li>
+                                    </ul>
                                 </div>
                                 <div class="messages-block block">
-                                    <div class="messages">
-                                        <a class="message d-flex align-items-center" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
-                                                ng-class="{'border-light' : $index <= user.unreadMessages[gID]-1}">
-                                            <div class="content">
-                                                <strong class="d-block">{{user.nickname}}</strong>
-                                                <span class="d-block">{{gData.data}}</span>
+                                    <div class="messages" style="overflow-x: hidden;" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
+                                         ng-mouseover="vm.deleteButton[gData.id]=true;" ng-mouseleave="vm.deleteButton[gData.id]=false;">
+                                        <button class="close closeTab text-danger" type="button" style="position:relative; right: 20px;"
+                                                data-toggle="modal" data-target="#deleteConfirmModal"
+                                                ng-click="vm.deleteMsg.gID=gID; vm.deleteMsg.mID=gData.id;" ng-show="vm.deleteButton[gData.id] && gData.id !=='created' ">×</button>
+                                        <a class="message d-flex align-items-center">
+                                            <div class="content" ng-if="gData.type === 'text'">
+                                                <span class="d-block"><strong>{{user.nickname}}</strong>
+                                                <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
+                                                </span>
+                                                <span class="d-block text-overflow">{{gData.data}}</span>
+                                                <small class="date d-block">{{gData.date}}</small>
+                                            </div>
+                                            <div class="content" ng-if="gData.type !== 'text'">
+                                                <span class="d-block"><strong>{{user.nickname}}</strong>
+                                                      <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
+                                                </span>
+                                                <span class="d-block text-primary"
+                                                      ng-click="vm.saveAs(gData.name, gData.type, gData.data)" style="cursor: pointer;">
+                                                    <i class="fa fa-download" style="font-size:20px;"></i>
+                                                    <span class="text-overflow">{{gData.name}}</span>
+                                                </span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>
                                         </a>

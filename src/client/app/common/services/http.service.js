@@ -28,8 +28,9 @@
         service.groupUpdateName             = _groupUpdateName;
         service.groupInsertToOpenedList     = _groupInsertToOpenedList;
         service.groupRemoveFromOpenedList   = _groupRemoveFromOpenedList;
-        service.groupUpdateUnreadMessages      = _groupUpdateUnreadMessages;
+        service.groupUpdateUnreadMessages   = _groupUpdateUnreadMessages;
 
+        service.groupDeleteMessage          = _groupDeleteMessage;
         return service;
 
         // private functions
@@ -115,15 +116,20 @@
 
         //Functions for group managing
         function _groupAddData(data) {
+            let data2send = {
+                gID     : data.gID,
+                data    : data.value,
+                time    : data.time,
+                type    : data.type
+            };
+            if(data.type !== 'text'){
+                data2send.name = data.name;
+            }
+
             return $http({
                 method          : 'POST',
-                url             : '/group/add',
-                data            : {
-                                    gID     : data.gID,
-                                    data    : data.data,
-                                    time    : data.time,
-                                    type    : data.type
-                },
+                url             : '/group/add/data',
+                data            : data2send,
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant push data'));
@@ -224,6 +230,19 @@
                 data            : {
                     gID     : gID,
                     unread  : newVal
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
+        }
+
+        function _groupDeleteMessage(gID, mID) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/delete/message',
+                data            : {
+                    gID : gID,
+                    mID : mID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'

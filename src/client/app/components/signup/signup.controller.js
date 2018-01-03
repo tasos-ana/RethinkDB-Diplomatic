@@ -3,10 +3,10 @@
 
     angular
         .module('starterApp')
-        .controller('RegisterController', RegisterController);
+        .controller('SignupController', SignupController);
 
-    RegisterController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify'];
-    function RegisterController($rootScope, $location, httpService, ngNotify) {
+    SignupController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify'];
+    function SignupController($rootScope, $location, httpService, ngNotify) {
         const vm = this;
 
         vm.register = register;

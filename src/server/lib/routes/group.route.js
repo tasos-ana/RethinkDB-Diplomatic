@@ -32,7 +32,7 @@ router.route('/retrieve/name')
         });
     });
 
-router.route('/add')
+router.route('/add/data')
     .post(function (req,res) {
         groupService.addData(req.body, req.cookies.userCredentials, function (err, responseData) {
             if(err){
@@ -93,4 +93,13 @@ router.route('/update/unreadMessages')
         });
     });
 
+router.route('/delete/message')
+    .post(function (req,res) {
+        groupService.deleteMessage(req.body, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
 module.exports = router;

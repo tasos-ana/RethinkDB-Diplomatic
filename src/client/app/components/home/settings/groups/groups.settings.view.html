@@ -88,9 +88,9 @@
                                 <th scope="row">{{$index+1}}</th>
                                 <td>{{user.groupsNames[gID]}}</td>
                                 <td class="text-right">
-                                    <a href="" class="btn btn-secondary" data-toggle="modal" data-target="#editNameModal"
+                                    <a href="" class="btn btn-outline-secondary" data-toggle="modal" data-target="#editNameModal"
                                             ng-click="editGroup.curName=user.groupsNames[gID];editGroup.id=gID;editGroup.newName='';"><i class="fa fa-edit"></i></a>
-                                    <a href="" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmModal"
+                                    <a href="" class="btn btn-outline-danger" data-toggle="modal" data-target="#deleteConfirmModal"
                                             ng-click="deleteGroup.id=gID"><i class="fa fa-trash"></i></a>
                                 </td>
                             </tr>

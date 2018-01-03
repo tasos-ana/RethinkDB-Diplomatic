@@ -21,8 +21,10 @@ body{
     width:100%;
 }
 
-.logo-size{
-    max-height: 160px;
+@media (max-width: 321px) {
+    .logo-size{
+        max-height: 120px;
+    }
 }
 
 .bg-transparent{
@@ -49,4 +51,26 @@ body{
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+textarea {
+    padding: 10px;
+    width: 300px;
+    max-width: 90%;
+}
+.animate:focus {
+    -webkit-transition: height 50ms ease-in-out;
+    -moz-transition: height 50ms ease-in-out;
+    -o-transition: height 50ms ease-in-out;
+    transition: height 50ms ease-in-out;
+}
+.msd-elastic {
+    max-height: 400px;
+}
+#first {
+    font-size: 30px;
+}
+
+.text-overflow{
+    overflow-wrap:break-word;
 }

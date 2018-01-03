@@ -7,12 +7,10 @@
                     <div class="form d-flex align-items-center">
                         <div class="content">
                             <div class="logo row">
-                                <div class="col-sm-2"></div>
-                                <img class="col-sm-8" src="./assets/img/SignUp/signup_dark_glow.png" alt="">
-                                <div class="col-sm-2"></div>
-                            </div><br>
-                            <h4 class="h5 text-center text-info"><strong>Signup </strong> form</h4>
-                            <p class="text-center text-light">Type your information and make account for free.</p>
+                                <div class="col-sm-3"></div>
+                                <img class="col-sm-6 logo-size" src="./assets/img/SignUp/signup_dark_glow.png" alt="">
+                                <div class="col-sm-3"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -112,7 +110,7 @@
                                     <small ng-show="registerForm.uRepeatPassword.$error.compareto && registerForm.uPassword.$invalid"
                                        class="text-danger">Confirm password is invalid.</small>
                                 </div>
-                                <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary"> Register </button>
+                                <button ng-disabled="vm.dataLoading || registerForm.$invalid" id="register" type="submit" class="btn btn-primary btn-sm"> Sign up </button>
                             </form>
                             <small>Already have an account? </small><a href="/login" class="signup">Login</a>
                         </div>
