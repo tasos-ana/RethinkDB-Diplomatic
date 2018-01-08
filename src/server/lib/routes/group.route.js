@@ -22,6 +22,16 @@ router.route('/retrieve/data')
         });
     });
 
+router.route('/retrieve/file')
+    .get(function (req,res) {
+        groupService.retrieveFile({gID : req.query.gID, mID : req.query.mID}, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 router.route('/retrieve/name')
     .get(function (req,res) {
         groupService.retrieveGroupName(req.query.gID, req.cookies.userCredentials, function (err, responseData) {

@@ -71,9 +71,18 @@
             }
         }
 
-        function saveAs(name, type, data) {
-            var dataFile = new Blob([convertDataURIToBinary(data)], { type: type + ';charset=utf-8' });
-            FileSaver.saveAs(dataFile, '' + name);
+        function saveAs(gID, mID) {
+            httpService.retrieveFileValue(gID, mID)
+                .then(function (response) {
+                    if(response.success){
+                        var dataFile = new Blob([convertDataURIToBinary(response.data.file)], { type: response.data.type + ';charset=utf-8' });
+                        FileSaver.saveAs(dataFile, '' + response.data.name);
+                    }else{
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.message;
+                        $location.path('/login');
+                    }
+                });
         }
 
         function deleteMessage(gID, mID) {
@@ -144,8 +153,8 @@
                             httpService.groupAddData({
                                 gID   : gID,
                                 type  : theFile.type,
-                                value : e.target.result,
-                                name  : theFile.name,
+                                file : e.target.result,
+                                value  : theFile.name,
                                 time  : Date.now()
                             }).then(function (response) {
                                    if(response.success){

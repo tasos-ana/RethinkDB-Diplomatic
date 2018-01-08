@@ -16,6 +16,7 @@ const groupService = function () {
     return {
         createGroup         : _createGroup,
         retrieveGroupData   : _retrieveGroupData,
+        retrieveFile        : _retrieveFile,
         retrieveGroupName   : _retrieveGroupName,
         addData             : _addData,
         deleteGroup         : _deleteGroup,
@@ -275,7 +276,8 @@ const groupService = function () {
              * @param callback
              */
             function (connection, gName, callback) {
-                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).filter(rethinkdb.row('time').lt(Number(details.afterFrom))).limit(Number(details.limitVal))
+                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).pluck('data','type','time','id')
+                    .filter(rethinkdb.row('time').lt(Number(details.afterFrom))).limit(Number(details.limitVal))
                     .run(connection,function (err,cursor) {
                         connection.close();
                         if(err){
@@ -297,6 +299,90 @@ const groupService = function () {
         });
     }
 
+    /**
+     * Retrieve file details
+     * @param details
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _retrieveFile(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function(err,connection) {
+                    if(err){
+                        debug.error('Group.service@_retrieveFile: cant connect on database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null,connection);
+                });
+            },
+            /**
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@_retrieveFile: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                                debug.error('Account.service@_retrieveFile: user details and cookie isn\'t match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@_retrieveFile (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Retrieve file from table
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table(details.gID).get(details.mID).pluck('data','type','file')
+                    .run(connection,function (err,results) {
+                        connection.close();
+                        if(err){
+                            debug.error('Group.service@_retrieveFile: cant retrieve group <' + details.gID + '> data');
+                            return callback(true, 'Error happens while getting group data');
+                        }
+                        debug.correct('Retrieve data from group <' + details.gID + '> successful');
+                        callback(null,{
+                            gID     : details.gID,
+                            mID     : details.mID,
+                            name    : results.data,
+                            type    : results.type,
+                            file    : results.file
+                        });
+                    });
+            }
+        ],function (err,data) {
+            callback(err !== null, data);
+        });
+    }
+    
     /**
      * Retrieve group name from database
      * @param gID
@@ -457,7 +543,7 @@ const groupService = function () {
                         'data' : details.data,
                         'type' : details.type,
                         'time' : details.time,
-                        'name' : details.name
+                        'file' : details.file
                     }).run(connection,function(err,result){
                         connection.close();
                         if(err){

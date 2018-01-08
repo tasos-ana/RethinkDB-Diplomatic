@@ -100,9 +100,9 @@
                                                       <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                 </span>
                                                 <span class="d-block text-primary"
-                                                      ng-click="vm.saveAs(gData.name, gData.type, gData.data)" style="cursor: pointer;">
+                                                      ng-click="vm.saveAs(gID, gData.id)" style="cursor: pointer;">
                                                     <i class="fa fa-download" style="font-size:20px;"></i>
-                                                    <span class="text-overflow">{{gData.name}}</span>
+                                                    <span class="text-overflow">{{gData.data}}</span>
                                                 </span>
                                                 <small class="date d-block">{{gData.date}}</small>
                                             </div>

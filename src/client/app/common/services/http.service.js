@@ -22,6 +22,7 @@
 
         service.groupAddData                = _groupAddData;
         service.groupRetrieveData           = _groupRetrieveData;
+        service.retrieveFileValue           = _retrieveFileValue;
         service.groupRetrieveName           = _groupRetrieveName;
         service.groupCreate                 = _groupCreate;
         service.groupDelete                 = _groupDelete;
@@ -123,7 +124,7 @@
                 type    : data.type
             };
             if(data.type !== 'text'){
-                data2send.name = data.name;
+                data2send.file = data.file;
             }
 
             return $http({
@@ -147,6 +148,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant retrieve data from table:' + gID));
+        }
+
+        function _retrieveFileValue(gID, mID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/retrieve/file',
+                params          : {
+                    gID : gID,
+                    mID : mID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant retrieve file with id <' + mID + '> from group <' + gID +'>'));
         }
 
         function _groupRetrieveName(gID) {

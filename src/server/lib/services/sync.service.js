@@ -283,7 +283,6 @@ const syncService = function () {
                                                 "id": row.new_val.id,
                                                 "time": row.new_val.time,
                                                 "type": row.new_val.type,
-                                                "name": row.new_val.name
                                             }
                                         });
                                     } else if (Object.keys(row).length > 0 && row.type === 'remove') {
