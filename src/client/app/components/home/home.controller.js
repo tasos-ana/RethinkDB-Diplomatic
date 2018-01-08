@@ -32,7 +32,7 @@
             socketService.onGroupDelete();
             socketService.onGroupNameChange();
 
-            socketService.onGroupDataBadge();
+            // socketService.onGroupDataBadge();
 
         })();
     }
