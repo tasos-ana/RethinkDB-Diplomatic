@@ -232,6 +232,7 @@
                             .then(function (response) {
                                 if(response.success){
                                     if(!groupExists(response.data.gID)){
+                                        socketService.emitOpenGroup(response.data.gID);
                                         $rootScope.user.groupsList.push(response.data.gID);
                                         $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
                                     }
@@ -258,9 +259,9 @@
             if ($rootScope.user.openedGroupsList.indexOf(gID) !== -1) {
                 dashboardService.groupSetActive(gID);
             } else {
-                socketService.emitOpenGroup(gID);
                 dashboardService.groupOpen(gID);
             }
+            socketService.emitOpenGroup(gID);
         }
 
         function groupClose(gID) {

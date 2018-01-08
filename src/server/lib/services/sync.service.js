@@ -171,7 +171,7 @@ const syncService = function () {
 
     /**
      * Live feed on group and emit notification if we take new data
-     *TODO
+     *
      * @param socket
      * @param gID
      * @private
@@ -205,21 +205,23 @@ const syncService = function () {
                         }
                         if(socket.feeds.groupForBadgeNotification[gID] === undefined){
                             socket.feeds.groupForBadgeNotification[gID] = connection;
-                        }
-                        cursor.each(function (err, row) {
-                            if(socket.state === 'disconnecting'){
-                                delete socket.feeds.groupForBadgeNotification[gID];
-                                connection.close();
-                            }
-                            if(row !== undefined){
-                                if(Object.keys(row).length>0 && row.type === 'add'){
-                                    debug.status('Broadcast groupDataBadge for group <' + gID + '>');
-                                    socket.emit('groupDataBadge', {
-                                        "gID": gID,
-                                    });
+                            cursor.each(function (err, row) {
+                                if(socket.state === 'disconnecting'){
+                                    delete socket.feeds.groupForBadgeNotification[gID];
+                                    connection.close();
                                 }
-                            }
-                        });
+                                if(row !== undefined){
+                                    if(Object.keys(row).length>0 && row.type === 'add'){
+                                        debug.status('Broadcast groupDataBadge for group <' + gID + '>');
+                                        socket.emit('groupDataBadge', {
+                                            "gID": gID,
+                                        });
+                                    }
+                                }
+                            });
+                        }else{
+                            connection.close();
+                        }
                     });
             }
         ], function (err, msg) {
@@ -258,43 +260,45 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedGroupOnDataChange on group <' + gID + '>');
-                rethinkdb.table(gID).changes({includeTypes:true})
-                    .run(connection,function (err, cursor) {
-                        if(err){
-                            connection.close();
-                            return callback(true,'Sync.service@_feedGroupOnDataChange: something goes wrong with _feedGroupOnDataChange on group <' + gID + '>');
-                        }
-                        if(socket.feeds.groupOnDataChange[gID] === undefined){
-                            socket.feeds.groupOnDataChange[gID] = connection;
-                        }
-                        cursor.each(function (err, row) {
-                            if(socket.state === 'disconnecting'){
-                                delete socket.feeds.groupOnDataChange[gID];
+                if (socket.feeds.groupOnDataChange[gID] === undefined) {
+                    socket.feeds.groupOnDataChange[gID] = connection;
+                    rethinkdb.table(gID).changes({includeTypes:true})
+                        .run(connection,function (err, cursor) {
+                            if (err) {
                                 connection.close();
+                                return callback(true, 'Sync.service@_feedGroupOnDataChange: something goes wrong with _feedGroupOnDataChange on group <' + gID + '>');
                             }
-                            if(row !== undefined){
-                                if(Object.keys(row).length>0 && row.type === 'add'){
-                                    debug.status('Broadcast groupDataChange (add) for group <' + gID + '>');
-                                    socket.emit('groupDataAdd', {
-                                        "gID"   : gID,
-                                        "value" : {
-                                            "data"  : row.new_val.data,
-                                            "id"    : row.new_val.id,
-                                            "time"  : row.new_val.time,
-                                            "type"  : row.new_val.type,
-                                            "name"  : row.new_val.name
-                                        }
-                                    });
-                                }else if(Object.keys(row).length>0 && row.type === 'remove'){
-                                    debug.status('Broadcast groupDataChange (remove) for group <' + gID + '>');
-                                    socket.emit('groupDataRemove', {
-                                        "gID"   : gID,
-                                        "value" : row.old_val.id
-                                    });
+                            cursor.each(function (err, row) {
+                                if (socket.state === 'disconnecting') {
+                                    delete socket.feeds.groupOnDataChange[gID];
+                                    connection.close();
                                 }
-                            }
+                                if (row !== undefined) {
+                                    if (Object.keys(row).length > 0 && row.type === 'add') {
+                                        debug.status('Broadcast groupDataChange (add) for group <' + gID + '>');
+                                        socket.emit('groupDataAdd', {
+                                            "gID": gID,
+                                            "value": {
+                                                "data": row.new_val.data,
+                                                "id": row.new_val.id,
+                                                "time": row.new_val.time,
+                                                "type": row.new_val.type,
+                                                "name": row.new_val.name
+                                            }
+                                        });
+                                    } else if (Object.keys(row).length > 0 && row.type === 'remove') {
+                                        debug.status('Broadcast groupDataChange (remove) for group <' + gID + '>');
+                                        socket.emit('groupDataRemove', {
+                                            "gID": gID,
+                                            "value": row.old_val.id
+                                        });
+                                    }
+                                }
+                            });
                         });
-                });
+                }else{
+                    connection.close();
+                }
             }
         ], function (err, msg) {
             if(err){
@@ -332,30 +336,34 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedGroupOnDataChange on  group <' + gID + '>');
-                rethinkdb.table('groups').get(groupID).changes().run(connection,function (err, cursor) {
-                    if(err){
-                        connection.close();
-                        return callback(true,'Sync.service@_feedGroupOnDataChange : something goes wrong with changes on group <' + gID + '>');
-                    }
-                    if(socket.feeds.groupOnNameChange[gID] === undefined){
-                        socket.feeds.groupOnNameChange[gID] = connection;
-                    }
-                    cursor.each(function (err, row) {
-                        if(socket.state === 'disconnecting'){
-                            delete socket.feeds.groupOnNameChange[gID];
+
+                if(socket.feeds.groupOnNameChange[gID] === undefined){
+                    socket.feeds.groupOnNameChange[gID] = connection;
+
+                    rethinkdb.table('groups').get(groupID).changes().run(connection,function (err, cursor) {
+                        if(err){
                             connection.close();
+                            return callback(true,'Sync.service@_feedGroupOnDataChange : something goes wrong with changes on group <' + gID + '>');
                         }
-                        if(row !== undefined){
-                            if(Object.keys(row).length>0 && row.new_val !== null){
-                                debug.status('Broadcast groupNameChange for group <' + gID + '>');
-                                socket.emit('groupNameChange',{
-                                 "gID"     : gID,
-                                 "gName"   : row.new_val.name
-                                });
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.groupOnNameChange[gID];
+                                connection.close();
                             }
-                        }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                    debug.status('Broadcast groupNameChange for group <' + gID + '>');
+                                    socket.emit('groupNameChange',{
+                                        "gID"     : gID,
+                                        "gName"   : row.new_val.name
+                                    });
+                                }
+                            }
+                        });
                     });
-                });
+                }else{
+                    connection.close();
+                }
             }
         ], function (err, msg) {
             if(err){
@@ -392,16 +400,17 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedAccountOnNameChange on account <' + uEmail + '>');
-                rethinkdb.table('accounts').get(uEmail).changes()
-                    .filter(
-                     rethinkdb.row('old_val')('nickname').ne(rethinkdb.row('new_val')('nickname'))
-                    ).run(connection,function (err, cursor) {
+
+                if(socket.feeds.account.name === undefined){
+                    socket.feeds.account.name = connection;
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('old_val')('nickname').ne(rethinkdb.row('new_val')('nickname'))
+                        ).run(connection,function (err, cursor) {
                         if(err){
                             connection.close();
                             return callback(true,'Sync.service@_feedAccountOnNameChange : something goes wrong with changes on <' + uEmail + '>');
-                        }
-                        if(socket.feeds.account.name === undefined){
-                            socket.feeds.account.name = connection;
                         }
                         cursor.each(function (err, row) {
                             if(socket.state === 'disconnecting'){
@@ -418,7 +427,11 @@ const syncService = function () {
                                 }
                             }
                         });
-                });
+                    });
+
+                }else{
+                    connection.close();
+                }
             }
         ], function (err, msg) {
             if(err){
@@ -455,32 +468,36 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedAccountOnPasswordChange on account <' + uEmail + '>');
-                rethinkdb.table('accounts').get(uEmail).changes()
-                    .filter(
-                        rethinkdb.row('old_val')('password').ne(rethinkdb.row('new_val')('password'))
-                    ).run(connection,function (err, cursor) {
-                    if(err){
-                        connection.close();
-                        return callback(true,'Sync.service@_feedAccountOnPasswordChange : something goes wrong with changes on <' + uEmail + '>');
-                    }
-                    if(socket.feeds.account.password === undefined){
-                        socket.feeds.account.password = connection;
-                    }
-                    cursor.each(function (err, row) {
-                        if(socket.state === 'disconnecting'){
-                            delete socket.feeds.account.password;
+                if(socket.feeds.account.password === undefined){
+                    socket.feeds.account.password = connection;
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('old_val')('password').ne(rethinkdb.row('new_val')('password'))
+                        ).run(connection,function (err, cursor) {
+                        if(err){
                             connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnPasswordChange : something goes wrong with changes on <' + uEmail + '>');
                         }
-                        if(row !== undefined){
-                            if(Object.keys(row).length>0 && row.new_val !== null){
-                                debug.status('Broadcast accountPasswordChange for user <' + uEmail + '>');
-                                socket.emit('accountPasswordChange',{
-                                    "uPassword" : row.new_val.password
-                                });
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.password;
+                                connection.close();
                             }
-                        }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                    debug.status('Broadcast accountPasswordChange for user <' + uEmail + '>');
+                                    socket.emit('accountPasswordChange',{
+                                        "uPassword" : row.new_val.password
+                                    });
+                                }
+                            }
+                        });
                     });
-                });
+
+                }else{
+                    connection.close();
+                }
             }
         ], function (err, msg) {
             if(err){
@@ -517,42 +534,46 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedAccountOnPasswordChange on account <' + uEmail + '>');
-                rethinkdb.table('accounts').get(uEmail).changes()
-                    .filter(
-                        rethinkdb.row('new_val')('groups').count().gt(rethinkdb.row('old_val')('groups').count())
-                    ).run(connection,function (err, cursor) {
-                    if(err){
-                        connection.close();
-                        return callback(true,'Sync.service@_feedAccountOnGroupCreate : something goes wrong with changes on <' + uEmail + '>');
-                    }
-                    if(socket.feeds.account.insertGroup === undefined){
-                        socket.feeds.account.insertGroup = connection;
-                    }
-                    cursor.each(function (err, row) {
-                        if(socket.state === 'disconnecting'){
-                            delete socket.feeds.account.insertGroup;
+                if(socket.feeds.account.insertGroup === undefined){
+                    socket.feeds.account.insertGroup = connection;
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('new_val')('groups').count().gt(rethinkdb.row('old_val')('groups').count())
+                        ).run(connection,function (err, cursor) {
+                        if(err){
                             connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnGroupCreate : something goes wrong with changes on <' + uEmail + '>');
                         }
-                        if(row !== undefined){
-                            if(Object.keys(row).length>0 && row.new_val !== null){
-                                const gID   = (row.new_val.groups.diff(row.old_val.groups))[0];
-                                rethinkdb.table('groups').get(convertGroupID(gID, '-'))
-                                    .run(connection, function (err, result) {
-                                        if(err){
-                                            debug.error('Sync.service@_feedAccountOnGroupCreate: error happen while retrieve name for group: ' + gID);
-                                        }else{
-                                            debug.status('Broadcast groupCreate for user <' + uEmail + '>');
-                                            socket.emit('groupCreate',{
-                                                "uEmail"    : uEmail,
-                                                "gID"       : gID,
-                                                "gName"     : result.name
-                                            });
-                                        }
-                                    });
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.insertGroup;
+                                connection.close();
                             }
-                        }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                    const gID   = (row.new_val.groups.diff(row.old_val.groups))[0];
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                        .run(connection, function (err, result) {
+                                            if(err){
+                                                debug.error('Sync.service@_feedAccountOnGroupCreate: error happen while retrieve name for group: ' + gID);
+                                            }else{
+                                                debug.status('Broadcast groupCreate for user <' + uEmail + '>');
+                                                socket.emit('groupCreate',{
+                                                    "uEmail"    : uEmail,
+                                                    "gID"       : gID,
+                                                    "gName"     : result.name
+                                                });
+                                            }
+                                        });
+                                }
+                            }
+                        });
                     });
-                });
+
+                }else{
+                    connection.close();
+                }
             }
         ], function (err, msg) {
             if(err){
@@ -589,43 +610,50 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedAccountOnGroupDelete on account <' + uEmail + '>');
-                rethinkdb.table('accounts').get(uEmail).changes()
-                    .filter(
-                        rethinkdb.row('old_val')('groups').count().gt(rethinkdb.row('new_val')('groups').count())
-                    ).run(connection,function (err, cursor) {
-                    if(err){
-                        connection.close();
-                        return callback(true,'Sync.service@_feedAccountOnGroupDelete : something goes wrong with changes on <' + uEmail + '>');
-                    }
-                    if(socket.feeds.account.deleteGroup === undefined){
-                        socket.feeds.account.deleteGroup = connection;
-                    }
-                    cursor.each(function (err, row) {
-                        if(socket.state === 'disconnecting'){
-                            delete socket.feeds.account.deleteGroup;
-                            connection.close();
-                        }
-                        if(row !== undefined){
-                            if(Object.keys(row).length>0 && row.new_val !== null){
 
-                                const gID   = (row.old_val.groups.diff(row.new_val.groups))[0];
-                                rethinkdb.table('groups').get(convertGroupID(gID, '-'))
-                                    .run(connection, function (err, result) {
-                                        if(err){
-                                            debug.error('Sync.service@_feedAccountOnGroupDelete: error happen while retrieve name for group: ' + gID);
-                                        }else{
-                                            debug.status('Broadcast groupDelete for user <' + uEmail + '>');
-                                            socket.emit('groupDelete',{
-                                                "uEmail"    : uEmail,
-                                                "gID"       : gID,
-                                                "gName"     : result.name
-                                            });
-                                        }
-                                    });
-                            }
+                if(socket.feeds.account.deleteGroup === undefined){
+                    socket.feeds.account.deleteGroup = connection;
+
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('old_val')('groups').count().gt(rethinkdb.row('new_val')('groups').count())
+                        ).run(connection,function (err, cursor) {
+                        if(err){
+                            connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnGroupDelete : something goes wrong with changes on <' + uEmail + '>');
                         }
+
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.deleteGroup;
+                                connection.close();
+                            }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+
+                                    const gID   = (row.old_val.groups.diff(row.new_val.groups))[0];
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                        .run(connection, function (err, result) {
+                                            if(err){
+                                                debug.error('Sync.service@_feedAccountOnGroupDelete: error happen while retrieve name for group: ' + gID);
+                                            }else{
+                                                debug.status('Broadcast groupDelete for user <' + uEmail + '>');
+                                                socket.emit('groupDelete',{
+                                                    "uEmail"    : uEmail,
+                                                    "gID"       : gID,
+                                                    "gName"     : result.name
+                                                });
+                                            }
+                                        });
+                                }
+                            }
+                        });
                     });
-                });
+
+                }else{
+                    connection.close();
+                }
             }
         ], function (err, msg) {
             if(err){
