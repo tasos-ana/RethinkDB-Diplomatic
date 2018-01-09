@@ -245,11 +245,11 @@
                         httpService.groupCreate(vm.group.name)
                             .then(function (response) {
                                 if(response.success){
-                                    if(!groupExists(response.data.gID)){
-                                        socketService.emitOpenGroup(response.data.gID);
-                                        $rootScope.user.groupsList.push(response.data.gID);
-                                        $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
-                                    }
+                                    // if(!groupExists(response.data.gID)){
+                                    //     socketService.emitOpenGroup(response.data.gID);
+                                    //     $rootScope.user.groupsList.push(response.data.gID);
+                                    //     $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
+                                    // }
                                     $rootScope.user.unreadMessages[response.data.gID] = 0;
                                     groupOpen(response.data.gID);
                                     ngNotify.dismiss();
