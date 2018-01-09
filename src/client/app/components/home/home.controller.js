@@ -10,6 +10,7 @@
         const vm = this;
 
         (function initController() {
+            vm.dataLoading = true;
             vm.templateURL = $location.path();
             homeService.retrieveAccountDetails(function () {
 
@@ -31,7 +32,7 @@
             socketService.onGroupCreate();
             socketService.onGroupDelete();
             socketService.onGroupNameChange();
-
+            vm.dataLoading = false;
             // socketService.onGroupDataBadge();
 
         })();

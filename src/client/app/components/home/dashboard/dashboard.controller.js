@@ -26,6 +26,7 @@
         vm.deleteMessage    = deleteMessage;
 
         (function initController() {
+            vm.dataLoading = true;
             socketService.connectSocket();
 
             ngNotify.config({
@@ -58,6 +59,7 @@
             // socketService.onGroupDataBadge();
             socketService.onGroupDataAdd();
             socketService.onGroupDataRemove();
+            vm.dataLoading = false;
         })();
 
         function openFileLoader(gID) {

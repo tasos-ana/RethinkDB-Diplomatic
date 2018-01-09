@@ -13,6 +13,7 @@
         vm.accountSettingsFormReset         = _accountSettingsFormReset;
 
         (function initController() {
+            vm.dataLoading = true;
             vm.templateURL = $location.path();
 
             socketService.connectSocket();
@@ -39,7 +40,7 @@
             socketService.onGroupDelete();
             socketService.onGroupNameChange();
             // socketService.onGroupDataBadge();
-
+            vm.dataLoading = false;
         })();
 
         function _updateAccount() {

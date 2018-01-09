@@ -48,6 +48,7 @@
         }
 
         function _retrieveMoreGroupData(id, afterFrom, limitVal) {
+            $rootScope.user.openedGroupsData[id].dataLoading = true;
             httpService.groupRetrieveData(id, afterFrom, Math.floor(limitVal))
                 .then(function (response) {
                     if(response.success){
@@ -73,6 +74,7 @@
                         $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
+                    $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
                 });
         }
 

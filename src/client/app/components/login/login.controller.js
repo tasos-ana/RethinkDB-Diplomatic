@@ -8,14 +8,14 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService'];
-    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService) {
+    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService', '$window'];
+    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService, $window) {
         const vm = this;
 
         vm.login = login;
 
         (function initController() {
-            vm.dataLoading = false;
+            vm.dataLoading = true;
             vm.loginCauseError = {};
             vm.loginCauseSuccess = {};
 
@@ -46,6 +46,7 @@
             $rootScope.user = undefined;
             socketService.disconnectSocket();
             $cookies.remove('userCredentials');
+            vm.dataLoading = false;
         })();
 
         function login() {
@@ -60,7 +61,6 @@
                         $rootScope.user.openedGroupsList = [];
                         $rootScope.user.activeGroup = undefined;
                         $rootScope.loginStatus = true;
-                        vm.dataLoading = false;
                         $location.path('/home');
                     } else {
                         vm.dataLoading = false;
