@@ -247,15 +247,6 @@
                         httpService.groupCreate(vm.group.name)
                             .then(function (response) {
                                 if(response.success){
-                                    // if(!groupExists(response.data.gID)){
-                                    //     socketService.emitOpenGroup(response.data.gID);
-                                    //     $rootScope.user.groupsList.push(response.data.gID);
-                                    //     $rootScope.user.groupsNames[response.data.gID] = response.data.gName;
-                                    // }
-                                    $rootScope.user.unreadMessages[response.data.gID] = 0;
-                                    groupOpen(response.data.gID);
-                                    ngNotify.dismiss();
-                                    ngNotify.set("New group created successfully with name: " + response.data.gName, "notice-success");
                                     vm.group.creating = false;
                                     vm.group.name = '';
                                     vm.createGroupFadeIn=false;
@@ -317,11 +308,6 @@
             afterFrom = $rootScope.user.openedGroupsData[gID].data[0].time;
 
             dashboardService.retrieveMoreGroupData(gID, afterFrom, limitVal+limitVal/2);
-        }
-
-        function groupExists(gID) {
-            const index = $rootScope.user.groupsList.indexOf(gID);
-            return index !== -1;
         }
 
         function convertDataURIToBinary(dataURI) {
