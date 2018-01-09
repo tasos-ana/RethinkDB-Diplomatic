@@ -536,7 +536,7 @@ const groupService = function () {
                             return callback(true, 'Error happens while adding new data');
                         }
                         debug.correct('New data (text) added on group <' + details.gID + '> successful');
-                        callback(null, result);
+                        callback(null, {gID : details.gID, value : result});
                     });
                 }else{
                     rethinkdb.table(details.gID).insert({
@@ -551,7 +551,7 @@ const groupService = function () {
                             return callback(true, 'Error happens while adding new data');
                         }
                         debug.correct('New data (file) added on group <' + details.gID + '> successful');
-                        callback(null, result);
+                        callback(null, {gID : details.gID, value : result});
                     });
                 }
             }

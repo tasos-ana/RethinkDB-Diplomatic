@@ -72,6 +72,7 @@
         }
 
         function saveAs(gID, mID) {
+            $rootScope.user.openedGroupsData[gID].dataLoading = true;
             httpService.retrieveFileValue(gID, mID)
                 .then(function (response) {
                     if(response.success){
@@ -82,6 +83,7 @@
                         $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
                     }
+                    $rootScope.user.openedGroupsData[gID].dataLoading = false;
                 });
         }
 
@@ -144,27 +146,28 @@
 
                 for (let i = 0, f; f = files[i]; i++) {
                     const reader = new FileReader();
-
+                    $rootScope.user.openedGroupsData[group.id].dataLoading = true;
                     // Closure to capture the file information.
                     reader.onload = (function(theFile, gID) {
                         return function(e) {
                             //console.log(convertDataURIToBinary(e.target.result));
                             group.upload.uploadJobs += 1;
                             httpService.groupAddData({
-                                gID   : gID,
-                                type  : theFile.type,
-                                file : e.target.result,
-                                value  : theFile.name,
-                                time  : Date.now()
+                                gID     : gID,
+                                type    : theFile.type,
+                                file    : e.target.result,
+                                value   : theFile.name,
+                                time    : Date.now()
                             }).then(function (response) {
-                                   if(response.success){
-                                       group.upload.uploadJobs -= 1;
-                                       uploadText(group);
-                                   }else{
-                                       $rootScope.loginCauseError.enabled = true;
-                                       $rootScope.loginCauseError.msg = response.message;
-                                       $location.path('/login');
-                                   }
+                                $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
+                               if(response.success){
+                                   group.upload.uploadJobs -= 1;
+                                   uploadText(group);
+                               }else{
+                                   $rootScope.loginCauseError.enabled = true;
+                                   $rootScope.loginCauseError.msg = response.message;
+                                   $location.path('/login');
+                               }
                                 });
                         };
                     })(f, group.id);
@@ -181,12 +184,14 @@
             if(group.upload.uploadJobs <= 0){
                 if(group.upload.textData.length>0){
                     group.upload.uploadJobs += 1;
+                    $rootScope.user.openedGroupsData[group.id].dataLoading = true;
                     httpService.groupAddData({
                         gID     : group.id,
                         type    : 'text',
                         value   : group.upload.textData,
                         time    : Date.now()
                     }).then(function (response) {
+                        $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                         if(response.success){
                             group.upload.uploadJobs -= 1;
                             if(group.upload.uploadJobs <= 0){

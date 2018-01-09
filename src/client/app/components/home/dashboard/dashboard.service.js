@@ -48,7 +48,6 @@
         }
 
         function _retrieveMoreGroupData(id, afterFrom, limitVal) {
-            $rootScope.user.openedGroupsData[id].dataLoading = true;
             httpService.groupRetrieveData(id, afterFrom, Math.floor(limitVal))
                 .then(function (response) {
                     if(response.success){
@@ -69,7 +68,6 @@
                             $rootScope.user.openedGroupsData[response.data.id].noMoreData = true;
                         }
                         prepareGroup(response.data.id);
-                        $rootScope.user.openedGroupsData[response.data.id].dataLoading = false;
                     }else{
                         $rootScope.loginCauseError.enabled = true;
                         $rootScope.loginCauseError.msg = response.message;
