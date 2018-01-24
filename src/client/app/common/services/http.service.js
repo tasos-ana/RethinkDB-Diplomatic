@@ -33,6 +33,8 @@
         service.groupUpdateUnreadMessages   = _groupUpdateUnreadMessages;
 
         service.groupDeleteMessage          = _groupDeleteMessage;
+        service.groupModifyMessage          = _groupModifyMessage;
+
         return service;
 
         // private functions
@@ -282,7 +284,22 @@
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
+            }).then(handleSuccess, handleError('Cant delete message from group'));
+        }
+
+        function _groupModifyMessage(gID, mID, data) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/modify/message',
+                data            : {
+                    gID     : gID,
+                    mID     : mID,
+                    data    : data,
+                    modify  : Date.now()
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant modify message on group'));
         }
 
         function handleSuccess(res) {

@@ -281,10 +281,10 @@ const syncService = function () {
                                         socket.emit('groupDataAdd', {
                                             "gID": gID,
                                             "value": {
-                                                "data": row.new_val.data,
-                                                "id": row.new_val.id,
-                                                "time": row.new_val.time,
-                                                "type": row.new_val.type,
+                                                "data"  : row.new_val.data,
+                                                "id"    : row.new_val.id,
+                                                "time"  : row.new_val.time,
+                                                "type"  : row.new_val.type,
                                             }
                                         });
                                     } else if (Object.keys(row).length > 0 && row.type === 'remove') {
@@ -292,6 +292,16 @@ const syncService = function () {
                                         socket.emit('groupDataRemove', {
                                             "gID": gID,
                                             "value": row.old_val.id
+                                        });
+                                    }else if(Object.keys(row).length > 0 && row.type === 'change'){
+                                        debug.status('Broadcast groupDataModify (change) for group <' + gID + '>');
+                                        socket.emit('groupDataModify', {
+                                            "gID": gID,
+                                            "value": {
+                                                "data"  : row.new_val.data,
+                                                "mID"   : row.new_val.id,
+                                                "modify": row.new_val.modify
+                                            }
                                         });
                                     }
                                 }
