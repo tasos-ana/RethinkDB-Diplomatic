@@ -46,6 +46,7 @@ const syncService = function () {
                             account: {
                                 password    : undefined,
                                 name        : undefined,
+                                avatar      : undefined,
                                 insertGroup : undefined,
                                 deleteGroup : undefined
                             },
@@ -66,6 +67,7 @@ const syncService = function () {
                         //FEED ON ACCOUNT FOR CHANGES
                         const uEmail = responseData.email;
                         _feedAccountOnNameChange(socket, uEmail);
+                        _feedAccountOnAvatarChange(socket, uEmail);
                         _feedAccountOnPasswordChange(socket, uEmail);
                         _feedAccountOnGroupCreate(socket, uEmail);
                         _feedAccountOnGroupDelete(socket, uEmail);
@@ -422,6 +424,74 @@ const syncService = function () {
                                     socket.emit('accountNameChange',{
                                         "uEmail"       : uEmail,
                                         "uNickname"    : row.new_val.nickname
+                                    });
+                                }
+                            }
+                        });
+                    });
+
+                }else{
+                    connection.close();
+                }
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
+    }
+
+    /**
+     * Live feed on user for avatar change
+     *
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnAvatarChange(socket, uEmail) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnAvatarChange: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnAvatarChange on account <' + uEmail + '>');
+
+                if(socket.feeds.account.avatar === undefined){
+                    socket.feeds.account.avatar = connection;
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('old_val')('avatar').ne(rethinkdb.row('new_val')('avatar'))
+                        ).run(connection,function (err, cursor) {
+                        if(err){
+                            connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnAvatarChange : something goes wrong with changes on <' + uEmail + '>');
+                        }
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.avatar;
+                                connection.close();
+                            }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                    debug.status('Broadcast accountAvatarChange for user <' + uEmail + '>');
+                                    socket.emit('accountAvatarChange',{
+                                        "uEmail"    : uEmail,
+                                        "avatar"    : row.new_val.avatar
                                     });
                                 }
                             }

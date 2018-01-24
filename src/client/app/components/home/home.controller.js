@@ -26,14 +26,10 @@
 
             socketService.connectSocket();
 
-            socketService.onAccountNameChange();
-            socketService.onAccountPasswordChange();
+            socketService.onAccountDetails();
+            socketService.onGroupDetails();
 
-            socketService.onGroupCreate();
-            socketService.onGroupDelete();
-            socketService.onGroupNameChange();
             vm.dataLoading = false;
-            // socketService.onGroupDataBadge();
 
         })();
     }

@@ -32,13 +32,8 @@
 
             });
 
-            socketService.onAccountNameChange();
-            socketService.onAccountPasswordChange();
-
-            socketService.onGroupCreate();
-            socketService.onGroupDelete();
-            socketService.onGroupNameChange();
-            // socketService.onGroupDataBadge();
+            socketService.onAccountDetails();
+            socketService.onGroupDetails();
             vm.dataLoading = false;
         })();
 

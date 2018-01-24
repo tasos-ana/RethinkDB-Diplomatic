@@ -19,6 +19,7 @@
         service.accountUpdateNickname       = _accountUpdateNickname;
         service.accountUpdatePassword       = _accountUpdatePassword;
         service.accountUpdateAll            = _accountUpdateAll;
+        service.accountUpdate               = _accountUpdate;
 
         service.groupAddData                = _groupAddData;
         service.groupRetrieveData           = _groupRetrieveData;
@@ -54,7 +55,7 @@
                 data            : {
                                     uNickname   : user.uNickname,
                                     uEmail      : user.uEmail,
-                                    uPassword   : md5.createHash(user.uPassword || '')
+                                    uPassword   : md5(user.uPassword || '')
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -67,7 +68,7 @@
                 url             : '/account/authenticate',
                 params          : {
                                     uEmail      : user.uEmail,
-                                    uPassword   : md5.createHash(user.uPassword),
+                                    uPassword   : md5(user.uPassword),
                                     rememberMe  : user.rememberMe
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
@@ -80,7 +81,7 @@
                 method          : 'POST',
                 url             : '/account/update/nickname',
                 data            : {
-                    curPassword : md5.createHash(curPassword),
+                    curPassword : md5(curPassword),
                     nickname    : nickname
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
@@ -93,8 +94,8 @@
                 method          : 'POST',
                 url             : '/account/update/password',
                 data            : {
-                    curPassword : md5.createHash(curPassword),
-                    password    : md5.createHash(newPassword)
+                    curPassword : md5(curPassword),
+                    password    : md5(newPassword)
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -106,13 +107,34 @@
                 method          : 'POST',
                 url             : '/account/update/all',
                 data            : {
-                    curPassword : md5.createHash(curPassword),
+                    curPassword : md5(curPassword),
                     nickname    : nickname,
-                    password    : md5.createHash(newPassword)
+                    password    : md5(newPassword)
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Error updating nickname and password'));
+        }
+
+        function _accountUpdate(details) {
+            let newPassword;
+            if(details.newPassword !== undefined){
+                newPassword = md5(details.newPassword);
+            }else{
+                newPassword = undefined;
+            }
+            return $http({
+                method      : 'POST',
+                url         : '/account/update/details',
+                data        : {
+                    newAvatar   : details.newAvatar,
+                    newNickname : details.newNickname,
+                    newPassword : newPassword,
+                    curPassword : md5(details.curPassword)
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Error while updating account details'));
         }
 
         //Functions for group managing
