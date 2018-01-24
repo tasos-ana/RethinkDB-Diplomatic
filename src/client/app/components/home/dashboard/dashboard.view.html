@@ -29,7 +29,7 @@
                         <ul class="nav nav-tabs">
                             <li class="nav-item" ng-repeat="gID in user.openedGroupsList" ng-click="vm.groupSetActive(gID)">
                                 <a class="nav-link" ng-class="{'active' : user.activeGroup === gID}" data-toggle="tab" ng-href="#{{gID}}">
-                                    <button class="close closeTab" type="button" ng-click="vm.groupClose(gID)">×</button>
+                                    <button class="close closeTab" type="button" ng-click="vm.groupClose(gID)" title="Close group">×</button>
                                     {{user.openedGroupsData[gID].name}}
                                 </a>
                             </li>
@@ -77,7 +77,7 @@
                                     </div>
                                     <div class="input-group">
                                         <button type="button" class="btn btn-outline-primary btn-xs" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
-                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData"
+                                                    ng-disabled="user.openedGroupsData[gID].upload.uploadData" title="Click to share data"
                                                     ng-class="{'col-sm-10' : user.openedGroupsData[gID].upload.textData.length>0 || user.openedGroupsData[gID].upload.files.length>0,
                                                                'col-sm-12' : !(user.openedGroupsData[gID].upload.textData.length>0 || user.openedGroupsData[gID].upload.files.length>0)}">
                                                         <small>UP</small></button><br>
@@ -99,22 +99,37 @@
                                                 ng-click="vm.deleteMsg.gID=gID; vm.deleteMsg.mID=gData.id;" ng-show="vm.deleteButton[gData.id] && gData.id !=='created' ">×</button>
                                         <a class="message d-flex align-items-center">
                                             <div class="content" ng-if="gData.type === 'text'">
-                                                <span class="d-block"><strong>{{user.nickname}}</strong>
-                                                <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
-                                                </span>
-                                                <span class="d-block text-overflow">{{gData.data}}</span>
-                                                <small class="date d-block">{{gData.date}}</small>
+                                                <div class="row">
+                                                    <div class="avatar col-sm-2">
+                                                        <img gravatar-src="user.avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
+                                                    </div>
+                                                    <div class="col-sm-10">
+                                                        <span class="d-block text-overflow" ng-attr-title="{{user.nickname}}"><strong>{{user.nickname}}</strong>
+                                                            <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
+                                                        </span>
+                                                        <span class="d-block text-overflow" ng-attr-title="{{gData.data}}">{{gData.data}}</span>
+                                                        <small class="date d-block text-overflow" ng-attr-title="{{gData.date}}">{{gData.date}}</small>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                             <div class="content" ng-if="gData.type !== 'text'">
-                                                <span class="d-block"><strong>{{user.nickname}}</strong>
-                                                      <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
-                                                </span>
-                                                <span class="d-block text-primary"
-                                                      ng-click="vm.saveAs(gID, gData.id)" style="cursor: pointer;">
-                                                    <i class="fa fa-download" style="font-size:20px;"></i>
-                                                    <span class="text-overflow">{{gData.data}}</span>
-                                                </span>
-                                                <small class="date d-block">{{gData.date}}</small>
+                                                <div class="row">
+                                                    <div class="avatar col-sm-2">
+                                                        <img gravatar-src="user.avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
+                                                    </div>
+                                                    <div class="col-sm-10">
+                                                        <span class="d-block text-overflow" ng-attr-title="{{user.nickname}}"><strong>{{user.nickname}}</strong>
+                                                            <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
+                                                        </span>
+                                                        <span class="d-block text-primary text-overflow"
+                                                              ng-click="vm.saveAs(gID, gData.id)" style="cursor: pointer;">
+                                                                <i class="fa fa-download" style="font-size:20px;"></i>
+                                                            <span class="text-overflow" ng-attr-title="{{gData.data}}">{{gData.data}}</span>
+                                                        </span>
+                                                        <small class="date d-block text-overflow" ng-attr-title="{{gData.date}}">{{gData.date}}</small>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </a>
                                     </div>
