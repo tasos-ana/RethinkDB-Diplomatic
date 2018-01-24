@@ -112,4 +112,14 @@ router.route('/delete/message')
             res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
         });
     });
+
+router.route('/modify/message')
+    .post(function (req,res) {
+        groupService.modifyMessage(req.body, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
 module.exports = router;

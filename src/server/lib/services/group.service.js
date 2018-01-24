@@ -24,7 +24,8 @@ const groupService = function () {
         insertOpenedGroup   : _insertOpenedGroup,
         removeOpenedGroup   : _removeOpenedGroup,
         messageNotification : _messageNotification,
-        deleteMessage       : _deleteMessage
+        deleteMessage       : _deleteMessage,
+        modifyMessage       : _modifyMessage
     };
 
     /**
@@ -276,7 +277,7 @@ const groupService = function () {
              * @param callback
              */
             function (connection, gName, callback) {
-                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).pluck('data','type','time','id')
+                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).pluck('data','type','time','id','modify')
                     .filter(rethinkdb.row('time').lt(Number(details.afterFrom))).limit(Number(details.limitVal))
                     .run(connection,function (err,cursor) {
                         connection.close();
@@ -1112,6 +1113,87 @@ const groupService = function () {
                     .run(connection, function (err, result) {
                         if(err){
                             debug.error('Group.service@delete: cant delete group <' + details.gID + '> from groups table');
+                            connection.close();
+                            return callback(true, 'Error happens while deleting group from groups table');
+                        }
+                        callback(null, {});
+                    });
+            }
+        ],function (err,data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Modify message
+     *
+     * @param details contains gID,mID,data,modify
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _modifyMessage(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function(err,connection) {
+                    if(err){
+                        debug.error('Group.service@_modifyMessage: cant connect on database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null,connection);
+                });
+            },
+            /**
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@_modifyMessage: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details that required for validation');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+
+                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                                debug.error('Account.service@_modifyMessage: user details and cookie isnt match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@_modifyMessage (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Delete the message from group
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table(details.gID).get(details.mID).update({
+                  'data'    : details.data,
+                  'modify'  : details.modify
+                }).run(connection, function (err, result) {
+                        if(err){
+                            debug.error('Group.service@_modifyMessage: cant modify a message from group <' + details.gID + '>');
                             connection.close();
                             return callback(true, 'Error happens while deleting group from groups table');
                         }
