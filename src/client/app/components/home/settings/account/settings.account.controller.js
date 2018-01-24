@@ -9,8 +9,9 @@
     function SettingsAccountController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, ngNotify, $window, settingsAccountService) {
         const vm = this;
 
-        vm.updateAccount                    = _updateAccount;
-        vm.accountSettingsFormReset         = _accountSettingsFormReset;
+        vm.generateNewAvatar        = _generateNewAvatar;
+        vm.updateAccount            = _updateAccount;
+        vm.accountSettingsFormReset = _accountSettingsFormReset;
 
         (function initController() {
             vm.dataLoading = true;
@@ -30,18 +31,23 @@
             vm.accountSettings.applyChanges = false;
 
             homeService.retrieveAccountDetails(function () {
-
+                vm.accountSettings.newAvatar = $rootScope.user.avatar;
             });
 
-            socketService.onAccountNameChange();
-            socketService.onAccountPasswordChange();
+            socketService.onAccountDetails();
+            socketService.onGroupDetails();
 
-            socketService.onGroupCreate();
-            socketService.onGroupDelete();
-            socketService.onGroupNameChange();
-            // socketService.onGroupDataBadge();
             vm.dataLoading = false;
         })();
+
+        
+        function _generateNewAvatar() {
+            $timeout(function () {
+                $rootScope.$apply(function () {
+                    vm.accountSettings.newAvatar = vm.accountSettings.newAvatar.shuffle();
+                });
+            });
+        }
 
         function _updateAccount() {
             //Clean up
@@ -51,6 +57,7 @@
             const confirmNewPassword    = vm.accountSettings.confirmNewPassword;
             let changeNickname  = false;
             let changePassword  = false;
+            let changeAvatar    = false;
             let error           = false;
             ngNotify.dismiss();
             if($scope.accountSettingsForm.newNickname.$invalid){
@@ -96,16 +103,23 @@
                 }
             }
 
-            if(!error){
-                if(changeNickname && changePassword){
-                    settingsAccountService.accountUpdateAll(vm);
-                }else if(changeNickname){
-                    settingsAccountService.accountUpdateNickname(vm);
-                }else if(changePassword){
-                    settingsAccountService.accountUpdatePassword(vm);
+            if(vm.accountSettings.newAvatar !== $rootScope.user.avatar){
+                if(curPassword!==undefined && curPassword.length>=8){
+                    changeAvatar = true;
+                }else if($scope.accountSettingsForm.curPassword.$valid){
+                    ngNotify.set("Your current password is required", "notice-danger");
+                    $window.document.getElementById('curPassword_input').focus();
+                    error=true;
                 }else{
-                    ngNotify.dismiss();
-                    ngNotify.set("You are happy with your details. No changes was made on your account", "notice-success");
+                    ngNotify.set("Your current password is invalid", "notice-danger");
+                    $window.document.getElementById('curPassword_input').focus();
+                    error=true
+                }
+            }
+
+            if(!error){
+                if(changeNickname || changePassword || changeAvatar){
+                    settingsAccountService.accountUpdate(vm);
                 }
             }
         }
@@ -114,6 +128,7 @@
             // call that on success update
             delete vm.accountSettings;
             vm.accountSettings = {};
+            vm.accountSettings.newAvatar = $rootScope.user.avatar;
             vm.accountSettings.applyChanges = false;
             // $scope.accountSettingsForm.$setPristine();
         }
