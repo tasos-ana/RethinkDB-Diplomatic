@@ -95,20 +95,20 @@
                                     <div class="messages" style="overflow-x: hidden;" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
                                          ng-mouseover="vm.deleteButton[gData.id]=true;" ng-mouseleave="vm.deleteButton[gData.id]=false;">
                                         <button class="close closeTab text-danger" type="button" style="position:relative; right: 20px;"
-                                                data-toggle="modal" data-target="#deleteConfirmModal"
+                                                data-toggle="modal" data-target="#deleteConfirmModal" title="Delete message"
                                                 ng-click="vm.deleteMsg.gID=gID; vm.deleteMsg.mID=gData.id;" ng-show="vm.deleteButton[gData.id] && gData.id !=='created' ">×</button>
                                         <a class="message d-flex align-items-center">
-                                            <div class="content" ng-if="gData.type === 'text'">
+                                            <div class="content col-sm-12" ng-if="gData.type === 'text'">
                                                 <div class="row">
-                                                    <div class="avatar col-sm-2">
+                                                    <div class="avatar">
                                                         <img gravatar-src="user.avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
                                                     </div>
-                                                    <div class="col-sm-10">
-                                                        <span class="d-block text-overflow" ng-attr-title="{{user.nickname}}"><strong>{{user.nickname}}</strong>
+                                                    <div >
+                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.nickname}}"><strong>{{user.nickname}}</strong>
                                                             <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                         </span>
-                                                        <span class="d-block text-overflow" ng-attr-title="{{gData.data}}">{{gData.data}}</span>
-                                                        <small class="date d-block text-overflow" ng-attr-title="{{gData.date}}">{{gData.date}}</small>
+                                                        <span class="d-block text-overflow" ng-attr-title="Send: {{gData.data}}">{{gData.data}}</span>
+                                                        <small class="date d-block text-overflow" ng-attr-title="At: {{gData.date}}">{{gData.date}}</small>
                                                     </div>
                                                 </div>
 
@@ -119,15 +119,15 @@
                                                         <img gravatar-src="user.avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
                                                     </div>
                                                     <div class="col-sm-10">
-                                                        <span class="d-block text-overflow" ng-attr-title="{{user.nickname}}"><strong>{{user.nickname}}</strong>
+                                                        <span class="d-block text-overflow" ng-attr-title="From:{{user.nickname}}"><strong>{{user.nickname}}</strong>
                                                             <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                         </span>
                                                         <span class="d-block text-primary text-overflow"
                                                               ng-click="vm.saveAs(gID, gData.id)" style="cursor: pointer;">
                                                                 <i class="fa fa-download" style="font-size:20px;"></i>
-                                                            <span class="text-overflow" ng-attr-title="{{gData.data}}">{{gData.data}}</span>
+                                                            <span class="text-overflow" ng-attr-title="Send: {{gData.data}}">{{gData.data}}</span>
                                                         </span>
-                                                        <small class="date d-block text-overflow" ng-attr-title="{{gData.date}}">{{gData.date}}</small>
+                                                        <small class="date d-block text-overflow" ng-attr-title="At: {{gData.date}}">{{gData.date}}</small>
                                                     </div>
                                                 </div>
                                             </div>
