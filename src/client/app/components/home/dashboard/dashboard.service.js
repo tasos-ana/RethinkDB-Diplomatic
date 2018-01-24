@@ -108,6 +108,10 @@
             for(let i = 0; i<$rootScope.user.openedGroupsData[index].data.length; ++i){
                 const date = new Date($rootScope.user.openedGroupsData[index].data[i].time);
                 $rootScope.user.openedGroupsData[index].data[i].date = _configureDate(now,date);
+                if($rootScope.user.openedGroupsData[index].data[i].modify !== undefined){
+                    const modify = new Date($rootScope.user.openedGroupsData[index].data[i].modify);
+                    $rootScope.user.openedGroupsData[index].data[i].date += ' (Last modified: ' + _configureDate(now,modify) + ')';
+                }
             }
         }
 

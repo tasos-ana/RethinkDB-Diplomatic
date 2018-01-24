@@ -54,6 +54,7 @@
         function _onGroupData() {
             _onGroupDataAdd();
             _onGroupDataRemove();
+            _onGroupDataModify();
         }
         
         function _onGroupDetails() {
@@ -109,12 +110,26 @@
         function _onGroupDataRemove() {
             socketValidate();
             /**
-             * Data contains {gID , value:{data,time,date,type}}
+             * Data contains {gID , value:mID}
              */
             socket.on('groupDataRemove', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         tryDeleteMessage(data.gID, data.value);
+                    });
+                });
+            });
+        }
+        
+        function _onGroupDataModify() {
+            socketValidate();
+            /**
+             * Data contains {gID , value:{mID, data, modify}}
+             */
+            socket.on('groupDataModify', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        tryModifyMessage(data.gID, data.value);
                     });
                 });
             });
@@ -284,6 +299,24 @@
                     $timeout(function () {
                         $rootScope.$apply(function () {
                             $rootScope.user.openedGroupsData[gID].data.splice(i,1);
+                        });
+                    });
+                    break;
+                }
+            }
+        }
+
+        //details contains mID, data, modify
+        function tryModifyMessage(gID, details) {
+            for(let i=0; i<$rootScope.user.openedGroupsData[gID].data.length; ++i){
+                if($rootScope.user.openedGroupsData[gID].data[i].id === details.mID){
+                    const msg = $rootScope.user.openedGroupsData[gID].data[i];
+                    $timeout(function () {
+                        $rootScope.$apply(function () {
+                            msg.data = details.data;
+                            msg.modify = details.modify;
+                            msg.date = dashboardService.configureDate(new Date(),new Date(msg.time)) +
+                                ' (Last modified: ' + dashboardService.configureDate(new Date(), new Date(details.modify)) +')';
                         });
                     });
                     break;

@@ -24,6 +24,7 @@
         vm.saveAs           = saveAs;
 
         vm.deleteMessage    = deleteMessage;
+        vm.modifyMessage    = modifyMessage;
 
         (function initController() {
             vm.dataLoading = true;
@@ -42,8 +43,8 @@
             vm.templateURL = $location.path();
             vm.eventListener = {};
             vm.myGroupsExpand = false;
-            vm.deleteButton = {};
-            vm.deleteMsg    = {};
+            vm.editButton = {};
+            vm.editMessage    = {};
             if($rootScope.user === undefined || $rootScope.user ===null){
                 homeService.retrieveAccountDetails(dashboardService.retrieveGroupsData);
             }else{
@@ -87,27 +88,23 @@
         function deleteMessage(gID, mID) {
             httpService.groupDeleteMessage(gID,mID)
                 .then(function (response) {
-                if(response.success){
-                    tryDeleteMessage(gID,mID);
-                }else{
-                    $rootScope.loginCauseError.enabled = true;
-                    $rootScope.loginCauseError.msg = response.message;
-                    $location.path('/login');
-                }
+                    if(!response.success){
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.message;
+                        $location.path('/login');
+                    }
             });
         }
-
-        function tryDeleteMessage(gID, mID) {
-            for(let i=0; i<$rootScope.user.openedGroupsData[gID].data.length; ++i){
-                if($rootScope.user.openedGroupsData[gID].data[i].id === mID){
-                    $timeout(function () {
-                       $rootScope.$apply(function () {
-                           $rootScope.user.openedGroupsData[gID].data.splice(i,1);
-                       });
-                    });
-                    break;
-                }
-            }
+        
+        function modifyMessage(gID, mID) {
+            httpService.groupModifyMessage(gID,mID, vm.editMessage.value)
+                .then(function (response) {
+                    if(!response.success){
+                        $rootScope.loginCauseError.enabled = true;
+                        $rootScope.loginCauseError.msg = response.message;
+                        $location.path('/login');
+                    }
+                });
         }
 
         function handleFileSelect(evt, gID) {
