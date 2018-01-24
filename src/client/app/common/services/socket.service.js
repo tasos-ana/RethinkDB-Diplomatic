@@ -8,27 +8,22 @@
         .module('starterApp')
         .factory('socketService', socketService);
 
-    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location', 'httpService'];
-    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location, httpService) {
+    socketService.$inject = ['$rootScope', '$timeout', 'ngNotify', 'dashboardService', '$location', 'httpService', 'md5'];
+    function socketService($rootScope, $timeout, ngNotify, dashboardService, $location, httpService, md5) {
         let socket = null;
 
         return {
-            connectSocket           : _connectSocket,
-            disconnectSocket        : _disconnectSocket,
+            connectSocket       : _connectSocket,
+            disconnectSocket    : _disconnectSocket,
 
-            emitOpenGroup           : _emitOpenGroup,
-            emitCloseGroup          : _emitCloseGroup,
-            emitDeleteGroup         : _emitDeleteGroup,
+            emitOpenGroup       : _emitOpenGroup,
+            emitCloseGroup      : _emitCloseGroup,
+            emitDeleteGroup     : _emitDeleteGroup,
 
-            onGroupNameChange       : _onGroupNameChange,
-            onGroupDataAdd          : _onGroupDataAdd,
-            onGroupDataRemove       : _onGroupDataRemove,
-            onGroupDataBadge        : _onGroupDataBadge,
-            onGroupCreate           : _onGroupCreate,
-            onGroupDelete           : _onGroupDelete,
+            onGroupData         : _onGroupData,
+            onGroupDetails      : _onGroupDetails,
 
-            onAccountNameChange     : _onAccountNameChange,
-            onAccountPasswordChange : _onAccountPasswordChange
+            onAccountDetails    : _onAccountDetails,
         };
 
         function _connectSocket() {
@@ -56,6 +51,24 @@
             socket.emit('deleteGroup', gID);
         }
 
+        function _onGroupData() {
+            _onGroupDataAdd();
+            _onGroupDataRemove();
+        }
+        
+        function _onGroupDetails() {
+            _onGroupNameChange();
+            // _onGroupDataBadge();
+            _onGroupCreate();
+            _onGroupDelete();
+        }
+        
+        function _onAccountDetails() {
+            _onAccountNameChange();
+            _onAccountPasswordChange();
+            _onAccountAvatarChange();
+        }
+        
         function _onGroupNameChange() {
             socketValidate();
             /**
@@ -210,7 +223,7 @@
                             if($rootScope.user.nickname !== data.uNickname){
                                 $rootScope.user.nickname = data.uNickname;
                                 ngNotify.dismiss();
-                                ngNotify.set("Your nickname change to '" + data.uNickname +"' from another device.", "notice-success");
+                                ngNotify.set("Your nickname change to '" + data.uNickname +"' successful.", "notice-success");
                             }
                         }
                     });
@@ -226,13 +239,33 @@
             socket.on('accountPasswordChange', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        if($rootScope.user.password !== data.uPassword){
+                        if($rootScope.user.password !== data.uPassword && data.uPassword !== md5('')){
                             $rootScope.loginCauseSuccess.title      = ' Password change from another device. ';
                             $rootScope.loginCauseSuccess.msg        = 'Please login again!';
                             $rootScope.loginCauseSuccess.enabled    = true;
                             $location.path('/login');
                         }else{
                             $rootScope.user.password = undefined;
+                        }
+                    });
+                });
+            });
+        }
+        
+        function _onAccountAvatarChange() {
+            socketValidate();
+            /**
+             * Data contains {avatar:newAvatar}
+             */
+            socket.on('accountAvatarChange', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if(data.uEmail === $rootScope.user.email){
+                            if($rootScope.user.avatar !== data.avatar){
+                                $rootScope.user.avatar = data.avatar;
+                                ngNotify.dismiss();
+                                ngNotify.set("Your avatar change successful.", "notice-success");
+                            }
                         }
                     });
                 });

@@ -50,15 +50,10 @@
                 dashboardService.retrieveGroupsData();
             }
 
-            socketService.onAccountNameChange();
-            socketService.onAccountPasswordChange();
+            socketService.onAccountDetails();
+            socketService.onGroupDetails();
+            socketService.onGroupData();
 
-            socketService.onGroupCreate();
-            socketService.onGroupDelete();
-            socketService.onGroupNameChange();
-            // socketService.onGroupDataBadge();
-            socketService.onGroupDataAdd();
-            socketService.onGroupDataRemove();
             vm.dataLoading = false;
         })();
 
