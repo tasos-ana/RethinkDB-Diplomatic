@@ -26,6 +26,7 @@
         service.retrieveFileValue           = _retrieveFileValue;
         service.groupRetrieveName           = _groupRetrieveName;
         service.groupCreate                 = _groupCreate;
+        service.groupShare                  = _groupShare;
         service.groupDelete                 = _groupDelete;
         service.groupUpdateName             = _groupUpdateName;
         service.groupInsertToOpenedList     = _groupInsertToOpenedList;
@@ -210,6 +211,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant create group \'' + gName + '\''));
+        }
+
+        function _groupShare(uEmail, gID) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/share',
+                data            : {
+                    email  : uEmail,
+                    gID     : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant share group to user \'' + uEmail + '\''));
         }
 
         function _groupDelete(gID, gName) {
