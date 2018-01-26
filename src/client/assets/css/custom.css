@@ -83,3 +83,11 @@ textarea {
 .text-overflow{
     overflow-wrap:break-word;
 }
+
+
+hr {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border: 0;
+    border-top: 1px solid #6c757d;
+}
