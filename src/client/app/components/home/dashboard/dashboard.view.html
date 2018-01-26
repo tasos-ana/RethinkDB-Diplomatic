@@ -36,6 +36,7 @@
                         </ul>
                         <!-- Tab panes -->
                         <div class="tab-content">
+
                             <!--CONFIRM DELETION OF MESSAGE-->
                             <div class="modal fade" id="deleteConfirmModal">
                                 <div class="modal-dialog modal-lg">
@@ -79,15 +80,20 @@
                                 </div>
                             </div>
 
-
+                            <!--DASHBOARD TABS-->
                             <div class="tab-pane fade tab-pane-scrollable container" ng-repeat="gID in user.openedGroupsList"
                                  ng-class="{'active show' : user.activeGroup === gID}"  id={{gID}}><br>
+                                <!--LOADER-->
                                 <nav class="navbar navbar-expand-lg" ng-show="user.openedGroupsData[gID].dataLoading">
                                     <div class="search-inner d-flex align-items-center justify-content-center">
                                         <div class="loader"></div>
                                     </div>
                                 </nav>
+
+                                <!--TABS CONTENT-->
                                 <div class="form-group">
+
+                                    <!--UPLOAD DATA FORM-->
                                     <div class="input-group">
                                         <textarea class="form-control form-control-sm animate msd-elastic: \n;" placeholder="Your text..."
                                                   ng-model="user.openedGroupsData[gID].upload.textData"></textarea>
@@ -101,6 +107,8 @@
                                             </button>
                                         </span>
                                     </div>
+
+                                    <!--UPLOAD FORM BUTTONS-->
                                     <div class="input-group">
                                         <button type="button" class="btn btn-outline-primary btn-xs" ng-click="vm.uploadData(user.openedGroupsData[gID]);"
                                                     ng-disabled="user.openedGroupsData[gID].upload.uploadData" title="Click to share data"
@@ -111,15 +119,21 @@
                                                     ng-show="user.openedGroupsData[gID].upload.textData.length>0 || user.openedGroupsData[gID].upload.files.length>0"
                                                     ng-disabled="user.openedGroupsData[gID].upload.uploadData"><small>Clear</small></button>
                                     </div>
+
+                                    <!--PREVIEW LIST OF FILES-->
                                     <ul>
                                         <li ng-repeat="file in user.openedGroupsData[gID].upload.files">
                                             <strong>{{file.name}}</strong> - {{file.size}} {{file.type}}
                                         </li>
                                     </ul>
                                 </div>
+
+                                <!--MESSAGES BLOCK-->
                                 <div class="messages-block block">
                                     <div class="messages" style="overflow-x: hidden;" ng-repeat="gData in user.openedGroupsData[gID].data | reverse"
                                          ng-mouseover="vm.editButton[gData.id]=true;" ng-mouseleave="vm.editButton[gData.id]=false;">
+
+                                        <!--BUTTONS FOR EDIT MESSAGES-->
                                         <button class="close closeTab text-success border-success" type="button" style="position: relative; right: 70px; top: 5px; width: 25px; height: 20px;"
                                                 data-toggle="modal" data-target="#modifyMessageModal" title="Modify message"
                                                 ng-click="vm.editMessage.gID=gID; vm.editMessage.mID=gData.id; vm.editMessage.value=gData.data"
@@ -132,7 +146,11 @@
                                                 ng-click="vm.editMessage.gID=gID; vm.editMessage.mID=gData.id;" ng-show="vm.editButton[gData.id] && gData.id !=='created' ">
                                                 <i class="fa fa-trash"></i>
                                         </button>
+
+                                        <!--THE DATA OF MESSAGE-->
                                         <a class="message d-flex align-items-center">
+
+                                            <!--IF DATA IS TEXT-->
                                             <div class="content col-sm-12" ng-if="gData.type === 'text'">
                                                 <div class="row">
                                                     <div class="avatar">
@@ -148,6 +166,8 @@
                                                 </div>
 
                                             </div>
+
+                                            <!--IF DATA IS FILE-->
                                             <div class="content col-sm-12" ng-if="gData.type !== 'text'">
                                                 <div class="row">
                                                     <div class="avatar">
@@ -166,9 +186,11 @@
                                                     </div>
                                                 </div>
                                             </div>
+
                                         </a>
                                     </div>
                                 </div>
+                                <!--LOAD MORE DATA -->
                                 <div class="text-center" style="width: 100%;">
                                     <a href="" class="border-primary text-primary"
                                        ng-click="vm.loadMoreData(gID)" ng-hide="user.openedGroupsData[gID].noMoreData">
