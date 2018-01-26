@@ -270,11 +270,18 @@
                                 httpService.groupShare(vm.share.email, vm.share.group)
                                     .then(function (response) {
                                         if(response.success){
-                                            vm.share.creating = false;
-                                            delete vm.share.email;
-                                            delete vm.share.group;
-                                            vm.shareGroupFadeIn=false;
+                                            if(!response.data.exist){
+                                                ngNotify.dismiss();
+                                                ngNotify.set("Group shared to the user successful!", "notice-success");
+                                            }else{
+                                                ngNotify.dismiss();
+                                                ngNotify.set("Group already shared to the user.", "notice-success");
+                                            }
                                         }
+                                        vm.share.creating = false;
+                                        delete vm.share.email;
+                                        delete vm.share.group;
+                                        vm.shareGroupFadeIn=false;
                                     });
                             });
                         });
