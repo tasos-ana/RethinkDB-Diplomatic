@@ -48,12 +48,13 @@ const accountService = function () {
              */
             function(connection,callback) {
                 rethinkdb.table('accounts').insert({
-                    'nickname'      : details.uNickname,
-                    'email'         : details.uEmail,
-                    'password'      : details.uPassword,
-                    'avatar'        : details.uEmail,
-                    'groups'        : [],
-                    'openedGroups'  : []
+                    'nickname'          : details.uNickname,
+                    'email'             : details.uEmail,
+                    'password'          : details.uPassword,
+                    'avatar'            : details.uEmail,
+                    'groups'            : [],
+                    'participateGroups' : [],
+                    'openedGroups'      : []
                 }).run(connection,function(err,result){
                     connection.close();
                     if(err){
