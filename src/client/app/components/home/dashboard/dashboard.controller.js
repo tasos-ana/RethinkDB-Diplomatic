@@ -144,14 +144,14 @@
                     // Closure to capture the file information.
                     reader.onload = (function(theFile, gID) {
                         return function(e) {
-                            //console.log(convertDataURIToBinary(e.target.result));
                             group.upload.uploadJobs += 1;
                             httpService.groupAddData({
                                 gID     : gID,
                                 type    : theFile.type,
                                 file    : e.target.result,
                                 value   : theFile.name,
-                                time    : Date.now()
+                                time    : Date.now(),
+                                user    : $rootScope.user.email
                             }).then(function (response) {
                                 $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                                if(response.success){
@@ -183,7 +183,8 @@
                         gID     : group.id,
                         type    : 'text',
                         value   : group.upload.textData,
-                        time    : Date.now()
+                        time    : Date.now(),
+                        user    : $rootScope.user.email
                     }).then(function (response) {
                         $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                         if(response.success){

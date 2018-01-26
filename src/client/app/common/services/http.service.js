@@ -145,7 +145,8 @@
                 gID     : data.gID,
                 data    : data.value,
                 time    : data.time,
-                type    : data.type
+                type    : data.type,
+                user    : data.user
             };
             if(data.type !== 'text'){
                 data2send.file = data.file;

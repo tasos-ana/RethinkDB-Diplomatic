@@ -285,6 +285,7 @@ const syncService = function () {
                                                 "id"    : row.new_val.id,
                                                 "time"  : row.new_val.time,
                                                 "type"  : row.new_val.type,
+                                                "user"  : row.new_val.user
                                             }
                                         });
                                     } else if (Object.keys(row).length > 0 && row.type === 'remove') {
