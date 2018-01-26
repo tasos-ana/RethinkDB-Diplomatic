@@ -31,7 +31,7 @@
             vm.accountSettings.applyChanges = false;
 
             homeService.retrieveAccountDetails(function () {
-                vm.accountSettings.newAvatar = $rootScope.user.avatar;
+                vm.accountSettings.newAvatar = $rootScope.user.usersDetails[$rootScope.user.email].avatar;
             });
 
             socketService.onAccountDetails();
@@ -103,7 +103,7 @@
                 }
             }
 
-            if(vm.accountSettings.newAvatar !== $rootScope.user.avatar){
+            if(vm.accountSettings.newAvatar !== $rootScope.user.usersDetails[$rootScope.user.email].avatar){
                 if(curPassword!==undefined && curPassword.length>=8){
                     changeAvatar = true;
                 }else if($scope.accountSettingsForm.curPassword.$valid){
@@ -128,7 +128,7 @@
             // call that on success update
             delete vm.accountSettings;
             vm.accountSettings = {};
-            vm.accountSettings.newAvatar = $rootScope.user.avatar;
+            vm.accountSettings.newAvatar = $rootScope.user.usersDetails[$rootScope.user.email].avatar;
             vm.accountSettings.applyChanges = false;
             // $scope.accountSettingsForm.$setPristine();
         }

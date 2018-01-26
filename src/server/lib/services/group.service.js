@@ -530,6 +530,7 @@ const groupService = function () {
                         'data' : details.data,
                         'type' : details.type,
                         'time' : details.time,
+                        'user' : details.user
                     }).run(connection,function(err,result){
                         connection.close();
                         if(err){
@@ -544,7 +545,8 @@ const groupService = function () {
                         'data' : details.data,
                         'type' : details.type,
                         'time' : details.time,
-                        'file' : details.file
+                        'file' : details.file,
+                        'user' : details.user
                     }).run(connection,function(err,result){
                         connection.close();
                         if(err){

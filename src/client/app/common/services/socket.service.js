@@ -235,8 +235,8 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if(data.uEmail === $rootScope.user.email){
-                            if($rootScope.user.nickname !== data.uNickname){
-                                $rootScope.user.nickname = data.uNickname;
+                            if($rootScope.user.usersDetails[$rootScope.user.email].nickname !== data.uNickname){
+                                $rootScope.user.usersDetails[$rootScope.user.email].nickname = data.uNickname;
                                 ngNotify.dismiss();
                                 ngNotify.set("Your nickname change to '" + data.uNickname +"' successful.", "notice-success");
                             }
@@ -276,8 +276,8 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if(data.uEmail === $rootScope.user.email){
-                            if($rootScope.user.avatar !== data.avatar){
-                                $rootScope.user.avatar = data.avatar;
+                            if($rootScope.user.usersDetails[$rootScope.user.email].avatar !== data.avatar){
+                                $rootScope.user.usersDetails[$rootScope.user.email].avatar = data.avatar;
                                 ngNotify.dismiss();
                                 ngNotify.set("Your avatar change successful.", "notice-success");
                             }

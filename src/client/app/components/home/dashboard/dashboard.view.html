@@ -154,10 +154,10 @@
                                             <div class="content col-sm-12" ng-if="gData.type === 'text'">
                                                 <div class="row">
                                                     <div class="avatar">
-                                                        <img gravatar-src="user.avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
+                                                        <img gravatar-src="user.usersDetails[user.email].avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
                                                     </div>
                                                     <div >
-                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.nickname}}"><strong>{{user.nickname}}</strong>
+                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.usersDetails[user.email].nickname}}"><strong>{{user.usersDetails[user.email].nickname}}</strong>
                                                             <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                         </span>
                                                         <span class="d-block text-overflow" ng-attr-title="Send: {{gData.data}}">{{gData.data}}</span>
@@ -170,10 +170,10 @@
                                             <div class="content col-sm-12" ng-if="gData.type !== 'text'">
                                                 <div class="row">
                                                     <div class="avatar">
-                                                        <img gravatar-src="user.avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
+                                                        <img gravatar-src="user.usersDetails[user.email].avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
                                                     </div>
                                                     <div>
-                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.nickname}}"><strong>{{user.nickname}}</strong>
+                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.usersDetails[user.email].nickname}}"><strong>{{user.usersDetails[user.email].nickname}}</strong>
                                                             <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                         </span>
                                                         <span class="d-block text-primary text-overflow"
