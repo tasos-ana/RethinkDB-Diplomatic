@@ -15,6 +15,7 @@ const groupService = function () {
 
     return {
         createGroup         : _createGroup,
+        shareGroup          : _shareGroup,
         retrieveGroupData   : _retrieveGroupData,
         retrieveFile        : _retrieveFile,
         retrieveGroupName   : _retrieveGroupName,
@@ -103,6 +104,7 @@ const groupService = function () {
                 rethinkdb.table('groups').insert({
                     'name'              : gName,
                     'user'              : details.uEmail,
+                    "participateUsers"  : [],
                     'unreadMessages'    : 0
                 }).run(connection, function (err, result) {
                     if (err) {
@@ -193,6 +195,143 @@ const groupService = function () {
                     });
             }
         ], function (err, data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Share a group to another user
+     *
+     * @param details   contains email: of the user that we share group, gID: the id of the group
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _shareGroup(details, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function(err,connection) {
+                    if(err){
+                        debug.error('Group.service@_shareGroup: cant connect on database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null,connection);
+                });
+            },
+            /**
+             * Validate req cookie with details on database
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                try{
+                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups')
+                        .run(connection,function (err,result) {
+                            if(err){
+                                debug.error('Account.service@_shareGroup: cant get user <' + cookieDetails.uEmail + '> info');
+                                connection.close();
+                                return callback(true, 'Error happens while getting user details');
+                            }
+                            if(result === null){
+                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                connection.close();
+                                return callback(true,'Email do not exists');
+                            }
+                            if(cookieDetails.uPassword !== result.password ){
+                                debug.error('Account.service@_shareGroup: user details and cookie isn\'t match');
+                                connection.close();
+                                return callback(true,'Invalid cookie');
+                            }else if(result.groups.indexOf(details.gID) === -1){
+                                debug.error('Account.service@_shareGroup: group with id <' + details.gID +'> isn\'t on user groups');
+                                connection.close();
+                                return callback(true,'Group that trying to share isn\'t on user groups list');
+                            }
+                            else{
+                                callback(null,connection);
+                            }
+                        });
+                }catch (e){
+                    debug.error('Account.service@_shareGroup (catch): user details and cookie isnt match');
+                    connection.close();
+                    return callback(true,'Invalid cookie');
+                }
+            },
+            /**
+             * Check if the group already shared to that user
+             *
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('accounts').get(details.email).pluck('participateGroups')
+                    .run(connection, function (err, result) {
+                        if(err){
+                            debug.error('Account.service@_shareGroup: cant retrieve participateGroup from user <' + details.email + '>');
+                            connection.close();
+                            return callback(true, 'Error happens while retrieving group name');
+                        }
+                        if(result['participateGroups'].indexOf(details.gID) === -1){
+                            callback(null, connection, false);
+                        }else{
+                            debug.status('Account.service@_shareGroup: group already exists on user');
+                            return callback(null, connection, true);
+                        }
+                    });
+            },
+            /**
+             * Add the gID on user participate
+             *
+             * @param connection
+             * @param exist if group already exist
+             * @param callback
+             */
+            function (connection,exist, callback) {
+                if(!exist){
+                    rethinkdb.table('accounts').get(details.email).update({
+                        participateGroups: rethinkdb.row('participateGroups').append(details.gID)
+                    }).run(connection, function (err, result) {
+                        if(err){
+                            debug.error('Account.service@_shareGroup: cant append shared group on user <' + details.email + '>');
+                            connection.close();
+                            return callback(true, 'Error happens while retrieving group name');
+                        }
+                        callback(null, connection, false);
+                    });
+                }else{
+                    callback(null,connection,true);
+                }
+
+            },
+            /**
+             * Add the gID on group participate
+             *
+             * @param connection
+             * @param exist
+             * @param callback
+             */
+            function (connection, exist, callback) {
+                if(!exist){
+                    rethinkdb.table('groups').get(convertGroupID(details.gID,'-')).update({
+                        participateUsers: rethinkdb.row('participateUsers').append(details.email)
+                    }).run(connection, function (err, result) {
+                        if(err){
+                            debug.error('Account.service@_shareGroup: cant append user on shared group <' + details.gID + '>');
+                            connection.close();
+                            return callback(true, 'Error happens while retrieving group name');
+                        }
+                        callback(null, {gID: details.gID, email: details.email, exist : false});
+                    });
+                }else{
+                    callback(null, {exist : true});
+                }
+
+            }
+        ],function (err,data) {
             callback(err !== null, data);
         });
     }

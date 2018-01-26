@@ -12,6 +12,16 @@ router.route('/create')
         });
     });
 
+router.route('/share')
+    .post(function (req,res) {
+        groupService.shareGroup(req.body , req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 router.route('/retrieve/data')
     .get(function (req,res) {
         groupService.retrieveGroupData({gID : req.query.gID, afterFrom : req.query.afterFrom, limitVal : req.query.limitVal}, req.cookies.userCredentials, function (err, responseData) {
