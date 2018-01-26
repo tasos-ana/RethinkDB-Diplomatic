@@ -58,6 +58,16 @@
                 .then(function (response) {
                     if (response.success) {
                         $rootScope.user = response.data;
+                        if($rootScope.user.usersDetails === undefined){
+                            $rootScope.user.usersDetails = {};
+                            $rootScope.user.usersDetails[$rootScope.user.email] = {
+                                'email'     : $rootScope.user.email,
+                                'nickname'  : $rootScope.user.nickname,
+                                'avatar'    : $rootScope.user.avatar
+                            };
+                            delete $rootScope.user.nickname;
+                            delete $rootScope.user.avatar;
+                        }
                         $rootScope.user.openedGroupsList = [];
                         $rootScope.user.activeGroup = undefined;
                         $rootScope.loginStatus = true;
