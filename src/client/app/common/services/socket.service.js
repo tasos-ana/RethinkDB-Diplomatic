@@ -62,6 +62,9 @@
             // _onGroupDataBadge();
             _onGroupCreate();
             _onGroupDelete();
+
+            _onParticipateAdd();
+            _onParticipateRemove();
         }
         
         function _onAccountDetails() {
@@ -219,6 +222,70 @@
                                 }
                                 ngNotify.dismiss();
                                 ngNotify.set("The group with name '" + data.gName +"' deleted.", "notice-success");
+                            }
+                        }
+                    });
+                });
+            });
+        }
+        
+        function _onParticipateAdd() {
+            socketValidate();
+            /**
+             * Data contains {uEmail, gID, gName}
+             */
+            socket.on('participateAdd',function (data) {
+                $timeout(function () {
+                   $rootScope.$apply(function () {
+                      if(data.uEmail === $rootScope.user.email){
+                          const index = $rootScope.user.participateGroupsList.indexOf(data.gID);
+                          if(index === -1){
+                              $rootScope.user.participateGroupsList.push(data.gID);
+                              $rootScope.user.groupsNames[data.gID] = data.gName;
+                              $rootScope.user.unreadMessages[data.gID] = 0;
+                              dashboardService.groupOpen(data.gID);
+                              _emitOpenGroup(data.gID);
+                              ngNotify.dismiss();
+                              ngNotify.set("New group shared to you with name '" + data.gName +"'.", "notice-success");
+                          }
+                      }
+                   });
+                });
+            })
+        }
+        
+        function _onParticipateRemove() {
+            socketValidate();
+            /**
+             * Data contains {uEmail, gID:gID}
+             */
+            socket.on('participateRemove', function (data) {
+                $timeout(function () {
+                    $rootScope.$apply(function () {
+                        if(data.uEmail === $rootScope.user.email){
+                            const index = $rootScope.user.participateGroupsList.indexOf(data.gID);
+                            if(index >= -1){
+                                $rootScope.user.participateGroupsList.splice(index, 1);
+                                delete $rootScope.user.groupsNames[data.gID];
+
+                                $rootScope.user.unreadMessages.total -= $rootScope.user.unreadMessages[data.gID];
+                                delete $rootScope.user.unreadMessages[data.gID];
+
+                                if($location.path() === "/home/dashboard"){
+                                    const index = $rootScope.user.openedGroupsList.indexOf(data.gID);
+                                    if (index >= 0) {
+                                        $rootScope.user.openedGroupsList.splice(index, 1);
+                                    }
+                                    if(data.gID === $rootScope.user.activeGroup){
+                                        if(index >= $rootScope.user.openedGroupsList.length){
+                                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index-1];
+                                        }else{
+                                            $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
+                                        }
+                                    }
+                                }
+                                ngNotify.dismiss();
+                                ngNotify.set("The owner of shared group '" + data.gName +"' removed you.", "notice-success");
                             }
                         }
                     });
