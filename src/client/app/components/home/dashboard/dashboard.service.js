@@ -22,11 +22,6 @@
         return service;
 
         function _retrieveGroupsData() {
-            for(let i = 0; i<$rootScope.user.participateGroupsList.length; ++i){
-                const gID  = $rootScope.user.participateGroupsList[i];
-                _retrieveSingleGroupName(gID);
-            }
-
             for(let i = 0; i<$rootScope.user.openedGroupsList.length; ++i){
                 const gID  = $rootScope.user.openedGroupsList[i];
                 _retrieveSingleGroupData(gID, Date.now(), 10);

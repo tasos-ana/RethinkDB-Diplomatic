@@ -216,8 +216,12 @@ const accountService = function () {
              * @param callback
              */
             function (connection, data, callback) {
-                rethinkdb.table('groups').orderBy({index : 'userAndName'}).filter({user : data.email})
-                    .run(connection,function (err, result) {
+                rethinkdb.table('groups').orderBy({index : 'userAndName'}).filter(
+                    function (group) {
+                     return group('participateUsers').contains(data.email)
+                         .or(group("user").eq(data.email));
+                    }
+                ).run(connection,function (err, result) {
                         connection.close();
                         if(err){
                             debug.error('Account.service@accountInfo: cant get for user <' + uEmail + '> the groups details');
@@ -234,6 +238,9 @@ const accountService = function () {
                                 const gID = convertGroupID(arr[i].id,'_');
                                 if(data.tmpGroupsList.indexOf(gID) !== -1){
                                     data.groupsList.push(gID);
+                                    data.groupsNames[gID] = arr[i].name;
+                                    data.unreadMessages[gID] = arr[i].unreadMessages;
+                                }else if(data.participateGroupsList.indexOf(gID) !== -1){
                                     data.groupsNames[gID] = arr[i].name;
                                     data.unreadMessages[gID] = arr[i].unreadMessages;
                                 }else{
