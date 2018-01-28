@@ -44,11 +44,13 @@ const syncService = function () {
                         //INITIALIAZE STRUCTURE ON socket THAT WE WILL KEEP CONNECTION
                         socket.feeds = {
                             account: {
-                                password    : undefined,
-                                name        : undefined,
-                                avatar      : undefined,
-                                insertGroup : undefined,
-                                deleteGroup : undefined
+                                password            : undefined,
+                                name                : undefined,
+                                avatar              : undefined,
+                                insertGroup         : undefined,
+                                deleteGroup         : undefined,
+                                addParticipate      : undefined,
+                                removeParticipate   : undefined
                             },
                             groupForBadgeNotification: {
                                 //gID : connection
@@ -69,8 +71,12 @@ const syncService = function () {
                         _feedAccountOnNameChange(socket, uEmail);
                         _feedAccountOnAvatarChange(socket, uEmail);
                         _feedAccountOnPasswordChange(socket, uEmail);
+
                         _feedAccountOnGroupCreate(socket, uEmail);
                         _feedAccountOnGroupDelete(socket, uEmail);
+
+                        _feedAccountOnParticipateAdd(socket, uEmail);
+                        _feedAccountOnParticipateRemove(socket, uEmail);
 
                         //FEED ON ALL groupsList for badge notification,name change and delete perform
                         //FEED ON ALL openedGroup for data
@@ -352,7 +358,9 @@ const syncService = function () {
                 if(socket.feeds.groupOnNameChange[gID] === undefined){
                     socket.feeds.groupOnNameChange[gID] = connection;
 
-                    rethinkdb.table('groups').get(groupID).changes().run(connection,function (err, cursor) {
+                    rethinkdb.table('groups').get(groupID).changes().filter(
+                        rethinkdb.row('old_val')('name').ne(rethinkdb.row('new_val')('name'))
+                    ).run(connection,function (err, cursor) {
                         if(err){
                             connection.close();
                             return callback(true,'Sync.service@_feedGroupOnDataChange : something goes wrong with changes on group <' + gID + '>');
@@ -743,6 +751,164 @@ const syncService = function () {
     }
 
     /**
+     * Live feed on user for new group participate
+     *
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnParticipateAdd(socket, uEmail) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnParticipateAdd: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnParticipateAdd on account <' + uEmail + '>');
+                if(socket.feeds.account.addParticipate === undefined){
+                    socket.feeds.account.addParticipate = connection;
+
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('new_val')('participateGroups').count().gt(rethinkdb.row('old_val')('participateGroups').count())
+                        ).run(connection,function (err, cursor) {
+                        if(err){
+                            connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnParticipateAdd : something goes wrong with changes on <' + uEmail + '>');
+                        }
+
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.addParticipate;
+                                connection.close();
+                            }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+
+                                    const gID   = (row.new_val.participateGroups.diff(row.old_val.participateGroups))[0];
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                        .run(connection, function (err, result) {
+                                            if(err){
+                                                debug.error('Sync.service@_feedAccountOnParticipateAdd: error happen while retrieve name for group: ' + gID);
+                                            }else{
+                                                debug.status('Broadcast participateAdd for user <' + uEmail + '>');
+                                                socket.emit('participateAdd',{
+                                                    "uEmail"    : uEmail,
+                                                    "gID"       : gID,
+                                                    "gName"     : result.name
+                                                });
+                                            }
+                                        });
+                                }
+                            }
+                        });
+                    });
+                }else{
+                    connection.close();
+                }
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
+    }
+
+    /**
+     * Live feed on user for removed from a participating group
+     *
+     * @param socket
+     * @param uEmail
+     * @private
+     */
+    function _feedAccountOnParticipateRemove(socket, uEmail) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_feedAccountOnParticipateRemove: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Start live feeding on account
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                debug.status('Start _feedAccountOnParticipateRemove on account <' + uEmail + '>');
+
+                if(socket.feeds.account.removeParticipate === undefined){
+                    socket.feeds.account.removeParticipate = connection;
+
+
+                    rethinkdb.table('accounts').get(uEmail).changes()
+                        .filter(
+                            rethinkdb.row('old_val')('participateGroups').count().gt(rethinkdb.row('new_val')('participateGroups').count())
+                        ).run(connection,function (err, cursor) {
+                        if(err){
+                            connection.close();
+                            return callback(true,'Sync.service@_feedAccountOnParticipateRemove : something goes wrong with changes on <' + uEmail + '>');
+                        }
+
+                        cursor.each(function (err, row) {
+                            if(socket.state === 'disconnecting'){
+                                delete socket.feeds.account.removeParticipate;
+                                connection.close();
+                            }
+                            if(row !== undefined){
+                                if(Object.keys(row).length>0 && row.new_val !== null){
+
+                                    const gID   = (row.old_val.participateGroups.diff(row.new_val.participateGroups))[0];
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                        .run(connection, function (err, result) {
+                                            if(err){
+                                                debug.error('Sync.service@_feedAccountOnParticipateRemove: error happen while retrieve name for group: ' + gID);
+                                            }else{
+                                                debug.status('Broadcast participateRemove for user <' + uEmail + '>');
+                                                socket.emit('participateRemove',{
+                                                    "uEmail"    : uEmail,
+                                                    "gID"       : gID,
+                                                    "gName"     : result.name
+                                                });
+                                            }
+                                        });
+                                }
+                            }
+                        });
+                    });
+
+                }else{
+                    connection.close();
+                }
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
+    }
+    
+    /**
      * If the gID contained in the list it's popped else return undefined
      *
      * @param gID
@@ -759,35 +925,6 @@ const syncService = function () {
             if (index >= 0) {
                 elem = list[index];
                 list.splice(index, 1);
-            }
-        }
-        return elem;
-    }
-
-    /**
-     * If the gID contained in the list we return undefined else we push it
-     *
-     * @param gID
-     * @param list
-     * @returns {*}
-     * @private
-     */
-    function _tryPush(list, gID) {
-        let elem;
-        if(list === undefined){
-            elem = undefined;
-        }else{
-            if(list.length === 0){
-                list.push(gID);
-                elem = gID;
-            }else{
-                const index = list.indexOf(gID);
-                if (index >= 0) {
-                    elem = undefined
-                }else{
-                    list.push(gID);
-                    elem = gID;
-                }
             }
         }
         return elem;

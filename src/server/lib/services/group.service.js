@@ -80,8 +80,8 @@ const groupService = function () {
                                 return callback(true,'Invalid cookie');
                             }else{
                                 const details = {
-                                  uEmail    : cookieDetails.uEmail,
-                                  uNickname : result.nickname
+                                    uEmail    : cookieDetails.uEmail,
+                                    uNickname : result.nickname
                                 };
                                 callback(null, details, connection);
                             }
@@ -379,7 +379,8 @@ const groupService = function () {
                                 connection.close();
                                 return callback(true,'Email do not exists');
                             }
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
                                 debug.error('Account.service@_retrieveGroupData: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -522,7 +523,7 @@ const groupService = function () {
             callback(err !== null, data);
         });
     }
-    
+
     /**
      * Retrieve group name from database
      * @param gID
@@ -565,7 +566,9 @@ const groupService = function () {
                                 connection.close();
                                 return callback(true,'Email do not exists');
                             }
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(gID) === -1){
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(gID) === -1 && result.participateGroups.indexOf(gID) === -1))
+                            {
                                 debug.error('Account.service@_retrieveGroupName: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -644,7 +647,8 @@ const groupService = function () {
                                 return callback(true,'Email do not exists');
                             }
 
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
                                 debug.error('Account.service@add: user details and cookie isnt match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -769,13 +773,13 @@ const groupService = function () {
                 rethinkdb.table('groups').get(convertGroupID(details.gID,'-')).update({
                     name : details.gName
                 }).run(connection, function (err, result) {
-                        connection.close();
-                        if(err){
-                            debug.error('Group.service@UpdateName: cant update group <' + gID + '> name');
-                            return callback(true, 'Error happens while updating group name');
-                        }
-                        callback(null, result);
-                    });
+                    connection.close();
+                    if(err){
+                        debug.error('Group.service@UpdateName: cant update group <' + gID + '> name');
+                        return callback(true, 'Error happens while updating group name');
+                    }
+                    callback(null, result);
+                });
             }
         ],function (err,data) {
             callback(err !== null, data);
@@ -847,15 +851,15 @@ const groupService = function () {
              */
             function (connection, uEmail, callback) {
                 rethinkdb.table('accounts').get(uEmail).update({
-                  groups : rethinkdb.row('groups').deleteAt(rethinkdb.row('groups').offsetsOf(details.gID)(0))
+                    groups : rethinkdb.row('groups').deleteAt(rethinkdb.row('groups').offsetsOf(details.gID)(0))
                 }).run(connection,function (err,results) {
-                        if(err){
-                            debug.error('Group.service@delete: cant delete group <' + details.gID + '> from user <' + uEmail + '>');
-                            connection.close();
-                            return callback(true, 'Error happens while deleting group from user');
-                        }
-                        callback(null, connection, uEmail);
-                    });
+                    if(err){
+                        debug.error('Group.service@delete: cant delete group <' + details.gID + '> from user <' + uEmail + '>');
+                        connection.close();
+                        return callback(true, 'Error happens while deleting group from user');
+                    }
+                    callback(null, connection, uEmail);
+                });
             },
             /**
              * Delete from user the gID at field openedGRoups
@@ -984,16 +988,16 @@ const groupService = function () {
                 rethinkdb.table('accounts').get(details.uEmail)('openedGroups').offsetsOf(details.gID)
                     .run(connection, function (err, result) {
                         details.insertGroup = true;
-                       if(err){
-                           connection.close();
-                           debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
-                           return callback(true, 'Error happens while update user groups');
-                       }
-                       if(result.length!==0){
-                           details.insertGroup = false;
-                           debug.correct('Group <' + details.gID + '> already opened for user <' + details.uEmail + '>');
-                       }
-                       callback(null, details, connection);
+                        if(err){
+                            connection.close();
+                            debug.error('Group.service@insertOpenedGroup: cant update user <' + details.uEmail + '> groups');
+                            return callback(true, 'Error happens while update user groups');
+                        }
+                        if(result.length!==0){
+                            details.insertGroup = false;
+                            debug.correct('Group <' + details.gID + '> already opened for user <' + details.uEmail + '>');
+                        }
+                        callback(null, details, connection);
                     });
             },
             /**
@@ -1072,8 +1076,8 @@ const groupService = function () {
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
-                                 details.uEmail    = cookieDetails.uEmail;
-                                 details.uNickname = result.nickname;
+                                details.uEmail    = cookieDetails.uEmail;
+                                details.uNickname = result.nickname;
                                 callback(null, details, connection);
                             }
                         });
@@ -1230,7 +1234,8 @@ const groupService = function () {
                                 return callback(true,'Email do not exists');
                             }
 
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
                                 debug.error('Account.service@_deleteMessage: user details and cookie isnt match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -1309,7 +1314,8 @@ const groupService = function () {
                                 return callback(true,'Email do not exists');
                             }
 
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
                                 debug.error('Account.service@_modifyMessage: user details and cookie isnt match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
@@ -1330,16 +1336,16 @@ const groupService = function () {
              */
             function (connection, callback) {
                 rethinkdb.table(details.gID).get(details.mID).update({
-                  'data'    : details.data,
-                  'modify'  : details.modify
+                    'data'    : details.data,
+                    'modify'  : details.modify
                 }).run(connection, function (err, result) {
-                        if(err){
-                            debug.error('Group.service@_modifyMessage: cant modify a message from group <' + details.gID + '>');
-                            connection.close();
-                            return callback(true, 'Error happens while deleting group from groups table');
-                        }
-                        callback(null, {});
-                    });
+                    if(err){
+                        debug.error('Group.service@_modifyMessage: cant modify a message from group <' + details.gID + '>');
+                        connection.close();
+                        return callback(true, 'Error happens while deleting group from groups table');
+                    }
+                    callback(null, {});
+                });
             }
         ],function (err,data) {
             callback(err !== null, data);

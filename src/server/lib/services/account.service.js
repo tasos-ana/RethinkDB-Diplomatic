@@ -115,11 +115,12 @@ const accountService = function () {
                             }else{
                                 debug.correct('User <' + details.uEmail + '> authenticated');
                                 callback(null, {
-                                        email               : result.email,
-                                        nickname            : result.nickname,
-                                        avatar              : result.avatar,
-                                        groupsList          : result.groups,
-                                        openedGroupsData    : { }
+                                        email                   : result.email,
+                                        nickname                : result.nickname,
+                                        avatar                  : result.avatar,
+                                        groupsList              : result.groups,
+                                        participateGroupsList   : result.participateGroups,
+                                        openedGroupsData        : { }
                                 });
                             }
                         }
@@ -188,15 +189,16 @@ const accountService = function () {
                             }else{
                                 debug.status('Retrieved info for user <' + result.email +'>');
                                 callback(null, connection, {
-                                    "email"             : result.email,
-                                    "nickname"          : result.nickname,
-                                    "avatar"            : result.avatar,
-                                    "tmpGroupsList"     : result.groups,
-                                    "groupsList"        : [ ],
-                                    "groupsNames"       : { },
-                                    "openedGroupsData"  : { },
-                                    "unreadMessages"    : { },
-                                    "openedGroupsList"  : result.openedGroups
+                                    "email"                 : result.email,
+                                    "nickname"              : result.nickname,
+                                    "avatar"                : result.avatar,
+                                    "tmpGroupsList"         : result.groups,
+                                    "groupsList"            : [ ],
+                                    "participateGroupsList" : result.participateGroups,
+                                    "groupsNames"           : { },
+                                    "openedGroupsData"      : { },
+                                    "unreadMessages"        : { },
+                                    "openedGroupsList"      : result.openedGroups
                                 });
                             }
                         });
