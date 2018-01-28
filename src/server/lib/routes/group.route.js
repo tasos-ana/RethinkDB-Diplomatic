@@ -82,6 +82,16 @@ router.route('/delete')
         });
     });
 
+router.route('/participate/leave')
+    .get(function (req,res) {
+        groupService.leaveParticipateGroup({gID : req.query.gID, gName : req.query.gName}, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 router.route('/openedList/insert')
     .post(function (req,res) {
         groupService.insertOpenedGroup(req.body, req.cookies.userCredentials, function (err, responseData) {
