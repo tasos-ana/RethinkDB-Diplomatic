@@ -96,11 +96,22 @@
                     <select class="form-control" id="participantUserSelect" ng-model="editParticipants.user">
                         <option ng-repeat="user in user.groupsParticipants[editParticipants.id]" value={{user}}>{{user}}</option>
                     </select>
+                    <form class="justify-content-center form-inline" name="confirmRemoveParticipant">
+                        <div class="form-group">
+                            <input id="removeParticipantInput" type="text" class="mx-sm-3 form-control text-center"
+                                   ng-model="editParticipants.confirm" placeholder="Type 'Confirm' to continue">
+                        </div>
+                    </form>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" ng-disabled="editParticipants.user===undefined"
-                        data-dismiss="modal" ng-click="vm.removeParticipant(editParticipants.id)">Remove</button>
+                <button type="button" class="btn btn-primary" ng-if="user.groupsParticipants[editParticipants.id].length===1"
+                        ng-disabled="editParticipants.user===undefined || editParticipants.confirm!=='Confirm'"
+                        ng-click="vm.removeParticipant(editParticipants.id)" data-dismiss="modal">Remove</button>
+
+                <button type="button" class="btn btn-primary" ng-if="user.groupsParticipants[editParticipants.id].length!==1"
+                        ng-disabled="editParticipants.user===undefined || editParticipants.confirm!=='Confirm'"
+                        ng-click="vm.removeParticipant(editParticipants.id)">Remove</button>
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Back</button>
             </div>
         </div>

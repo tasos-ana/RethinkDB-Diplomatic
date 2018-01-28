@@ -93,13 +93,14 @@
         }
 
         function _removeParticipant(gID) {
-            httpService.groupRemoveParticipant($rootScope.editParticipants.user,gID)
+            httpService.groupRemoveParticipant($rootScope.editParticipants.user, gID)
                 .then(function (response) {
                    if(response.success){
                        const index = $rootScope.user.groupsParticipants[response.data.gID].indexOf(response.data.uEmail);
                        if(index !== -1 ){
                            $rootScope.user.groupsParticipants[response.data.gID].splice(index,1);
                        }
+                       $rootScope.editParticipants.user = undefined;
                    }else{
                        $rootScope.loginCauseError.enabled = true;
                        $rootScope.loginCauseError.msg = response.message;
