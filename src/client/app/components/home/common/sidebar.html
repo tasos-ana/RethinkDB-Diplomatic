@@ -37,7 +37,7 @@
             <li>
                 <a href="" data-toggle="collapse" data-target="#participateGroupsList"> <i class="fa fa-users"></i><small> Participate groups</small></a>
                 <ul id="participateGroupsList" class="collapse list-unstyled" style="max-height: 250px; overflow-y:auto;">
-                    <li ng-repeat="gID in user.groupsList">
+                    <li ng-repeat="gID in user.participateGroupsList">
                         <a href="" ng-click="vm.groupOpen(gID)" class="text-overflow" style="overflow-x: hidden;">
                             <span class="badge bg-primary text-dark" ng-show="user.unreadMessages[gID]>0">{{user.unreadMessages[gID]}}</span> {{user.groupsNames[gID]}}
                         </a>
