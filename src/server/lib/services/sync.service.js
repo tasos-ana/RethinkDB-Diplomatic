@@ -90,6 +90,15 @@ const syncService = function () {
                             _feedGroupOnNameChange(socket, gID);
                             _feedGroupForBadgeNotification(socket, gID);
                         }
+
+                        while (openedList.length>0){
+                            const gID = openedList.pop();
+                            if(gID !== undefined){
+                                _feedGroupOnDataChange(socket, gID);
+                                _feedGroupOnNameChange(socket, gID);
+                                _feedGroupForBadgeNotification(socket, gID);
+                            }
+                        }
                         socket.state = 'ready';
                         debug.status('SOCKET CONNECTION ESTABLISHED');
                     }
@@ -353,7 +362,7 @@ const syncService = function () {
              * @param callback
              */
             function (connection, callback) {
-                debug.status('Start _feedGroupOnDataChange on  group <' + gID + '>');
+                debug.status('Start _feedGroupOnNameChange on  group <' + gID + '>');
 
                 if(socket.feeds.groupOnNameChange[gID] === undefined){
                     socket.feeds.groupOnNameChange[gID] = connection;
@@ -363,7 +372,7 @@ const syncService = function () {
                     ).run(connection,function (err, cursor) {
                         if(err){
                             connection.close();
-                            return callback(true,'Sync.service@_feedGroupOnDataChange : something goes wrong with changes on group <' + gID + '>');
+                            return callback(true,'Sync.service@_feedGroupOnNameChange : something goes wrong with changes on group <' + gID + '>');
                         }
                         cursor.each(function (err, row) {
                             if(socket.state === 'disconnecting'){
