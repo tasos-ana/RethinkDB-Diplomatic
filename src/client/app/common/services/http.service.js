@@ -24,6 +24,7 @@
 
         service.groupAddData                    = _groupAddData;
         service.groupRetrieveData               = _groupRetrieveData;
+        service.retrieveGroupParticipants       = _retrieveGroupParticipants;
         service.retrieveFileValue               = _retrieveFileValue;
         service.groupRetrieveName               = _groupRetrieveName;
         service.groupCreate                     = _groupCreate;
@@ -31,6 +32,7 @@
         service.groupDelete                     = _groupDelete;
         service.groupUpdateName                 = _groupUpdateName;
         service.groupParticipateLeave           = _groupParticipateLeave;
+        service.groupRemoveParticipant          = _groupRemoveParticipant;
 
         service.groupInsertToOpenedList         = _groupInsertToOpenedList;
         service.groupRemoveFromOpenedList       = _groupRemoveFromOpenedList;
@@ -189,6 +191,18 @@
             }).then(handleSuccess,handleError('Cant retrieve data from table:' + gID));
         }
 
+        function _retrieveGroupParticipants(gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/retrieve/participants',
+                params          : {
+                    gID         : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant retrieve participants from table:' + gID));
+        }
+
         function _retrieveFileValue(gID, mID) {
             return $http({
                 method          : 'GET',
@@ -274,6 +288,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant leave from the participate group \'' + gID + '\''));
+        }
+
+        function _groupRemoveParticipant(uEmail, gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/participant/remove',
+                params          : {
+                    gID     : gID,
+                    uEmail  : uEmail,
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant remove participant from group \'' + gID + '\''));
         }
 
         function _groupInsertToOpenedList(gID) {

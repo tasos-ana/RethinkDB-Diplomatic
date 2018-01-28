@@ -32,6 +32,16 @@ router.route('/retrieve/data')
         });
     });
 
+router.route('/retrieve/participants')
+    .get(function (req,res) {
+        groupService.retrieveGroupParticipants(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 router.route('/retrieve/file')
     .get(function (req,res) {
         groupService.retrieveFile({gID : req.query.gID, mID : req.query.mID}, req.cookies.userCredentials, function (err, responseData) {
@@ -85,6 +95,16 @@ router.route('/delete')
 router.route('/participate/leave')
     .get(function (req,res) {
         groupService.leaveParticipateGroup({gID : req.query.gID, gName : req.query.gName}, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/participant/remove')
+    .get(function (req,res) {
+        groupService.removeParticipateUser({gID : req.query.gID, uEmail : req.query.uEmail}, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

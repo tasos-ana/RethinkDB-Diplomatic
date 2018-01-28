@@ -9,9 +9,10 @@
     function SettingsGroupsController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, ngNotify) {
         const vm = this;
 
-        vm.updateGroupName  = _updateGroupName;
-        vm.deleteGroup      = _deleteGroup;
-        vm.leaveGroup       = _leaveGroup;
+        vm.updateGroupName      = _updateGroupName;
+        vm.deleteGroup          = _deleteGroup;
+        vm.leaveGroup           = _leaveGroup;
+        vm.removeParticipant    = _removeParticipant;
 
         (function initController() {
             vm.dataLoading = true;
@@ -29,8 +30,21 @@
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
             $rootScope.leaveGroup = {};
+            $rootScope.editParticipants = {};
 
-            homeService.retrieveAccountDetails(function () {});
+            homeService.retrieveAccountDetails(function () {
+                //Function to retrieve the participants per group
+                $rootScope.user.groupsParticipants = {};
+                for(let i=0; i<$rootScope.user.groupsList.length; ++i){
+                    let gID = $rootScope.user.groupsList[i];
+                    httpService.retrieveGroupParticipants(gID)
+                        .then(function (response) {
+                           if(response.success){
+                               $rootScope.user.groupsParticipants[response.data.gID] = response.data.participants;
+                           }
+                        });
+                }
+            });
 
             socketService.onAccountDetails();
             socketService.onGroupDetails();
@@ -71,6 +85,22 @@
             httpService.groupParticipateLeave(gID)
                 .then(function (response) {
                    if(!response.success){
+                       $rootScope.loginCauseError.enabled = true;
+                       $rootScope.loginCauseError.msg = response.message;
+                       $location.path('/login');
+                   }
+                });
+        }
+
+        function _removeParticipant(gID) {
+            httpService.groupRemoveParticipant($rootScope.editParticipants.user,gID)
+                .then(function (response) {
+                   if(response.success){
+                       const index = $rootScope.user.groupsParticipants[response.data.gID].indexOf(response.data.uEmail);
+                       if(index !== -1 ){
+                           $rootScope.user.groupsParticipants[response.data.gID].splice(index,1);
+                       }
+                   }else{
                        $rootScope.loginCauseError.enabled = true;
                        $rootScope.loginCauseError.msg = response.message;
                        $location.path('/login');

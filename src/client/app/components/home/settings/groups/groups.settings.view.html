@@ -34,7 +34,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editNameConfirmModal"
                         ng-disabled="renameGroupForm.$invalid" ng-click="vm.updateGroupName(editGroup)" data-dismiss="modal">Apply</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Back</button>
             </div>
         </div>
     </div>
@@ -82,6 +82,34 @@
     </div>
 </div>
 
+<!--EDIT THE PARTICIPANTS OF GROUP-->
+<div class="modal fade" id="editParticipantsModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title h5 text-light">Manage the participants of groups.</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="text-light" for="participantUserSelect">Select a user:</label>
+                    <select class="form-control" id="participantUserSelect" ng-model="editParticipants.user">
+                        <option ng-repeat="user in user.groupsParticipants[editParticipants.id]" value={{user}}>{{user}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-disabled="editParticipants.user===undefined"
+                        data-dismiss="modal" ng-click="vm.removeParticipant(editParticipants.id)">Remove</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
 <!--MAIN CONTENT-->
 <div class="d-flex align-items-stretch">
     <!-- SIDEBAR -->
@@ -91,7 +119,7 @@
             <div class="container-fluid">
                 <ol class="breadcrumb no-margin no-padding">
                     <li class="breadcrumb-item h5"><a href="/home">Home</a></li>
-                    <li class="breadcrumb-item active text-secondary h5">Group settings</li>
+                    <li class="breadcrumb-item active text-secondary h5">Groups settings</li>
                 </ol>
             </div>
         </div><br><br>
@@ -115,6 +143,10 @@
                                 <th scope="row">{{$index+1}}</th>
                                 <td>{{user.groupsNames[gID]}}</td>
                                 <td class="text-right">
+                                    <a href="" class="btn btn-outline-secondary text-danger" data-toggle="modal" data-target="#editParticipantsModal"
+                                       ng-click="editParticipants.id=gID" title="Manage group participants" ng-show="user.groupsParticipants[gID].length>0">
+                                        <i class="fa fa-ban"></i>
+                                    </a>
                                     <a href="" class="btn btn-outline-secondary" data-toggle="modal" data-target="#editNameModal"
                                        ng-click="editGroup.curName=user.groupsNames[gID];editGroup.id=gID;editGroup.newName='';"
                                        title="Edit group name">
