@@ -9,14 +9,15 @@
     function dashboardService($rootScope, $location, httpService, $timeout) {
         const service = {};
 
-        service.retrieveGroupsData      = _retrieveGroupsData;
-        service.retrieveSingleGroupData = _retrieveSingleGroupData;
-        service.retrieveMoreGroupData   = _retrieveMoreGroupData;
-        service.retrieveSingleGroupName = _retrieveSingleGroupName;
-        service.configureDate           = _configureDate;
+        service.retrieveGroupsData          = _retrieveGroupsData;
+        service.retrieveSingleGroupData     = _retrieveSingleGroupData;
+        service.retrieveMoreGroupData       = _retrieveMoreGroupData;
+        service.retrieveSingleGroupName     = _retrieveSingleGroupName;
+        service.retrieveParticipateUserInfo = _retrieveParticipateUserInfo;
+        service.configureDate               = _configureDate;
 
-        service.groupOpen               = _groupOpen;
-        service.groupSetActive          = _groupSetActive;
+        service.groupOpen                   = _groupOpen;
+        service.groupSetActive              = _groupSetActive;
 
         return service;
 
@@ -106,12 +107,37 @@
         function configureAllDates(index) {
             const now = new Date();
             for(let i = 0; i<$rootScope.user.openedGroupsData[index].data.length; ++i){
+                const user = $rootScope.user.openedGroupsData[index].data[i].user;
+                _retrieveParticipateUserInfo(user);
                 const date = new Date($rootScope.user.openedGroupsData[index].data[i].time);
                 $rootScope.user.openedGroupsData[index].data[i].date = _configureDate(now,date);
                 if($rootScope.user.openedGroupsData[index].data[i].modify !== undefined){
                     const modify = new Date($rootScope.user.openedGroupsData[index].data[i].modify);
                     $rootScope.user.openedGroupsData[index].data[i].date += ' (Last modified: ' + _configureDate(now,modify) + ')';
                 }
+            }
+        }
+
+        function _retrieveParticipateUserInfo(user) {
+            if($rootScope.user.usersDetails[user] === undefined){
+                $rootScope.user.usersDetails[user] = {
+                    'email'     : user,
+                    'nickname'  : undefined,
+                    'avatar'    : undefined
+                };
+                httpService.accountGetParticipateUserInfo(user)
+                    .then(function (response) {
+                        if(response.success){
+                            if($rootScope.user.usersDetails[response.data.email].email === response.data.email) {
+                                $rootScope.user.usersDetails[response.data.email].nickname = response.data.nickname;
+                                $rootScope.user.usersDetails[response.data.email].avatar = response.data.avatar;
+                            }else{
+                                console.log('Error at configureAllDates, while retrieving user details');
+                            }
+                        }else{
+                            console.log('Error at configureAllDates, user do not exists');
+                        }
+                    });
             }
         }
 

@@ -51,6 +51,16 @@ router.route('/info')
        });
     });
 
+router.route('/participate/info')
+    .get(function (req,res) {
+        accountService.participateInfo(req.query.uEmail ,req.cookies.userCredentials, function (err,responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 router.route('/update/details')
     .post(function (req,res) {
         accountService.updateAccountDetails(req.body ,req.cookies.userCredentials, function (err,responseData) {

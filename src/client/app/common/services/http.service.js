@@ -13,27 +13,33 @@
     function httpService($http, md5) {
         const service = {};
 
-        service.accountGetUserInfo          = _accountGetUserInfo;
-        service.accountCreate               = _accountCreate;
-        service.accountAuthenticate         = _accountAuthenticate;
-        service.accountUpdateNickname       = _accountUpdateNickname;
-        service.accountUpdatePassword       = _accountUpdatePassword;
-        service.accountUpdateAll            = _accountUpdateAll;
-        service.accountUpdate               = _accountUpdate;
+        service.accountGetUserInfo              = _accountGetUserInfo;
+        service.accountGetParticipateUserInfo   = _accountGetParticipateUserInfo;
+        service.accountCreate                   = _accountCreate;
+        service.accountAuthenticate             = _accountAuthenticate;
+        service.accountUpdateNickname           = _accountUpdateNickname;
+        service.accountUpdatePassword           = _accountUpdatePassword;
+        service.accountUpdateAll                = _accountUpdateAll;
+        service.accountUpdate                   = _accountUpdate;
 
-        service.groupAddData                = _groupAddData;
-        service.groupRetrieveData           = _groupRetrieveData;
-        service.retrieveFileValue           = _retrieveFileValue;
-        service.groupRetrieveName           = _groupRetrieveName;
-        service.groupCreate                 = _groupCreate;
-        service.groupDelete                 = _groupDelete;
-        service.groupUpdateName             = _groupUpdateName;
-        service.groupInsertToOpenedList     = _groupInsertToOpenedList;
-        service.groupRemoveFromOpenedList   = _groupRemoveFromOpenedList;
-        service.groupUpdateUnreadMessages   = _groupUpdateUnreadMessages;
+        service.groupAddData                    = _groupAddData;
+        service.groupRetrieveData               = _groupRetrieveData;
+        service.retrieveGroupParticipants       = _retrieveGroupParticipants;
+        service.retrieveFileValue               = _retrieveFileValue;
+        service.groupRetrieveName               = _groupRetrieveName;
+        service.groupCreate                     = _groupCreate;
+        service.groupShare                      = _groupShare;
+        service.groupDelete                     = _groupDelete;
+        service.groupUpdateName                 = _groupUpdateName;
+        service.groupParticipateLeave           = _groupParticipateLeave;
+        service.groupRemoveParticipant          = _groupRemoveParticipant;
 
-        service.groupDeleteMessage          = _groupDeleteMessage;
-        service.groupModifyMessage          = _groupModifyMessage;
+        service.groupInsertToOpenedList         = _groupInsertToOpenedList;
+        service.groupRemoveFromOpenedList       = _groupRemoveFromOpenedList;
+        service.groupUpdateUnreadMessages       = _groupUpdateUnreadMessages;
+
+        service.groupDeleteMessage              = _groupDeleteMessage;
+        service.groupModifyMessage              = _groupModifyMessage;
 
         return service;
 
@@ -48,6 +54,16 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('User do not exist'));
+        }
+
+        function _accountGetParticipateUserInfo(uEmail) {
+            return $http({
+                method          : 'GET',
+                url             : '/account/participate/info',
+                params          : { uEmail : uEmail},
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Participate user do not exist'));
         }
 
         function _accountCreate(user) {
@@ -145,7 +161,8 @@
                 gID     : data.gID,
                 data    : data.value,
                 time    : data.time,
-                type    : data.type
+                type    : data.type,
+                user    : data.user
             };
             if(data.type !== 'text'){
                 data2send.file = data.file;
@@ -172,6 +189,18 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant retrieve data from table:' + gID));
+        }
+
+        function _retrieveGroupParticipants(gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/retrieve/participants',
+                params          : {
+                    gID         : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant retrieve participants from table:' + gID));
         }
 
         function _retrieveFileValue(gID, mID) {
@@ -211,13 +240,25 @@
             }).then(handleSuccess,handleError('Cant create group \'' + gName + '\''));
         }
 
-        function _groupDelete(gID, gName) {
+        function _groupShare(uEmail, gID) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/share',
+                data            : {
+                    email  : uEmail,
+                    gID     : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant share group to user \'' + uEmail + '\''));
+        }
+
+        function _groupDelete(gID) {
             return $http({
                 method          : 'GET',
                 url             : '/group/delete',
                 params          : {
-                                    gID     : gID,
-                                    gName   : gName
+                                    gID     : gID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -235,6 +276,31 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Cant update group name'));
+        }
+        
+        function _groupParticipateLeave(gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/participate/leave',
+                params          : {
+                    gID     : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant leave from the participate group \'' + gID + '\''));
+        }
+
+        function _groupRemoveParticipant(uEmail, gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/participant/remove',
+                params          : {
+                    gID     : gID,
+                    uEmail  : uEmail,
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant remove participant from group \'' + gID + '\''));
         }
 
         function _groupInsertToOpenedList(gID) {

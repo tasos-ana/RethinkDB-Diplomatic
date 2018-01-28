@@ -17,5 +17,4 @@
                 (items + '').split('').reverse().join(''); // else make it a string (if it isn't already), and reverse it
         };
     }
-
 })();

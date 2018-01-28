@@ -55,11 +55,6 @@
                 templateUrl: './app/components/home/settings/groups/groups.settings.view.html',
                 controllerAs: 'vm'
             })
-            .when('/home/about',{
-                controller: 'HomeController',
-                templateUrl: './app/components/home/about/about.view.html',
-                controllerAs: 'vm'
-            })
             .when('/login',{
                 controller: 'LoginController',
                 templateUrl: './app/components/login/login.view.html',

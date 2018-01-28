@@ -11,20 +11,22 @@
                                  homeService, socketService, $timeout, ngNotify, $window, FileSaver, Blob) {
         const vm = this;
 
-        vm.uploadData       = uploadData;
-        vm.clearUploadData  = clearUploadData;
-        vm.groupCreate      = groupCreate;
-        vm.openGroupCreate  = openGroupCreate;
-        vm.groupOpen        = groupOpen;
-        vm.groupClose       = groupClose;
-        vm.groupSetActive   = dashboardService.groupSetActive;
-        vm.loadMoreData     = loadMoreData;
+        vm.uploadData           = uploadData;
+        vm.clearUploadData      = clearUploadData;
+        vm.groupCreate          = groupCreate;
+        vm.groupShare           = groupShare;
+        vm.openGroupCreateModal = openGroupCreateModal;
+        vm.openShareGroupModal  = openShareGroupModal;
+        vm.groupOpen            = groupOpen;
+        vm.groupClose           = groupClose;
+        vm.groupSetActive       = dashboardService.groupSetActive;
+        vm.loadMoreData         = loadMoreData;
 
-        vm.openFileLoader   = openFileLoader;
-        vm.saveAs           = saveAs;
+        vm.openFileLoader       = openFileLoader;
+        vm.saveAs               = saveAs;
 
-        vm.deleteMessage    = deleteMessage;
-        vm.modifyMessage    = modifyMessage;
+        vm.deleteMessage        = deleteMessage;
+        vm.modifyMessage        = modifyMessage;
 
         (function initController() {
             vm.dataLoading = true;
@@ -39,6 +41,7 @@
             ngNotify.addType('notice-info','bg-info text-dark');
 
             vm.createGroupFadeIn = false;
+            vm.shareGroupFadeIn = false;
             vm.sidebarToggled = false;
             vm.templateURL = $location.path();
             vm.eventListener = {};
@@ -144,14 +147,14 @@
                     // Closure to capture the file information.
                     reader.onload = (function(theFile, gID) {
                         return function(e) {
-                            //console.log(convertDataURIToBinary(e.target.result));
                             group.upload.uploadJobs += 1;
                             httpService.groupAddData({
                                 gID     : gID,
                                 type    : theFile.type,
                                 file    : e.target.result,
                                 value   : theFile.name,
-                                time    : Date.now()
+                                time    : Date.now(),
+                                user    : $rootScope.user.email
                             }).then(function (response) {
                                 $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                                if(response.success){
@@ -183,7 +186,8 @@
                         gID     : group.id,
                         type    : 'text',
                         value   : group.upload.textData,
-                        time    : Date.now()
+                        time    : Date.now(),
+                        user    : $rootScope.user.email
                     }).then(function (response) {
                         $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                         if(response.success){
@@ -249,9 +253,50 @@
             }
         }
         
-        function openGroupCreate() {
+        function groupShare(isValid) {
+            if($rootScope.user.groupsList.length === 0){
+                vm.shareGroupFadeIn = false;
+            }else{
+                if(isValid){
+                    if(vm.share.group === undefined){
+                        ngNotify.dismiss();
+                        ngNotify.set("Please select a group first.", "notice-danger");
+                    }else{
+                        ngNotify.dismiss();
+                        ngNotify.set("Group sharing, please wait...", "notice-info");
+                        $timeout(function () {
+                            $rootScope.$apply(function () {
+                                vm.share.creating = true;
+                                httpService.groupShare(vm.share.email, vm.share.group)
+                                    .then(function (response) {
+                                        if(response.success){
+                                            if(!response.data.exist){
+                                                ngNotify.dismiss();
+                                                ngNotify.set("Group shared to the user successful!", "notice-success");
+                                            }else{
+                                                ngNotify.dismiss();
+                                                ngNotify.set("Group already shared to the user.", "notice-success");
+                                            }
+                                        }
+                                        vm.share.creating = false;
+                                        delete vm.share.email;
+                                        // delete vm.share.group;
+                                        vm.shareGroupFadeIn=false;
+                                    });
+                            });
+                        });
+                    }
+                }
+            }
+        }
+        
+        function openGroupCreateModal() {
             vm.createGroupFadeIn=true;
             $window.document.getElementById('createGroupInput').focus();
+        }
+        
+        function openShareGroupModal() {
+            vm.shareGroupFadeIn = true;
         }
 
         function groupOpen(gID) {
