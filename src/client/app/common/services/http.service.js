@@ -239,13 +239,12 @@
             }).then(handleSuccess,handleError('Cant share group to user \'' + uEmail + '\''));
         }
 
-        function _groupDelete(gID, gName) {
+        function _groupDelete(gID) {
             return $http({
                 method          : 'GET',
                 url             : '/group/delete',
                 params          : {
-                                    gID     : gID,
-                                    gName   : gName
+                                    gID     : gID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -265,13 +264,12 @@
             }).then(handleSuccess, handleError('Cant update group name'));
         }
         
-        function _groupParticipateLeave(gID, gName) {
+        function _groupParticipateLeave(gID) {
             return $http({
                 method          : 'GET',
                 url             : '/group/participate/leave',
                 params          : {
-                    gID     : gID,
-                    gName   : gName
+                    gID     : gID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
