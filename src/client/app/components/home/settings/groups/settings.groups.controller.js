@@ -30,9 +30,7 @@
             $rootScope.deleteGroup = {};
             $rootScope.leaveGroup = {};
 
-            homeService.retrieveAccountDetails(function () {
-
-            });
+            homeService.retrieveAccountDetails(function () {});
 
             socketService.onAccountDetails();
             socketService.onGroupDetails();
@@ -57,7 +55,7 @@
         function _deleteGroup(gID) {
             socketService.emitDeleteGroup(gID);
 
-            httpService.groupDelete(gID, $rootScope.user.groupsNames[gID])
+            httpService.groupDelete(gID)
                 .then(function (response) {
                     if(!response.success){
                         $rootScope.loginCauseError.enabled = true;
@@ -70,7 +68,7 @@
         function _leaveGroup(gID) {
             socketService.emitDeleteGroup(gID);
 
-            httpService.groupParticipateLeave(gID, $rootScope.user.groupsNames[gID])
+            httpService.groupParticipateLeave(gID)
                 .then(function (response) {
                    if(!response.success){
                        $rootScope.loginCauseError.enabled = true;

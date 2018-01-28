@@ -81,13 +81,17 @@
             socket.on('groupNameChange', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
-                        const index = $rootScope.user.groupsList.indexOf(data.gID);
+                        let index1 = $rootScope.user.groupsList.indexOf(data.gID),
+                            index2 = $rootScope.user.participateGroupsList.indexOf(data.gID);
                         const prevName = $rootScope.user.groupsNames[data.gID];
-                        if(index !== -1 && prevName!==data.gName){
+                        if((index1 !== -1 || index2 !== -1) && prevName!==data.gName){
                             $rootScope.user.groupsNames[data.gID] = data.gName;
                             ngNotify.dismiss();
                             ngNotify.set("Group name change from '" + prevName +"' to '" + data.gName  +"'.", "notice-success");
                         }
+
+
+
                     });
                 });
             });
