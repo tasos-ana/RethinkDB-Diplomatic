@@ -151,7 +151,8 @@ const groupService = function () {
                     id              : 'created',
                     data            : 'Group created by (' + details.uEmail + ')',
                     type            : 'text',
-                    time            : Date.now()
+                    time            : Date.now(),
+                    user            : details.uEmail
                 }).run(connection,function (err,result) {
                     if (err) {
                         debug.error('Group.service@create: cant insert created data on group <' + details.gID + '>');
@@ -417,7 +418,7 @@ const groupService = function () {
              * @param callback
              */
             function (connection, gName, callback) {
-                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).pluck('data','type','time','id','modify')
+                rethinkdb.table(details.gID).orderBy(rethinkdb.desc('time')).pluck('data','type','time','id','modify','user')
                     .filter(rethinkdb.row('time').lt(Number(details.afterFrom))).limit(Number(details.limitVal))
                     .run(connection,function (err,cursor) {
                         connection.close();
