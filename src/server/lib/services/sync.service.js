@@ -80,7 +80,7 @@ const syncService = function () {
 
                         //FEED ON ALL groupsList for badge notification,name change and delete perform
                         //FEED ON ALL openedGroup for data
-                        const groupsList = responseData.groupsList;
+                        const groupsList = responseData.groupsList.concat(responseData.participateGroupsList);
                         const openedList = responseData.openedGroupsList;
                         while (groupsList.length > 0) {
                             const gID = groupsList.pop();
@@ -89,15 +89,6 @@ const syncService = function () {
                             }
                             _feedGroupOnNameChange(socket, gID);
                             _feedGroupForBadgeNotification(socket, gID);
-                        }
-
-                        while (openedList.length>0){
-                            const gID = openedList.pop();
-                            if(gID !== undefined){
-                                _feedGroupOnDataChange(socket, gID);
-                                _feedGroupOnNameChange(socket, gID);
-                                _feedGroupForBadgeNotification(socket, gID);
-                            }
                         }
                         socket.state = 'ready';
                         debug.status('SOCKET CONNECTION ESTABLISHED');

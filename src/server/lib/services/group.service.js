@@ -1000,7 +1000,7 @@ const groupService = function () {
             },
             /**
              * Delete from user openedGroups the gID
-             * 
+             *
              * @param connection
              * @param callback
              */
