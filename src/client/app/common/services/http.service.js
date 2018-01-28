@@ -30,6 +30,8 @@
         service.groupShare                      = _groupShare;
         service.groupDelete                     = _groupDelete;
         service.groupUpdateName                 = _groupUpdateName;
+        service.groupParticipateLeave           = _groupParticipateLeave;
+
         service.groupInsertToOpenedList         = _groupInsertToOpenedList;
         service.groupRemoveFromOpenedList       = _groupRemoveFromOpenedList;
         service.groupUpdateUnreadMessages       = _groupUpdateUnreadMessages;
@@ -261,6 +263,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Cant update group name'));
+        }
+        
+        function _groupParticipateLeave(gID, gName) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/participate/leave',
+                params          : {
+                    gID     : gID,
+                    gName   : gName
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant leave from the participate group \'' + gID + '\''));
         }
 
         function _groupInsertToOpenedList(gID) {

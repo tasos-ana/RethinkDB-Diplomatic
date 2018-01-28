@@ -11,6 +11,7 @@
 
         vm.updateGroupName  = _updateGroupName;
         vm.deleteGroup      = _deleteGroup;
+        vm.leaveGroup       = _leaveGroup;
 
         (function initController() {
             vm.dataLoading = true;
@@ -27,6 +28,7 @@
 
             $rootScope.editGroup = {};
             $rootScope.deleteGroup = {};
+            $rootScope.leaveGroup = {};
 
             homeService.retrieveAccountDetails(function () {
 
@@ -43,8 +45,6 @@
                     .then(function (response) {
                         if(response.success){
                             $rootScope.user.groupsNames[group.id] = group.newName;
-                            ngNotify.dismiss();
-                            ngNotify.set("Group name changed successful to \""+ group.newName +"\"", "notice-success");
                         }else{
                             $rootScope.loginCauseError.enabled = true;
                             $rootScope.loginCauseError.msg = response.message;
@@ -59,12 +59,7 @@
 
             httpService.groupDelete(gID, $rootScope.user.groupsNames[gID])
                 .then(function (response) {
-                    if(response.success){
-                        ngNotify.dismiss();
-                        ngNotify.set("Group \"" + response.data.gName + "\" deleted successful", "notice-success");
-                        removeGroup(response.data.gID);
-                        delete $rootScope.user.groupsNames[response.data.gID];
-                    }else{
+                    if(!response.success){
                         $rootScope.loginCauseError.enabled = true;
                         $rootScope.loginCauseError.msg = response.message;
                         $location.path('/login');
@@ -72,11 +67,17 @@
                 });
         }
 
-        function removeGroup(gID){
-            const index = $rootScope.user.groupsList.indexOf(gID);
-            if (index >= 0) {
-                $rootScope.user.groupsList.splice(index, 1);
-            }
+        function _leaveGroup(gID) {
+            socketService.emitDeleteGroup(gID);
+
+            httpService.groupParticipateLeave(gID, $rootScope.user.groupsNames[gID])
+                .then(function (response) {
+                   if(!response.success){
+                       $rootScope.loginCauseError.enabled = true;
+                       $rootScope.loginCauseError.msg = response.message;
+                       $location.path('/login');
+                   }
+                });
         }
     }
 })();

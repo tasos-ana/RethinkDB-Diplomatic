@@ -286,7 +286,7 @@
                                     }
                                 }
                                 ngNotify.dismiss();
-                                ngNotify.set("The owner of shared group '" + data.gName +"' removed you.", "notice-success");
+                                ngNotify.set("The shared group '" + data.gName +"' removed from your list.", "notice-success");
                             }
                         }
                     });
