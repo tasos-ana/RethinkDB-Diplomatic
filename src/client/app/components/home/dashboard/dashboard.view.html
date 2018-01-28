@@ -135,16 +135,17 @@
                                          ng-mouseover="vm.editButton[gData.id]=true;" ng-mouseleave="vm.editButton[gData.id]=false;">
 
                                         <!--BUTTONS FOR EDIT MESSAGES-->
-                                        <button class="close closeTab text-success border-success" type="button" style="position: relative; right: 70px; top: 5px; width: 25px; height: 20px;"
+                                        <button class="close closeTab text-success border-success" type="button" style="position: relative; right: 70px; top: 5px; width: 25px; height: 20px; z-index: 1;"
                                                 data-toggle="modal" data-target="#modifyMessageModal" title="Modify message"
                                                 ng-click="vm.editMessage.gID=gID; vm.editMessage.mID=gData.id; vm.editMessage.value=gData.data"
-                                                ng-show="vm.editButton[gData.id] && gData.id !=='created'">
+                                                ng-show="vm.editButton[gData.id] && gData.id !=='created' && user.email===gData.user">
                                                 <i class="fa fa-edit"></i>
                                         </button>
 
-                                        <button class="close closeTab text-danger" type="button" style="position:relative; right: 23px; top: 3px;"
+                                        <button class="close closeTab text-danger" type="button" style="position:relative; right: 23px; top: 3px; width: 25px; height: 20px; z-index: 1;"
                                                 data-toggle="modal" data-target="#deleteConfirmModal" title="Delete message"
-                                                ng-click="vm.editMessage.gID=gID; vm.editMessage.mID=gData.id;" ng-show="vm.editButton[gData.id] && gData.id !=='created' ">
+                                                ng-click="vm.editMessage.gID=gID; vm.editMessage.mID=gData.id;"
+                                                ng-show="vm.editButton[gData.id] && gData.id !=='created' && user.email===gData.user">
                                                 <i class="fa fa-trash"></i>
                                         </button>
 
@@ -155,10 +156,10 @@
                                             <div class="content col-sm-12" ng-if="gData.type === 'text'">
                                                 <div class="row">
                                                     <div class="avatar">
-                                                        <img gravatar-src="user.usersDetails[user.email].avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
+                                                        <img gravatar-src="user.usersDetails[gData.user].avatar" ng-attr-title="{{gData.user}}" alt="..." class="img-fluid rounded-circle">
                                                     </div>
                                                     <div >
-                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.usersDetails[user.email].nickname}}"><strong>{{user.usersDetails[user.email].nickname}}</strong>
+                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.usersDetails[gData.user].nickname}}"><strong>{{user.usersDetails[gData.user].nickname}}</strong>
                                                             <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                         </span>
                                                         <span class="d-block text-overflow" ng-attr-title="Send: {{gData.data}}">{{gData.data}}</span>
@@ -171,10 +172,10 @@
                                             <div class="content col-sm-12" ng-if="gData.type !== 'text'">
                                                 <div class="row">
                                                     <div class="avatar">
-                                                        <img gravatar-src="user.usersDetails[user.email].avatar" ng-attr-title="{{user.email}}" alt="..." class="img-fluid rounded-circle">
+                                                        <img gravatar-src="user.usersDetails[gData.user].avatar" ng-attr-title="{{gData.user}}" alt="..." class="img-fluid rounded-circle">
                                                     </div>
                                                     <div>
-                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.usersDetails[user.email].nickname}}"><strong>{{user.usersDetails[user.email].nickname}}</strong>
+                                                        <span class="d-block text-overflow" ng-attr-title="From: {{user.usersDetails[gData.user].nickname}}"><strong>{{user.usersDetails[gData.user].nickname}}</strong>
                                                             <strong class="h5" ng-show="$index <= user.unreadMessages[gID]-1"> * </strong>
                                                         </span>
                                                         <span class="d-block text-primary text-overflow"

@@ -101,6 +101,7 @@
             socket.on('groupDataAdd', function (data) {
                 $timeout(function () {
                     $rootScope.$apply(function () {
+                        dashboardService.retrieveParticipateUserInfo(data.value.user);
                         data.value.date = dashboardService.configureDate(new Date(), new Date(data.value.time));
                         if($rootScope.user.openedGroupsData[data.gID] !== undefined){
                             $rootScope.user.openedGroupsData[data.gID].data[$rootScope.user.openedGroupsData[data.gID].data.length] = data.value;
