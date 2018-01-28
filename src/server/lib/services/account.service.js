@@ -17,6 +17,7 @@ const accountService = function () {
         create                  : _create,
         authenticate            : _authenticate,
         info                    : _info,
+        participateInfo         : _participateInfo,
         updateAccountDetails    : _updateAccountDetails
     };
 
@@ -244,6 +245,59 @@ const accountService = function () {
                             delete data.tmpGroupsList;
                             debug.correct('Data for user <' + uEmail + '> retrieved successful');
                             callback(null,data);
+                        });
+                    });
+            }
+        ], function (err,data) {
+            callback(err !== null, data);
+        });
+    }
+
+    /**
+     * Retrieve participate user info
+     *
+     * @param uEmail
+     * @param cookie
+     * @param callback
+     * @private
+     */
+    function _participateInfo(uEmail, cookie, callback) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err,connection) {
+                    if(err){
+                        debug.error('Account.service@_participateInfo: cant connect to database');
+                        return callback(true, 'Error connecting to database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Get details
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('accounts').get(uEmail).pluck('email','nickname', 'avatar')
+                    .run(connection,function (err,result) {
+                        connection.close();
+                        if(err){
+                            debug.error('Account.service@_participateInfo: cant get user <' + uEmail + '> info');
+                            return callback(true, 'Error happens while getting user details');
+                        }
+                        if(result === null){
+                            debug.status('User <' + uEmail + '> do not exists');
+                            return callback(true,'Email do not exists');
+                        }
+                        debug.status('Retrieved info for participate user <' + result.email +'>');
+                        callback(null, {
+                            "email"                 : result.email,
+                            "nickname"              : result.nickname,
+                            "avatar"                : result.avatar
                         });
                     });
             }
