@@ -65,7 +65,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('email', 'nickname')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Group.service@create: cant get user <' + cookieDetails.uEmail + '> info');
@@ -371,7 +371,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_retrieveGroupData: cant get user <' + cookieDetails.uEmail + '> info');
@@ -404,14 +404,14 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('groups').get(convertGroupID(details.gID, '-'))('name')
-                    .run(connection, function (err, gName) {
+                rethinkdb.table('groups').get(convertGroupID(details.gID, '-')).pluck('name')
+                    .run(connection, function (err, result) {
                         if(err){
                             debug.error('Account.service@_retrieveGroupData: cant retrieve group <' + details.gID + '> name');
                             connection.close();
                             return callback(true, 'Error happens while retrieving group name');
                         }
-                        callback(null, connection, gName);
+                        callback(null, connection, result.name);
                     });
             },
             /**
@@ -467,7 +467,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_retrieveGroupParticipants: cant get user <' + cookieDetails.uEmail + '> info');
@@ -544,7 +544,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_retrieveFile: cant get user <' + cookieDetails.uEmail + '> info');
@@ -628,7 +628,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_retrieveGroupName: cant get user <' + cookieDetails.uEmail + '> info');
@@ -662,14 +662,14 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('groups').get(convertGroupID(gID, '-'))('name')
-                    .run(connection, function (err, gName) {
+                rethinkdb.table('groups').get(convertGroupID(gID, '-')).pluck('name')
+                    .run(connection, function (err, result) {
                         connection.close();
                         if(err){
                             debug.error('Account.service@_retrieveGroupName: cant retrieve group <' + gID + '> name');
                             return callback(true, 'Error happens while retrieving group name');
                         }
-                        callback(null,{id : gID, name : gName});
+                        callback(null,{id : gID, name : result.name});
                     });
             }
         ],function (err,data) {
@@ -708,7 +708,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@add: cant get user <' + cookieDetails.uEmail + '> info');
@@ -723,7 +723,7 @@ const groupService = function () {
 
                             if(cookieDetails.uPassword !== result.password ||
                                 (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
-                                debug.error('Account.service@add: user details and cookie isnt match');
+                                debug.error('Account.service@add: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -811,7 +811,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@UpdateName: cant get user <' + cookieDetails.uEmail + '> info');
@@ -825,7 +825,7 @@ const groupService = function () {
                             }
 
                             if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
-                                debug.error('Account.service@UpdateName: user details and cookie isnt match');
+                                debug.error('Account.service@UpdateName: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -891,7 +891,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@delete: cant get user <' + cookieDetails.uEmail + '> info');
@@ -905,7 +905,7 @@ const groupService = function () {
                             }
 
                             if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
-                                debug.error('Account.service@delete: user details and cookie isnt match');
+                                debug.error('Account.service@delete: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -1146,7 +1146,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_leaveParticipateGroup: cant get user <' + cookieDetails.uEmail + '> info');
@@ -1160,7 +1160,7 @@ const groupService = function () {
                             }
 
                             if(cookieDetails.uPassword !== result.password || result.participateGroups.indexOf(details.gID) === -1){
-                                debug.error('Account.service@_leaveParticipateGroup: user details and cookie isnt match');
+                                debug.error('Account.service@_leaveParticipateGroup: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }else{
@@ -1169,22 +1169,48 @@ const groupService = function () {
                             }
                         });
                 }catch (e){
-                    debug.error('Account.service@_leaveParticipateGroup (catch): user details and cookie isnt match');
+                    debug.error('Account.service@_leaveParticipateGroup (catch): user details and cookie isn\'t match');
                     connection.close();
                     return callback(true,'Invalid cookie');
                 }
             },
             /**
-             * Delete from user participateGroups and openedGroups the gID
+             * Delete from user in openedGroups the gID
              *
              * @param connection
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail).update({
-                    participateGroups : rethinkdb.row('participateGroups').deleteAt(rethinkdb.row('participateGroups').offsetsOf(details.gID)(0)),
-                    openedGroups : rethinkdb.row('openedGroups').deleteAt(rethinkdb.row('openedGroups').offsetsOf(details.gID)(0))
-                }).run(connection,function (err,results) {
+                rethinkdb.table('accounts').get(details.uEmail).update(
+                    function(user) {
+                        return rethinkdb.branch(
+                            user("openedGroups").contains(details.gID),
+                            {openedGroups : user('openedGroups').deleteAt(user('openedGroups').offsetsOf(details.gID)(0))},{}
+                        )
+
+                    }).run(connection,function (err,results) {
+                    if(err){
+                        debug.error('Group.service@_leaveParticipateGroup: cant delete group <' + details.gID + '> from user <' + details.uEmail + '>');
+                        connection.close();
+                        return callback(true, 'Error happens while deleting group from user');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Delete from user in participateGroups the gID
+             *
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('accounts').get(details.uEmail).update(
+                    function(user) {
+                        return rethinkdb.branch(
+                            user("participateGroups").contains(details.gID),
+                            {participateGroups : user('participateGroups').deleteAt(user('participateGroups').offsetsOf(details.gID)(0))},{}
+                        )
+                    }).run(connection,function (err,results) {
                     if(err){
                         debug.error('Group.service@_leaveParticipateGroup: cant delete group <' + details.gID + '> from user <' + details.uEmail + '>');
                         connection.close();
@@ -1247,7 +1273,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'nickname')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Group.service@insertOpenedGroup: cant get user <' + cookieDetails.uEmail + '> info');
@@ -1358,7 +1384,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'nickname')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Group.service@removeOpenedGroup: cant get user <' + cookieDetails.uEmail + '> info');
@@ -1442,7 +1468,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Group.service@_messageNotification: cant get user <' + cookieDetails.uEmail + '> info');
@@ -1520,7 +1546,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_deleteMessage: cant get user <' + cookieDetails.uEmail + '> info');
@@ -1600,7 +1626,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_modifyMessage: cant get user <' + cookieDetails.uEmail + '> info');
