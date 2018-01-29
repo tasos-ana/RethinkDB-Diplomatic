@@ -74,7 +74,8 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-primary" ng-click="vm.modifyMessage(vm.editMessage.gID, vm.editMessage.mID)" data-dismiss="modal">Modify</button>
+                                            <button type="button" class="btn btn-primary" ng-disabled="vm.editMessage.value.length<1"
+                                                    ng-click="vm.modifyMessage(vm.editMessage.gID, vm.editMessage.mID)" data-dismiss="modal">Modify</button>
                                             <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
                                         </div>
                                     </div>

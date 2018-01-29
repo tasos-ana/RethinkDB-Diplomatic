@@ -65,7 +65,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('email', 'nickname')
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('email', 'nickname','password')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Group.service@create: cant get user <' + cookieDetails.uEmail + '> info');
@@ -545,7 +545,7 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups')
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_retrieveFile: cant get user <' + cookieDetails.uEmail + '> info');
@@ -557,7 +557,8 @@ const groupService = function () {
                                 connection.close();
                                 return callback(true,'Email do not exists');
                             }
-                            if(cookieDetails.uPassword !== result.password || result.groups.indexOf(details.gID) === -1){
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
                                 debug.error('Account.service@_retrieveFile: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
