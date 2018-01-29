@@ -159,6 +159,7 @@
                                 $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                                if(response.success){
                                    group.upload.uploadJobs -= 1;
+                                   socketService.emitLastActiveGroup(response.data.gID);
                                    _uploadText(group);
                                }else{
                                    $rootScope.loginCauseError.enabled = true;
@@ -193,6 +194,7 @@
                         if(response.success){
                             group.upload.uploadJobs -= 1;
                             if(group.upload.uploadJobs <= 0){
+                                socketService.emitLastActiveGroup(response.data.gID);
                                 $timeout(function () {
                                     $rootScope.$apply(function () {
                                         group.upload = {

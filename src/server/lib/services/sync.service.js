@@ -661,6 +661,9 @@ const syncService = function () {
                                             if(err){
                                                 debug.error('Sync.service@_feedAccountOnGroupCreate: error happen while retrieve name for group: ' + gID);
                                             }else{
+                                                _groupUpdateLastTimeRead(socket, gID, undefined);
+                                                _feedGroupOnNameChange(socket, gID);
+                                                _feedGroupForBadgeNotification(socket, gID);
                                                 debug.status('Broadcast groupCreate for user <' + uEmail + '>');
                                                 socket.emit('groupCreate',{
                                                     "uEmail"    : uEmail,
@@ -820,6 +823,9 @@ const syncService = function () {
                                             if(err){
                                                 debug.error('Sync.service@_feedAccountOnParticipateAdd: error happen while retrieve name for group: ' + gID);
                                             }else{
+                                                _groupUpdateLastTimeRead(socket, gID, undefined);
+                                                _feedGroupOnNameChange(socket, gID);
+                                                _feedGroupForBadgeNotification(socket, gID);
                                                 debug.status('Broadcast participateAdd for user <' + uEmail + '>');
                                                 socket.emit('participateAdd',{
                                                     "uEmail"    : uEmail,

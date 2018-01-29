@@ -288,13 +288,9 @@
                                           }
                                       }
                                   });
-                              //Update time for last active group
-                              if($rootScope.user.activeGroup!==undefined){
-                                  _emitLastActiveGroup($rootScope.user.activeGroup);
-                              }else{
-                                  _emitLastActiveGroup(response.data.gID);
+                              if($location.path() === '/home/dashboard'){
+                                  dashboardService.groupOpen(data.gID);
                               }
-                              dashboardService.groupOpen(data.gID);
                               _emitOpenGroup(data.gID);
                               ngNotify.dismiss();
                               ngNotify.set("New group shared to you with name '" + data.gName +"'.", "notice-success");
