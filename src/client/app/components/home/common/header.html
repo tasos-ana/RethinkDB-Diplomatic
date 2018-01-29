@@ -35,10 +35,12 @@
                            class="text-danger">Email is invalid. Example csd3166@csd.gr</small>
                     <small ng-show="!shareForm.share.$error.emailExists && !shareForm.$invalid"
                            class="text-danger">Email does not exists.</small>
-                    <small ng-show="vm.share.user === user.email"
+                    <small ng-show="vm.share.email === user.email"
                            class="text-danger">You can't share group in your self.
                     </small>
-                    <button type="submit" class="submit" ng-show="shareForm.share.$error.emailExists && !vm.share.creating">Share</button>
+                    <button type="submit" class="submit"
+                            ng-show="shareForm.share.$error.emailExists && !vm.share.creating && vm.share.email !== user.email">
+                        Share</button>
                 </div>
             </form>
         </div>

@@ -308,6 +308,8 @@
             //Update time for last active group
             if($rootScope.user.activeGroup!==undefined){
                 socketService.emitLastActiveGroup($rootScope.user.activeGroup);
+            }else{
+                socketService.emitLastActiveGroup(gID);
             }
             socketService.emitOpenGroup(gID);
         }
@@ -345,8 +347,11 @@
 
         function _groupSetActive(gID) {
             //Update time for last active group
+            //Update time for last active group
             if($rootScope.user.activeGroup!==undefined){
                 socketService.emitLastActiveGroup($rootScope.user.activeGroup);
+            }else{
+                socketService.emitLastActiveGroup(gID);
             }
             dashboardService.groupSetActive(gID);
         }

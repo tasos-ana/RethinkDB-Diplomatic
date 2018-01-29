@@ -188,15 +188,12 @@
         function _groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
 
-            if($rootScope.user.unreadMessages[gID] === undefined){
-                $rootScope.user.unreadMessages[gID] = 0;
+            if($rootScope.user.groupsList.indexOf(gID) !== -1){
+                $rootScope.user.unreadMessages.groups -= $rootScope.user.unreadMessages[gID];
+            }else{
+                $rootScope.user.unreadMessages.participate -= $rootScope.user.unreadMessages[gID];
             }
-            const prevVal = $rootScope.user.unreadMessages[gID];
-            $rootScope.user.unreadMessages.total -= prevVal;
-            if(prevVal!==0) {
-                httpService.groupUpdateUnreadMessages(gID, 0).then(function () {
-                });
-            }
+
             $timeout(function () {
                 if($location.path() === '/home/dashboard'){
                     $rootScope.user.unreadMessages[gID] = 0;
