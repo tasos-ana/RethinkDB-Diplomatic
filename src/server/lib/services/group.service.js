@@ -27,7 +27,7 @@ const groupService = function () {
         updateGroupName             : _updateGroupName,
         insertOpenedGroup           : _insertOpenedGroup,
         removeOpenedGroup           : _removeOpenedGroup,
-        messageNotification         : _messageNotification,
+        retrieveUnreadMessages      : _retrieveUnreadMessages,
         deleteMessage               : _deleteMessage,
         modifyMessage               : _modifyMessage
     };
@@ -1440,13 +1440,14 @@ const groupService = function () {
     }
 
     /**
-     * Update how much message user received and he didnt read it yet
-     * @param details
+     * Retrieving unreadMessages for user
+     *
+     * @param details contains gID and fingerprint
      * @param cookie
      * @param callback
      * @private
      */
-    function _messageNotification(details, cookie, callback) {
+    function _retrieveUnreadMessages(details, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -1455,14 +1456,13 @@ const groupService = function () {
             function (callback) {
                 db.connectToDb(function (err,connection) {
                     if(err){
-                        debug.error('Group.service@_messageNotification: can\'t connect to database');
+                        debug.error('Group.service@_retrieveUnreadMessages: can\'t connect to database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null, connection);
                 });
             },
             /**
-             * Stage 0:
              * Validate req cookie with details on database
              * @param connection
              * @param callback
@@ -1470,10 +1470,10 @@ const groupService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password')
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'groups', 'participateGroups')
                         .run(connection,function (err,result) {
                             if(err){
-                                debug.error('Group.service@_messageNotification: cant get user <' + cookieDetails.uEmail + '> info');
+                                debug.error('Group.service@_retrieveUnreadMessages: cant get user <' + cookieDetails.uEmail + '> info');
                                 connection.close();
                                 return callback(true, 'Error happens while getting user details');
                             }
@@ -1482,8 +1482,9 @@ const groupService = function () {
                                 connection.close();
                                 return callback(true,'Email do not exists');
                             }
-                            if(cookieDetails.uPassword !== result.password){
-                                debug.error('Group.service@_messageNotification:: user details and cookie isnt match');
+                            if(cookieDetails.uPassword !== result.password ||
+                                (result.groups.indexOf(details.gID) === -1 && result.participateGroups.indexOf(details.gID) === -1)){
+                                debug.error('Group.service@_retrieveUnreadMessages:: user details and cookie isn\'t match');
                                 connection.close();
                                 return callback(true,'Invalid cookie');
                             }
@@ -1491,28 +1492,54 @@ const groupService = function () {
                         });
 
                 }catch (e){
-                    debug.error('Group.service@_messageNotification: user details and cookie isnt match');
+                    debug.error('Group.service@_retrieveUnreadMessages: user details and cookie isnt match');
                     connection.close();
                     return callback(true,'Invalid cookie');
                 }
             },
             /**
-             * Update the group unreadMessages with new value
+             * Retrieve timestamp
+             *
              * @param connection
              * @param callback
              */
             function(connection, callback) {
-                rethinkdb.table('groups').get(convertGroupID(details.gID, '-')).update({
-                    unreadMessages : details.unread
-                }).run(connection, function (err, result) {
-                    connection.close();
+                rethinkdb.table('groups').get(convertGroupID(details.gID, '-')).pluck('lastTimeRead')
+                    .run(connection, function (err, result) {
                     if (err) {
-                        debug.error('Group.service@_messageNotification: cant update group <' + details.gID + '> unread messages');
+                        connection.close();
+                        debug.error('Group.service@_retrieveUnreadMessages: cant update group <' + details.gID + '> unread messages');
                         return callback(true, 'Error happens while update user groups');
                     }
-                    debug.correct('Unread messages for group <' + details.gID + '> updated successful');
-                    callback(null, {});
+                    const index = result.lastTimeRead.indexOf(details.fingerprint);
+                    if(index !== -1 && result.lastTimeRead.length > index+1){
+                        details.timestamp = result.lastTimeRead[index+1];
+                        callback(null, connection);
+                    }else{
+                        connection.close();
+                        debug.error('Group.service@_retrieveUnreadMessages: out of bound. we will try later again');
+                        return callback(true, 'Error happens while retrieving timestamp, out of bound');
+                    }
+
                 });
+            },
+            /**
+             * Calculate unread messages
+             *
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table(details.gID).orderBy({index : 'time'}).filter(rethinkdb.row('time').gt(details.timestamp)).count()
+                    .run(connection, function (err, result) {
+                        connection.close();
+                        if(err){
+                            debug.error('Group.service@_retrieveUnreadMessages: can\t calculate total unread message for group <' + details.gID +'>');
+                            return callback(true, 'Error happens while calculating unread messages');
+                        }
+                        debug.correct('Group.service@_retrieveUnreadMessages: unreadMessages calculated for group <'+ details.gID +'>');
+                        callback(null, {'gID': details.gID, 'unreadMessages': result});
+                    });
             }
         ], function (err, data) {
             callback(err !== null, data);

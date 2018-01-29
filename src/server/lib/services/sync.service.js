@@ -86,6 +86,10 @@ const syncService = function () {
                         _feedAccountOnParticipateAdd(socket, uEmail);
                         _feedAccountOnParticipateRemove(socket, uEmail);
 
+                        if(responseData.openedGroupsList.length>0){
+                            _groupUpdateLastTimeRead(socket, responseData.openedGroupsList[0], Date.now());
+                        }
+
                         //FEED ON ALL groupsList for badge notification,name change and delete perform
                         //FEED ON ALL openedGroup for data
                         const groupsList = responseData.groupsList.concat(responseData.participateGroupsList);
@@ -888,7 +892,6 @@ const syncService = function () {
                             }
                             if(row !== undefined){
                                 if(Object.keys(row).length>0 && row.new_val !== null){
-
                                     const gID   = (row.old_val.participateGroups.diff(row.new_val.participateGroups))[0];
                                     rethinkdb.table('groups').get(convertGroupID(gID, '-'))
                                         .run(connection, function (err, result) {
@@ -962,10 +965,7 @@ const syncService = function () {
                 }else{
                     callback(null, connection);
                 }
-
             },
-
-
             /**
              * Checking if exist lastTimeRead depends on user fingerprint
              *

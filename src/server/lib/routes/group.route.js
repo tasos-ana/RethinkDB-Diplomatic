@@ -133,9 +133,9 @@ router.route('/openedList/remove')
     });
 
 
-router.route('/update/unreadMessages')
-    .post(function (req,res) {
-        groupService.messageNotification(req.body, req.cookies.userCredentials, function (err, responseData) {
+router.route('/retrieve/unreadMessages')
+    .get(function (req,res) {
+        groupService.retrieveUnreadMessages({gID : req.query.gID, fingerprint : req.query.fingerprint}, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
