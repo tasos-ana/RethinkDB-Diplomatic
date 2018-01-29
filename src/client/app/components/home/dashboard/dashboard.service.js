@@ -172,8 +172,8 @@
                             .then(function (response) {
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(response.data.gID);
-                                    _groupSetActive(response.data.gID);
                                     _retrieveSingleGroupData(response.data.gID, Date.now(), 10);
+                                    _groupSetActive(response.data.gID);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.message;
@@ -187,15 +187,13 @@
 
         function _groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
-            if($rootScope.user.unreadMessages[gID] === undefined){
-                $rootScope.user.unreadMessages[gID] = 0;
+
+            if($rootScope.user.groupsList.indexOf(gID) !== -1){
+                $rootScope.user.unreadMessages.groups -= $rootScope.user.unreadMessages[gID];
+            }else{
+                $rootScope.user.unreadMessages.participate -= $rootScope.user.unreadMessages[gID];
             }
-            const prevVal = $rootScope.user.unreadMessages[gID];
-            $rootScope.user.unreadMessages.total -= prevVal;
-            if(prevVal!==0) {
-                httpService.groupUpdateUnreadMessages(gID, 0).then(function () {
-                });
-            }
+
             $timeout(function () {
                 if($location.path() === '/home/dashboard'){
                     $rootScope.user.unreadMessages[gID] = 0;

@@ -11,22 +11,22 @@
                                  homeService, socketService, $timeout, ngNotify, $window, FileSaver, Blob) {
         const vm = this;
 
-        vm.uploadData           = uploadData;
-        vm.clearUploadData      = clearUploadData;
-        vm.groupCreate          = groupCreate;
-        vm.groupShare           = groupShare;
-        vm.openGroupCreateModal = openGroupCreateModal;
-        vm.openShareGroupModal  = openShareGroupModal;
-        vm.groupOpen            = groupOpen;
-        vm.groupClose           = groupClose;
-        vm.groupSetActive       = dashboardService.groupSetActive;
-        vm.loadMoreData         = loadMoreData;
+        vm.uploadData           = _uploadData;
+        vm.clearUploadData      = _clearUploadData;
+        vm.groupCreate          = _groupCreate;
+        vm.groupShare           = _groupShare;
+        vm.openGroupCreateModal = _openGroupCreateModal;
+        vm.openShareGroupModal  = _openShareGroupModal;
+        vm.groupOpen            = _groupOpen;
+        vm.groupClose           = _groupClose;
+        vm.groupSetActive       = _groupSetActive;
+        vm.loadMoreData         = _loadMoreData;
 
-        vm.openFileLoader       = openFileLoader;
-        vm.saveAs               = saveAs;
+        vm.openFileLoader       = _openFileLoader;
+        vm.saveAs               = _saveAs;
 
-        vm.deleteMessage        = deleteMessage;
-        vm.modifyMessage        = modifyMessage;
+        vm.deleteMessage        = _deleteMessage;
+        vm.modifyMessage        = _modifyMessage;
 
         (function initController() {
             vm.dataLoading = true;
@@ -61,23 +61,23 @@
             vm.dataLoading = false;
         })();
 
-        function openFileLoader(gID) {
+        function _openFileLoader(gID) {
             $window.document.getElementById('files').click();
 
             if(vm.eventListener[gID] === undefined){
                 $window.document.getElementById('files').addEventListener('change', function (evt) {
                     vm.eventListener[gID] = evt;
-                    handleFileSelect(evt,gID);
+                    _handleFileSelect(evt,gID);
                 }, false);
             }
         }
 
-        function saveAs(gID, mID) {
+        function _saveAs(gID, mID) {
             $rootScope.user.openedGroupsData[gID].dataLoading = true;
             httpService.retrieveFileValue(gID, mID)
                 .then(function (response) {
                     if(response.success){
-                        var dataFile = new Blob([convertDataURIToBinary(response.data.file)], { type: response.data.type + ';charset=utf-8' });
+                        var dataFile = new Blob([_convertDataURIToBinary(response.data.file)], { type: response.data.type + ';charset=utf-8' });
                         FileSaver.saveAs(dataFile, '' + response.data.name);
                     }else{
                         $rootScope.loginCauseError.enabled = true;
@@ -88,7 +88,7 @@
                 });
         }
 
-        function deleteMessage(gID, mID) {
+        function _deleteMessage(gID, mID) {
             httpService.groupDeleteMessage(gID,mID)
                 .then(function (response) {
                     if(!response.success){
@@ -99,7 +99,7 @@
             });
         }
         
-        function modifyMessage(gID, mID) {
+        function _modifyMessage(gID, mID) {
             httpService.groupModifyMessage(gID,mID, vm.editMessage.value)
                 .then(function (response) {
                     if(!response.success){
@@ -110,7 +110,7 @@
                 });
         }
 
-        function handleFileSelect(evt, gID) {
+        function _handleFileSelect(evt, gID) {
             const files = evt.target.files;
             // files is a FileList of File objects. List some properties.
             $rootScope.user.openedGroupsData[gID].upload.files = [];
@@ -133,7 +133,7 @@
             });
         }
 
-        function uploadData(group) {
+        function _uploadData(group) {
             group.upload.uploadData = true;
             group.upload.uploadJobs = 0;
 
@@ -159,7 +159,8 @@
                                 $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                                if(response.success){
                                    group.upload.uploadJobs -= 1;
-                                   uploadText(group);
+                                   socketService.emitLastActiveGroup(response.data.gID);
+                                   _uploadText(group);
                                }else{
                                    $rootScope.loginCauseError.enabled = true;
                                    $rootScope.loginCauseError.msg = response.message;
@@ -173,11 +174,11 @@
                     reader.readAsDataURL(f);
                 }
             }else{
-                uploadText(group);
+                _uploadText(group);
             }
         }
 
-        function uploadText(group) {
+        function _uploadText(group) {
             if(group.upload.uploadJobs <= 0){
                 if(group.upload.textData.length>0){
                     group.upload.uploadJobs += 1;
@@ -193,6 +194,7 @@
                         if(response.success){
                             group.upload.uploadJobs -= 1;
                             if(group.upload.uploadJobs <= 0){
+                                socketService.emitLastActiveGroup(response.data.gID);
                                 $timeout(function () {
                                     $rootScope.$apply(function () {
                                         group.upload = {
@@ -225,7 +227,7 @@
             }
         }
         
-        function clearUploadData(gID) {
+        function _clearUploadData(gID) {
             $rootScope.user.openedGroupsData[gID].upload = {
                 textData    : '',
                 files       : [],
@@ -233,7 +235,7 @@
             };
         }
 
-        function groupCreate(isValid) {
+        function _groupCreate(isValid) {
             if(isValid){
                 ngNotify.dismiss();
                 ngNotify.set("Group creating, please wait...", "notice-info");
@@ -253,7 +255,7 @@
             }
         }
         
-        function groupShare(isValid) {
+        function _groupShare(isValid) {
             if($rootScope.user.groupsList.length === 0){
                 vm.shareGroupFadeIn = false;
             }else{
@@ -290,25 +292,31 @@
             }
         }
         
-        function openGroupCreateModal() {
+        function _openGroupCreateModal() {
             vm.createGroupFadeIn=true;
             $window.document.getElementById('createGroupInput').focus();
         }
         
-        function openShareGroupModal() {
+        function _openShareGroupModal() {
             vm.shareGroupFadeIn = true;
         }
 
-        function groupOpen(gID) {
+        function _groupOpen(gID) {
             if ($rootScope.user.openedGroupsList.indexOf(gID) !== -1) {
                 dashboardService.groupSetActive(gID);
             } else {
                 dashboardService.groupOpen(gID);
             }
+            //Update time for last active group
+            if($rootScope.user.activeGroup!==undefined){
+                socketService.emitLastActiveGroup($rootScope.user.activeGroup);
+            }else{
+                socketService.emitLastActiveGroup(gID);
+            }
             socketService.emitOpenGroup(gID);
         }
 
-        function groupClose(gID) {
+        function _groupClose(gID) {
             socketService.emitCloseGroup(gID);
 
             $timeout(function () {
@@ -338,8 +346,19 @@
                 });
             });
         }
+
+        function _groupSetActive(gID) {
+            //Update time for last active group
+            //Update time for last active group
+            if($rootScope.user.activeGroup!==undefined){
+                socketService.emitLastActiveGroup($rootScope.user.activeGroup);
+            }else{
+                socketService.emitLastActiveGroup(gID);
+            }
+            dashboardService.groupSetActive(gID);
+        }
         
-        function loadMoreData(gID) {
+        function _loadMoreData(gID) {
             let afterFrom, limitVal;
             limitVal = $rootScope.user.openedGroupsData[gID].data.length;
             afterFrom = $rootScope.user.openedGroupsData[gID].data[0].time;
@@ -347,7 +366,7 @@
             dashboardService.retrieveMoreGroupData(gID, afterFrom, limitVal+limitVal/2);
         }
 
-        function convertDataURIToBinary(dataURI) {
+        function _convertDataURIToBinary(dataURI) {
             const BASE64_MARKER = ';base64,';
             var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
             var base64 = dataURI.substring(base64Index);

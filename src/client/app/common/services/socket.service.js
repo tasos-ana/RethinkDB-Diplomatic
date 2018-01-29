@@ -19,6 +19,7 @@
             emitOpenGroup       : _emitOpenGroup,
             emitCloseGroup      : _emitCloseGroup,
             emitDeleteGroup     : _emitDeleteGroup,
+            emitLastActiveGroup : _emitLastActiveGroup,
 
             onGroupData         : _onGroupData,
             onGroupDetails      : _onGroupDetails,
@@ -28,6 +29,11 @@
 
         function _connectSocket() {
             socket = io();
+            new Fingerprint2().get(function(result, components){
+                if(socket !== null){
+                    socket.emit('initConnection', result);
+                }
+            });
         }
 
         function _disconnectSocket() {
@@ -51,6 +57,11 @@
             socket.emit('deleteGroup', gID);
         }
 
+        function _emitLastActiveGroup(gID) {
+            socketValidate();
+            socket.emit('lastActiveGroup', gID, Date.now());
+        }
+
         function _onGroupData() {
             _onGroupDataAdd();
             _onGroupDataRemove();
@@ -59,7 +70,7 @@
         
         function _onGroupDetails() {
             _onGroupNameChange();
-            // _onGroupDataBadge();
+            _onGroupDataBadge();
             _onGroupCreate();
             _onGroupDelete();
 
@@ -152,17 +163,26 @@
                 $timeout(function () {
                     $rootScope.$apply(function () {
                         if($rootScope.user.activeGroup !== data.gID) {
-                            if ($rootScope.user.unreadMessages[data.gID] === undefined) {
-                                $rootScope.user.unreadMessages[data.gID] = 1;
-                            } else {
-                                $rootScope.user.unreadMessages[data.gID] += 1;
-                            }
-
-                            httpService.groupUpdateUnreadMessages(data.gID, $rootScope.user.unreadMessages[data.gID]).then(function () {});
-                            if($rootScope.user.unreadMessages.total !== undefined){
-                                $rootScope.user.unreadMessages.total+=1;
+                            if($rootScope.user.unreadMessages[data.gID] === undefined){
+                                //retrieve again unread
+                                httpService.groupRetrieveTotalUnreadMessages(data.gID, $rootScope.user.fingerprint)
+                                    .then(function (response) {
+                                        if(response.success){
+                                            $rootScope.user.unreadMessages[response.data.gID] = response.data.unreadMessages;
+                                            if($rootScope.user.groupsList.indexOf(response.data.gID) !== -1){
+                                                $rootScope.user.unreadMessages.groups +=  response.data.unreadMessages;
+                                            }else{
+                                                $rootScope.user.unreadMessages.participate +=  response.data.unreadMessages;
+                                            }
+                                        }
+                                    });
                             }else{
-                                $rootScope.user.unreadMessages.total = 1;
+                                $rootScope.user.unreadMessages[data.gID] += 1;
+                                if($rootScope.user.groupsList.indexOf(data.gID) !==-1){
+                                    $rootScope.user.unreadMessages.groups += 1;
+                                }else{
+                                    $rootScope.user.unreadMessages.participate += 1;
+                                }
                             }
                         }
                     });
@@ -184,6 +204,12 @@
                                 $rootScope.user.groupsList.push(data.gID);
                                 $rootScope.user.groupsNames[data.gID] = data.gName;
                                 $rootScope.user.unreadMessages[data.gID] = 0;
+                                //Update time for last active group
+                                if($rootScope.user.activeGroup!==undefined){
+                                    _emitLastActiveGroup($rootScope.user.activeGroup);
+                                }else{
+                                    _emitLastActiveGroup(data.gID);
+                                }
                                 dashboardService.groupOpen(data.gID);
                                 _emitOpenGroup(data.gID);
                                 ngNotify.dismiss();
@@ -209,7 +235,11 @@
                                 $rootScope.user.groupsList.splice(index, 1);
                                 delete $rootScope.user.groupsNames[data.gID];
 
-                                $rootScope.user.unreadMessages.total -= $rootScope.user.unreadMessages[data.gID];
+                                if($rootScope.user.groupsList.indexOf(data.gID)!==-1){
+                                    $rootScope.user.unreadMessages.groups -= $rootScope.user.unreadMessages[data.gID];
+                                }else{
+                                    $rootScope.user.unreadMessages.participate -= $rootScope.user.unreadMessages[data.gID];
+                                }
                                 delete $rootScope.user.unreadMessages[data.gID];
 
                                 if($location.path() === "/home/dashboard"){
@@ -247,8 +277,20 @@
                           if(index === -1){
                               $rootScope.user.participateGroupsList.push(data.gID);
                               $rootScope.user.groupsNames[data.gID] = data.gName;
-                              $rootScope.user.unreadMessages[data.gID] = 0;
-                              dashboardService.groupOpen(data.gID);
+                              httpService.groupRetrieveTotalUnreadMessages(data.gID, $rootScope.user.fingerprint)
+                                  .then(function (response) {
+                                      if(response.success){
+                                          $rootScope.user.unreadMessages[response.data.gID] = response.data.unreadMessages;
+                                          if($rootScope.user.groupsList.indexOf(response.data.gID) !== -1){
+                                              $rootScope.user.unreadMessages.groups +=  response.data.unreadMessages;
+                                          }else{
+                                              $rootScope.user.unreadMessages.participate +=  response.data.unreadMessages;
+                                          }
+                                      }
+                                  });
+                              if($location.path() === '/home/dashboard'){
+                                  dashboardService.groupOpen(data.gID);
+                              }
                               _emitOpenGroup(data.gID);
                               ngNotify.dismiss();
                               ngNotify.set("New group shared to you with name '" + data.gName +"'.", "notice-success");
@@ -273,7 +315,11 @@
                                 $rootScope.user.participateGroupsList.splice(index, 1);
                                 delete $rootScope.user.groupsNames[data.gID];
 
-                                $rootScope.user.unreadMessages.total -= $rootScope.user.unreadMessages[data.gID];
+                                if($rootScope.user.groupsList.indexOf(data.gID)!==-1){
+                                    $rootScope.user.unreadMessages.groups -= $rootScope.user.unreadMessages[data.gID];
+                                }else{
+                                    $rootScope.user.unreadMessages.participate -= $rootScope.user.unreadMessages[data.gID];
+                                }
                                 delete $rootScope.user.unreadMessages[data.gID];
 
                                 if($location.path() === "/home/dashboard"){

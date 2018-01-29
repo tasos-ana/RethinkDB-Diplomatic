@@ -17,9 +17,6 @@
         service.accountGetParticipateUserInfo   = _accountGetParticipateUserInfo;
         service.accountCreate                   = _accountCreate;
         service.accountAuthenticate             = _accountAuthenticate;
-        service.accountUpdateNickname           = _accountUpdateNickname;
-        service.accountUpdatePassword           = _accountUpdatePassword;
-        service.accountUpdateAll                = _accountUpdateAll;
         service.accountUpdate                   = _accountUpdate;
 
         service.groupAddData                    = _groupAddData;
@@ -36,7 +33,7 @@
 
         service.groupInsertToOpenedList         = _groupInsertToOpenedList;
         service.groupRemoveFromOpenedList       = _groupRemoveFromOpenedList;
-        service.groupUpdateUnreadMessages       = _groupUpdateUnreadMessages;
+        service.groupRetrieveTotalUnreadMessages= _groupRetrieveTotalUnreadMessages;
 
         service.groupDeleteMessage              = _groupDeleteMessage;
         service.groupModifyMessage              = _groupModifyMessage;
@@ -92,46 +89,6 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Error at user login'));
-        }
-
-        function _accountUpdateNickname(curPassword, nickname) {
-            return $http({
-                method          : 'POST',
-                url             : '/account/update/nickname',
-                data            : {
-                    curPassword : md5(curPassword),
-                    nickname    : nickname
-                },
-                xsrfCookieName  : 'XSRF-TOKEN',
-                xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Error updating nickname'));
-        }
-
-        function _accountUpdatePassword(curPassword, newPassword) {
-            return $http({
-                method          : 'POST',
-                url             : '/account/update/password',
-                data            : {
-                    curPassword : md5(curPassword),
-                    password    : md5(newPassword)
-                },
-                xsrfCookieName  : 'XSRF-TOKEN',
-                xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Error updating password'));
-        }
-
-        function _accountUpdateAll(curPassword, nickname, newPassword) {
-            return $http({
-                method          : 'POST',
-                url             : '/account/update/all',
-                data            : {
-                    curPassword : md5(curPassword),
-                    nickname    : nickname,
-                    password    : md5(newPassword)
-                },
-                xsrfCookieName  : 'XSRF-TOKEN',
-                xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Error updating nickname and password'));
         }
 
         function _accountUpdate(details) {
@@ -327,17 +284,17 @@
             }).then(handleSuccess, handleError('Cant remove on opened group list'));
         }
 
-        function _groupUpdateUnreadMessages(gID, newVal) {
+        function _groupRetrieveTotalUnreadMessages(gID, fingerprint) {
             return $http({
-                method          : 'POST',
-                url             : '/group/update/unreadMessages',
-                data            : {
-                    gID     : gID,
-                    unread  : newVal
+                method          : 'GET',
+                url             : '/group/retrieve/unreadMessages',
+                params          : {
+                    gID         : gID,
+                    fingerprint : fingerprint
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
+            }).then(handleSuccess,handleError('Cant retrieve unreadMessages from table:' + gID));
         }
 
         function _groupDeleteMessage(gID, mID) {

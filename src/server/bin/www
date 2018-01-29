@@ -89,7 +89,24 @@ const syncService = require('../lib/services/sync.service');
 io.use(cookieParser());
 
 io.on('connection',function (socket) {
-    syncService.connectAll(socket);
+    //ACTION FOR USER
+    socket.on('initConnection', function (fingerprint) {
+        syncService.connectAll(socket, fingerprint);
+    });
+
+    socket.on('disconnect',function () {
+        if(socket.account!== undefined && socket.account.lastActiveGroup!==undefined){
+            syncService.groupUpdateLastTimeRead(socket, socket.account.lastActiveGroup, Date.now());
+        }
+        syncService.disconnectAll(socket);
+    });
+
+    socket.on('logout', function () {
+        if(socket.account!== undefined && socket.account.lastActiveGroup!==undefined){
+            syncService.groupUpdateLastTimeRead(socket, socket.account.lastActiveGroup, Date.now());
+        }
+        syncService.disconnectAll(socket);
+    });
 
     //ACTION FOR GROUP
     socket.on('openGroup', function (gID){
@@ -103,15 +120,11 @@ io.on('connection',function (socket) {
     socket.on('deleteGroup', function (gID) {
         syncService.deleteSingleGroup(socket, gID);
     });
-
-    //ACTION FOR USER
-    socket.on('disconnect',function () {
-        syncService.disconnectAll(socket);
-    });
-
-    socket.on('logout', function () {
-        syncService.disconnectAll(socket);
-    });
+    
+    socket.on('lastActiveGroup', function (gID, timestamp) {
+        socket.account.lastActiveGroup = gID;
+        syncService.groupUpdateLastTimeRead(socket, gID, timestamp);
+    })
 });
 
 /**

@@ -48,6 +48,7 @@
 
             socketService.onAccountDetails();
             socketService.onGroupDetails();
+
             vm.dataLoading = false;
         })();
 

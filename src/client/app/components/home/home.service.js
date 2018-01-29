@@ -33,8 +33,13 @@
                             $rootScope.user.activeGroup = undefined;
                             if($rootScope.user.unreadMessages === undefined){
                                 $rootScope.user.unreadMessages = {};
+                                $rootScope.user.unreadMessages['participate'] = 0;
+                                $rootScope.user.unreadMessages['groups'] = 0;
                             }
-                            _calculateTotalNotifications();
+                            new Fingerprint2().get(function(result, components){
+                                $rootScope.user.fingerprint = result;
+                                _calculateUnreadMessages();
+                            });
 
                             cb();
                         }else{
@@ -46,14 +51,27 @@
             }
         }
         
-        function _calculateTotalNotifications() {
-            let total = 0;
-            for(const id in $rootScope.user.unreadMessages){
-                if(id !== 'total'){
-                    total+= $rootScope.user.unreadMessages[id];
-                }
+        function _calculateUnreadMessages() {
+
+            let groups = ($rootScope.user.groupsList).concat($rootScope.user.participateGroupsList);
+            while(groups.length>0){
+                const gID = groups.pop();
+                _retrieveUnreadMessages(gID);
             }
-            $rootScope.user.unreadMessages.total = total;
+        }
+
+        function _retrieveUnreadMessages(gID) {
+            httpService.groupRetrieveTotalUnreadMessages(gID, $rootScope.user.fingerprint)
+                .then(function (response) {
+                    if(response.success){
+                        $rootScope.user.unreadMessages[response.data.gID] = response.data.unreadMessages;
+                        if($rootScope.user.groupsList.indexOf(response.data.gID) !== -1){
+                            $rootScope.user.unreadMessages.groups +=  response.data.unreadMessages;
+                        }else{
+                            $rootScope.user.unreadMessages.participate +=  response.data.unreadMessages;
+                        }
+                    }
+                });
         }
     }
 })();
