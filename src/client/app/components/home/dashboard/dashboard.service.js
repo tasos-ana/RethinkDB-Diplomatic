@@ -172,8 +172,8 @@
                             .then(function (response) {
                                 if(response.success){
                                     $rootScope.user.openedGroupsList.push(response.data.gID);
-                                    _groupSetActive(response.data.gID);
                                     _retrieveSingleGroupData(response.data.gID, Date.now(), 10);
+                                    _groupSetActive(response.data.gID);
                                 } else{
                                     $rootScope.loginCauseError.enabled = true;
                                     $rootScope.loginCauseError.msg = response.message;
@@ -187,6 +187,7 @@
 
         function _groupSetActive(gID) {
             $rootScope.user.activeGroup = gID;
+
             if($rootScope.user.unreadMessages[gID] === undefined){
                 $rootScope.user.unreadMessages[gID] = 0;
             }

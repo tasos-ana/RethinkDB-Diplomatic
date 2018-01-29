@@ -108,7 +108,8 @@ const groupService = function () {
                     'name'              : gName,
                     'user'              : details.uEmail,
                     "participateUsers"  : [],
-                    'unreadMessages'    : 0
+                    'unreadMessages'    : 0,
+                    'lastTimeRead'      : {}
                 }).run(connection, function (err, result) {
                     if (err) {
                         debug.error('Group.service@create: can\'t insert <' + gName + '> on table \'groups\'');
