@@ -344,7 +344,7 @@ const accountService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'nickname', 'avatar')
                         .run(connection,function (err,result) {
                             if(err){
                                 debug.error('Account.service@_updateAccountDetails: cant get user <' + cookieDetails.uEmail + '> info');
