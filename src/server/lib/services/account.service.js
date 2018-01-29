@@ -198,7 +198,7 @@ const accountService = function () {
                                     "participateGroupsList" : result.participateGroups,
                                     "groupsNames"           : { },
                                     "openedGroupsData"      : { },
-                                    "unreadMessages"        : { },
+                                    "unreadMessages"        : {groups:0, participate:0},
                                     "openedGroupsList"      : result.openedGroups
                                 });
                             }
