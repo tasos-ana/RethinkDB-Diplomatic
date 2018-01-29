@@ -197,6 +197,7 @@
                                 $rootScope.user.unreadMessages[data.gID] = 0;
                                 dashboardService.groupOpen(data.gID);
                                 _emitOpenGroup(data.gID);
+                                _emitLastActiveGroup(data.gID);
                                 ngNotify.dismiss();
                                 ngNotify.set("New group created with name '" + data.gName +"'.", "notice-success");
                             }
