@@ -18,23 +18,26 @@ const syncService = function () {
     };
 
     return{
-        connectAll              : _connectAll,
-        disconnectAll           : _disconnectAll,
+        connectAll                  : _connectAll,
+        disconnectAll               : _disconnectAll,
 
-        connectSingleGroup      : _connectSingleGroup,
-        disconnectSingleGroup   : _disconnectSingleGroup,
+        connectSingleGroup          : _connectSingleGroup,
+        disconnectSingleGroup       : _disconnectSingleGroup,
 
-        deleteSingleGroup       : _deleteSingleGroup
+        deleteSingleGroup           : _deleteSingleGroup,
+
+        groupUpdateLastTimeRead     : _groupUpdateLastTimeRead
     };
 
     /**
      * Retrieve user details from database and
      * then feed on basic components
      *
-     * @param socket    communication socket between server,client
+     * @param socket    communication socket between server, client
+     * @param fingerprint
      * @private
      */
-    function _connectAll(socket) {
+    function _connectAll(socket, fingerprint) {
         if( socket.state !== 'ready' || socket.state !== 'connecting') {
             socket.state = 'connecting';
             debug.status('START SOCKET CONNECTION');
@@ -66,6 +69,11 @@ const syncService = function () {
                             }
                         };
 
+                        socket.account = {
+                            fingerprint       : fingerprint,
+                            lastActiveGroup   : undefined
+                        };
+
                         //FEED ON ACCOUNT FOR CHANGES
                         const uEmail = responseData.email;
                         _feedAccountOnNameChange(socket, uEmail);
@@ -87,9 +95,12 @@ const syncService = function () {
                             if (_tryPop(openedList, gID) !== undefined) {
                                 _feedGroupOnDataChange(socket, gID);
                             }
+                            _groupUpdateLastTimeRead(socket, gID, undefined);
+
                             _feedGroupOnNameChange(socket, gID);
                             _feedGroupForBadgeNotification(socket, gID);
                         }
+
                         socket.state = 'ready';
                         debug.status('SOCKET CONNECTION ESTABLISHED');
                     }
@@ -884,6 +895,7 @@ const syncService = function () {
                                             if(err){
                                                 debug.error('Sync.service@_feedAccountOnParticipateRemove: error happen while retrieve name for group: ' + gID);
                                             }else{
+                                                _groupDeleteLastTimeRead(socket, gID);
                                                 debug.status('Broadcast participateRemove for user <' + uEmail + '>');
                                                 socket.emit('participateRemove',{
                                                     "uEmail"    : uEmail,
@@ -907,7 +919,145 @@ const syncService = function () {
             }
         });
     }
-    
+
+    /**
+     * Check if timestamp for user on gID exists
+     *
+     * @param socket
+     * @param timestamp if undefined then we retrieve the group create time otherwise we use it
+     * @param gID
+     * @private
+     */
+    function _groupUpdateLastTimeRead(socket, gID, timestamp) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_checkGroupLastView: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Retrieve default timestamp from the group
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                if(timestamp === undefined){
+                    rethinkdb.table(gID).get('created').pluck('time')
+                        .run(connection,function (err,results) {
+                            if(err){
+                                connection.close();
+                                debug.error('Group.service@_checkGroupLastView: cant retrieve group <' + gID + '> timestamp');
+                                return callback(true, 'Error happens while getting group timestamp');
+                            }
+                            timestamp = results.time;
+                            callback(null, connection);
+                        });
+                }else{
+                    callback(null, connection);
+                }
+
+            },
+
+
+            /**
+             * Checking if exist lastTimeRead depends on user fingerprint
+             *
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('groups').get(convertGroupID(gID, '-')).update(
+                    function (group) {
+                        return rethinkdb.branch(
+                            group('lastTimeRead').contains(socket.account.fingerprint).eq(false),
+                            {
+                                lastTimeRead : group('lastTimeRead').append(socket.account.fingerprint).append(timestamp)
+                            },
+                            group('lastTimeRead')((group('lastTimeRead').offsetsOf(socket.account.fingerprint)(0)).add(1)).lt(timestamp),
+                            {
+                                lastTimeRead : group('lastTimeRead').changeAt((group('lastTimeRead').offsetsOf(socket.account.fingerprint)(0)).add(1),timestamp)
+                            },
+                            {}
+                        )
+                    }
+                ).run(connection, function (err, results) {
+                    connection.close();
+                    if(err){
+                        debug.error('Group.service@_checkGroupLastView: can\'t update group <' + gID + '> timestamp');
+                        return callback(true, 'Error happens while updating group timestamp');
+                    }
+                })
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
+    }
+
+    /**
+     * Delete lastRead for gID
+     *
+     * @param socket
+     * @param gID
+     * @private
+     */
+    function _groupDeleteLastTimeRead(socket, gID) {
+        async.waterfall([
+            /**
+             * Connect on database
+             * @param callback
+             */
+            function (callback) {
+                db.connectToDb(function (err, connection) {
+                    if (err){
+                        return callback(true, 'Sync.service@_groupDeleteLastTimeRead: cant connect on database');
+                    }
+                    callback(null, connection);
+                });
+            },
+            /**
+             * Delete lastTimeRead
+             *
+             * @param connection
+             * @param callback
+             */
+            function (connection, callback) {
+                rethinkdb.table('groups').get(convertGroupID(gID, '-')).update(
+                    function (group) {
+                        return rethinkdb.branch(
+                            group('lastTimeRead').contains(socket.account.fingerprint),
+                            {
+                                lastTimeRead : group('lastTimeRead').deleteAt(
+                                    (group('lastTimeRead').offsetsOf(socket.account.fingerprint)(0)),
+                                    (group('lastTimeRead').offsetsOf(socket.account.fingerprint)(0)).add(2)
+                                )
+                            },
+                            {}
+                        )
+                    }
+                ).run(connection, function (err, results) {
+                    connection.close();
+                    if(err){
+                        debug.error('Group.service@_groupDeleteLastTimeRead: can\'t update group <' + gID + '> timestamp');
+                        return callback(true, 'Error happens while updating group timestamp');
+                    }
+                })
+            }
+        ], function (err, msg) {
+            if(err){
+                debug.error(msg);
+            }
+        });
+    }
+
     /**
      * If the gID contained in the list it's popped else return undefined
      *

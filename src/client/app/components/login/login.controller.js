@@ -8,8 +8,8 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService', '$window'];
-    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService, $window) {
+    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService'];
+    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService) {
         const vm = this;
 
         vm.login = login;

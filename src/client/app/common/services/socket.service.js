@@ -19,6 +19,7 @@
             emitOpenGroup       : _emitOpenGroup,
             emitCloseGroup      : _emitCloseGroup,
             emitDeleteGroup     : _emitDeleteGroup,
+            emitLastActiveGroup : _emitLastActiveGroup,
 
             onGroupData         : _onGroupData,
             onGroupDetails      : _onGroupDetails,
@@ -28,6 +29,11 @@
 
         function _connectSocket() {
             socket = io();
+            new Fingerprint2().get(function(result, components){
+                if(socket !== null){
+                    socket.emit('initConnection', result);
+                }
+            });
         }
 
         function _disconnectSocket() {
@@ -49,6 +55,11 @@
         function _emitDeleteGroup(gID) {
             socketValidate();
             socket.emit('deleteGroup', gID);
+        }
+
+        function _emitLastActiveGroup(gID) {
+            socketValidate();
+            socket.emit('lastActiveGroup', gID, Date.now());
         }
 
         function _onGroupData() {
