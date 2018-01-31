@@ -92,19 +92,13 @@ router.route('/delete')
         });
     });
 
-router.route('/participate/leave')
-    .get(function (req,res) {
-        groupService.leaveParticipateGroup({gID : req.query.gID, gName : req.query.gName}, req.cookies.userCredentials, function (err, responseData) {
-            if(err){
-                return res.json({'success' : false, 'message': responseData, 'data' : null});
-            }
-            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
-        });
-    });
-
 router.route('/participant/remove')
     .get(function (req,res) {
-        groupService.removeParticipateUser({gID : req.query.gID, uEmail : req.query.uEmail}, function (err, responseData) {
+        let cookie = undefined;
+        if(req.query.uEmail === undefined){
+            cookie = req.cookies.userCredentials;
+        }
+        groupService.removeParticipateUser({gID : req.query.gID, uEmail : req.query.uEmail}, cookie, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

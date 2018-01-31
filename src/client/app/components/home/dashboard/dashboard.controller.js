@@ -159,7 +159,7 @@
                                 $rootScope.user.openedGroupsData[response.data.gID].dataLoading = false;
                                if(response.success){
                                    group.upload.uploadJobs -= 1;
-                                   socketService.emitLastActiveGroup(response.data.gID);
+                                   socketService.emitLastActiveGroup(undefined, response.data.gID);
                                    _uploadText(group);
                                }else{
                                    $rootScope.loginCauseError.enabled = true;
@@ -194,7 +194,7 @@
                         if(response.success){
                             group.upload.uploadJobs -= 1;
                             if(group.upload.uploadJobs <= 0){
-                                socketService.emitLastActiveGroup(response.data.gID);
+                                socketService.emitLastActiveGroup(undefined, response.data.gID);
                                 $timeout(function () {
                                     $rootScope.$apply(function () {
                                         group.upload = {
@@ -309,9 +309,9 @@
             }
             //Update time for last active group
             if($rootScope.user.activeGroup!==undefined){
-                socketService.emitLastActiveGroup($rootScope.user.activeGroup);
+                socketService.emitLastActiveGroup($rootScope.user.activeGroup, gID);
             }else{
-                socketService.emitLastActiveGroup(gID);
+                socketService.emitLastActiveGroup(undefined, gID);
             }
             socketService.emitOpenGroup(gID);
         }
@@ -336,6 +336,7 @@
                                     }else{
                                         $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
                                     }
+                                    socketService.emitLastActiveGroup(undefined, $rootScope.user.activeGroup);
                                 }
                             } else{
                                 $rootScope.loginCauseError.enabled = true;
@@ -351,9 +352,9 @@
             //Update time for last active group
             //Update time for last active group
             if($rootScope.user.activeGroup!==undefined){
-                socketService.emitLastActiveGroup($rootScope.user.activeGroup);
+                socketService.emitLastActiveGroup($rootScope.user.activeGroup, gID);
             }else{
-                socketService.emitLastActiveGroup(gID);
+                socketService.emitLastActiveGroup(undefined, gID);
             }
             dashboardService.groupSetActive(gID);
         }

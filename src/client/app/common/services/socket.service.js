@@ -57,9 +57,9 @@
             socket.emit('deleteGroup', gID);
         }
 
-        function _emitLastActiveGroup(gID) {
+        function _emitLastActiveGroup(prevActive, gID) {
             socketValidate();
-            socket.emit('lastActiveGroup', gID, Date.now());
+            socket.emit('lastActiveGroup', {prevID:prevActive, curID:gID}, Date.now());
         }
 
         function _onGroupData() {
@@ -206,9 +206,9 @@
                                 $rootScope.user.unreadMessages[data.gID] = 0;
                                 //Update time for last active group
                                 if($rootScope.user.activeGroup!==undefined){
-                                    _emitLastActiveGroup($rootScope.user.activeGroup);
+                                    _emitLastActiveGroup($rootScope.user.activeGroup, data.gID);
                                 }else{
-                                    _emitLastActiveGroup(data.gID);
+                                    _emitLastActiveGroup(undefined, data.gID);
                                 }
                                 dashboardService.groupOpen(data.gID);
                                 _emitOpenGroup(data.gID);
@@ -253,6 +253,7 @@
                                         }else{
                                             $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
                                         }
+                                        _emitLastActiveGroup(undefined, $rootScope.user.activeGroup);
                                     }
                                 }
                                 ngNotify.dismiss();
@@ -333,6 +334,7 @@
                                         }else{
                                             $rootScope.user.activeGroup = $rootScope.user.openedGroupsList[index];
                                         }
+                                        _emitLastActiveGroup(undefined, $rootScope.user.activeGroup);
                                     }
                                 }
                                 ngNotify.dismiss();

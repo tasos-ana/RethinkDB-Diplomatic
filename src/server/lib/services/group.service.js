@@ -22,7 +22,6 @@ const groupService = function () {
         retrieveGroupName           : _retrieveGroupName,
         addData                     : _addData,
         deleteGroup                 : _deleteGroup,
-        leaveParticipateGroup       : _leaveParticipateGroup,
         removeParticipateUser       : _removeParticipateUser,
         updateGroupName             : _updateGroupName,
         insertOpenedGroup           : _insertOpenedGroup,
@@ -936,7 +935,7 @@ const groupService = function () {
                         }
                         for(let i=0; i<results.participateUsers.length; ++i){
                             const uEmail = results.participateUsers[i];
-                            _removeParticipateUser({'uEmail': uEmail,'gID': details.gID}, function (err, responseData) {
+                            _removeParticipateUser({'uEmail': uEmail,'gID': details.gID}, undefined, function (err, responseData) {
                                 if(err){
                                     debug.error('Group.service@delete: cant delete a participate user from group <' + responseData.gID + '>');
                                     connection.close();
@@ -1033,9 +1032,10 @@ const groupService = function () {
      *
      * @param details contains uEmail, gID
      * @param callback
+     * @param cookie
      * @private
      */
-    function _removeParticipateUser(details, callback) {
+    function _removeParticipateUser(details,cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -1051,129 +1051,43 @@ const groupService = function () {
                 });
             },
             /**
-             * Delete from user participateGroups the gID
-             *
-             * @param connection
-             * @param callback
-             */
-            function (connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail).update(
-                    function(user) {
-                        return rethinkdb.branch(
-                            user("participateGroups").contains(details.gID),
-                            {participateGroups : user('participateGroups').deleteAt(user('participateGroups').offsetsOf(details.gID)(0))},{}
-                        )
-                    }).run(connection,function (err,results) {
-                    if(err){
-                        debug.error('Group.service@_removeParticipateUser: cant delete group <' + details.gID + '> from user <' + details.uEmail + '> from participateGroups');
-                        connection.close();
-                        return callback(true, 'Error happens while deleting group from user');
-                    }
-                    callback(null, connection);
-                });
-            },
-            /**
-             * Delete from user openedGroups the gID
-             *
-             * @param connection
-             * @param callback
-             */
-            function (connection, callback) {
-                rethinkdb.table('accounts').get(details.uEmail).update(
-                    function(user) {
-                        return rethinkdb.branch(
-                                user("openedGroups").contains(details.gID),
-                                {openedGroups : user('openedGroups').deleteAt(user('openedGroups').offsetsOf(details.gID)(0))},{}
-                        )
-                    }).run(connection,function (err,results) {
-                    if(err){
-                        debug.error('Group.service@_removeParticipateUser: cant delete group <' + details.gID + '> from user <' + details.uEmail + '> from openedGroups');
-                        connection.close();
-                        return callback(true, 'Error happens while deleting group from user');
-                    }
-                    callback(null, connection);
-                });
-            },
-            /**
-             * Delete the user from participateUsers
-             *
-             * @param connection
-             * @param callback
-             */
-            function (connection, callback) {
-                rethinkdb.table('groups').get(convertGroupID(details.gID,'-')).update({
-                    participateUsers : rethinkdb.row('participateUsers').deleteAt(rethinkdb.row('participateUsers').offsetsOf(details.uEmail)(0))
-                }).run(connection, function (err, result) {
-                    connection.close();
-                    if(err){
-                        debug.error('Group.service@_leaveParticipateGroup: cant delete participate user <' + details.uEmail + '> from group <' + details.gID);
-                        return callback(true, 'Error happens while delete participate user from group');
-                    }
-                    callback(null, {gID : details.gID, uEmail: details.uEmail});
-                });
-            }
-        ],function (err,data) {
-            callback(err !== null, data);
-        });
-    }
-
-    /**
-     * Leave from participate group
-     *
-     * @param details   contains gID
-     * @param cookie    Authorization field from request, required for validation
-     * @param callback
-     * @private
-     */
-    function _leaveParticipateGroup(details, cookie, callback) {
-        async.waterfall([
-            /**
-             * Connect on database
-             * @param callback
-             */
-            function (callback) {
-                db.connectToDb(function(err,connection) {
-                    if(err){
-                        debug.error('Group.service@_leaveParticipateGroup: cant connect on database');
-                        return callback(true, 'Error connecting to database');
-                    }
-                    callback(null,connection);
-                });
-            },
-            /**
              * Validate req cookie with details on database
              * @param connection
              * @param callback
              */
             function (connection, callback) {
-                try{
-                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'participateGroups')
-                        .run(connection,function (err,result) {
-                            if(err){
-                                debug.error('Account.service@_leaveParticipateGroup: cant get user <' + cookieDetails.uEmail + '> info');
-                                connection.close();
-                                return callback(true, 'Error happens while getting user details that required for validation');
-                            }
-                            if(result === null){
-                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
-                                connection.close();
-                                return callback(true,'Email do not exists');
-                            }
+                if(cookie !== undefined) {
+                    try {
+                        const cookieDetails = JSON.parse(encryption.decrypt(cookie));
+                        rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'participateGroups')
+                            .run(connection, function (err, result) {
+                                if (err) {
+                                    debug.error('Account.service@_removeParticipateUser: cant get user <' + cookieDetails.uEmail + '> info');
+                                    connection.close();
+                                    return callback(true, 'Error happens while getting user details that required for validation');
+                                }
+                                if (result === null) {
+                                    debug.status('User <' + cookieDetails.uEmail + '> do not exists');
+                                    connection.close();
+                                    return callback(true, 'Email do not exists');
+                                }
 
-                            if(cookieDetails.uPassword !== result.password || result.participateGroups.indexOf(details.gID) === -1){
-                                debug.error('Account.service@_leaveParticipateGroup: user details and cookie isn\'t match');
-                                connection.close();
-                                return callback(true,'Invalid cookie');
-                            }else{
-                                details.uEmail = cookieDetails.uEmail;
-                                callback(null, connection);
-                            }
-                        });
-                }catch (e){
-                    debug.error('Account.service@_leaveParticipateGroup (catch): user details and cookie isn\'t match');
-                    connection.close();
-                    return callback(true,'Invalid cookie');
+                                if (cookieDetails.uPassword !== result.password || result.participateGroups.indexOf(details.gID) === -1) {
+                                    debug.error('Account.service@_removeParticipateUser: user details and cookie isn\'t match');
+                                    connection.close();
+                                    return callback(true, 'Invalid cookie');
+                                } else {
+                                    details.uEmail = cookieDetails.uEmail;
+                                    callback(null, connection);
+                                }
+                            });
+                    } catch (e) {
+                        debug.error('Account.service@_removeParticipateUser (catch): user details and cookie isn\'t match');
+                        connection.close();
+                        return callback(true, 'Invalid cookie');
+                    }
+                }else{
+                    callback(null, connection);
                 }
             },
             /**
@@ -1192,7 +1106,7 @@ const groupService = function () {
 
                     }).run(connection,function (err,results) {
                     if(err){
-                        debug.error('Group.service@_leaveParticipateGroup: cant delete group <' + details.gID + '> from user <' + details.uEmail + '>');
+                        debug.error('Group.service@_removeParticipateUser: cant delete group <' + details.gID + '> from user <' + details.uEmail + '>');
                         connection.close();
                         return callback(true, 'Error happens while deleting group from user');
                     }
@@ -1214,7 +1128,7 @@ const groupService = function () {
                         )
                     }).run(connection,function (err,results) {
                     if(err){
-                        debug.error('Group.service@_leaveParticipateGroup: cant delete group <' + details.gID + '> from user <' + details.uEmail + '>');
+                        debug.error('Group.service@_removeParticipateUser: cant delete group <' + details.gID + '> from user <' + details.uEmail + '>');
                         connection.close();
                         return callback(true, 'Error happens while deleting group from user');
                     }
@@ -1233,10 +1147,10 @@ const groupService = function () {
                 }).run(connection, function (err, result) {
                     connection.close();
                     if(err){
-                        debug.error('Group.service@_leaveParticipateGroup: cant delete participate user <' + details.uEmail + '> from group <' + details.gID);
+                        debug.error('Group.service@_removeParticipateUser: cant delete participate user <' + details.uEmail + '> from group <' + details.gID);
                         return callback(true, 'Error happens while delete participate user from group');
                     }
-                    callback(null, {gID : details.gID});
+                    callback(null, {gID : details.gID, uEmail : details.uEmail});
                 });
             }
         ],function (err,data) {

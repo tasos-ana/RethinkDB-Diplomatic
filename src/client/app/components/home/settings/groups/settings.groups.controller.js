@@ -83,7 +83,7 @@
         function _leaveGroup(gID) {
             socketService.emitDeleteGroup(gID);
 
-            httpService.groupParticipateLeave(gID)
+            httpService.groupRemoveParticipant(undefined, gID)
                 .then(function (response) {
                    if(!response.success){
                        $rootScope.loginCauseError.enabled = true;
@@ -102,6 +102,7 @@
                            $rootScope.user.groupsParticipants[response.data.gID].splice(index,1);
                        }
                        $rootScope.editParticipants.user = undefined;
+                       $rootScope.editParticipants.confirm = undefined;
                    }else{
                        $rootScope.loginCauseError.enabled = true;
                        $rootScope.loginCauseError.msg = response.message;

@@ -30,8 +30,12 @@
                                 <li class="nav-item" ng-repeat="gID in user.openedGroupsList" ng-click="vm.groupSetActive(gID)">
                                     <a class="nav-link" ng-class="{'active' : user.activeGroup === gID}" data-toggle="tab" ng-href="#{{gID}}">
                                         <button class="close closeTab" type="button" ng-click="vm.groupClose(gID)" title="Close group">×</button>
-                                        <span ng-if="(user.groupsList.indexOf(gID) !== -1)">{{user.openedGroupsData[gID].name}}</span>
-                                        <span ng-if="(user.groupsList.indexOf(gID) === -1)"><i class="fa fa-users"></i> {{user.openedGroupsData[gID].name}} </span>
+                                        <span ng-if="(user.groupsList.indexOf(gID) !== -1)">{{user.openedGroupsData[gID].name}}
+                                            <span class="badge bg-primary text-dark" ng-show="user.unreadMessages[gID]>0">{{user.unreadMessages[gID]}}</span>
+                                        </span>
+                                        <span ng-if="(user.groupsList.indexOf(gID) === -1)"><i class="fa fa-users"></i> {{user.openedGroupsData[gID].name}}
+                                            <span class="badge bg-primary text-dark" ng-show="user.unreadMessages[gID]>0">{{user.unreadMessages[gID]}}</span>
+                                        </span>
                                     </a>
                                 </li>
                             </ul>

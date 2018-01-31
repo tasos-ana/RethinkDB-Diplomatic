@@ -121,9 +121,11 @@ io.on('connection',function (socket) {
         syncService.deleteSingleGroup(socket, gID);
     });
     
-    socket.on('lastActiveGroup', function (gID, timestamp) {
-        socket.account.lastActiveGroup = gID;
-        syncService.groupUpdateLastTimeRead(socket, gID, timestamp);
+    socket.on('lastActiveGroup', function (groupIDs, timestamp) {
+        socket.account.lastActiveGroup = groupIDs.curID;
+        if(groupIDs.prevID!== undefined){
+            syncService.groupUpdateLastTimeRead(socket, groupIDs.prevID, timestamp);
+        }
     })
 });
 
