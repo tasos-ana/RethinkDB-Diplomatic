@@ -107,7 +107,6 @@ const groupService = function () {
                     'name'              : gName,
                     'user'              : details.uEmail,
                     "participateUsers"  : [],
-                    'unreadMessages'    : 0,
                     'lastTimeRead'      : []
                 }).run(connection, function (err, result) {
                     if (err) {
