@@ -201,7 +201,7 @@
                 method          : 'POST',
                 url             : '/group/share',
                 data            : {
-                    email  : uEmail,
+                    uEmail  : uEmail,
                     gID     : gID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',

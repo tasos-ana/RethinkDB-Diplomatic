@@ -205,7 +205,7 @@ const groupService = function () {
     /**
      * Share a group to another user
      *
-     * @param details   contains email: of the user that we share group, gID: the id of the group
+     * @param details   contains uEmail: of the user that we share group, gID: the id of the group
      * @param cookie
      * @param callback
      * @private
@@ -271,10 +271,10 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table('accounts').get(details.email).pluck('participateGroups')
+                rethinkdb.table('accounts').get(details.uEmail).pluck('participateGroups')
                     .run(connection, function (err, result) {
                         if(err){
-                            debug.error('Account.service@_shareGroup: cant retrieve participateGroup from user <' + details.email + '>');
+                            debug.error('Account.service@_shareGroup: cant retrieve participateGroup from user <' + details.uEmail + '>');
                             connection.close();
                             return callback(true, 'Error happens while retrieving group name');
                         }
@@ -295,11 +295,11 @@ const groupService = function () {
              */
             function (connection,exist, callback) {
                 if(!exist){
-                    rethinkdb.table('accounts').get(details.email).update({
+                    rethinkdb.table('accounts').get(details.uEmail).update({
                         participateGroups: rethinkdb.row('participateGroups').append(details.gID)
                     }).run(connection, function (err, result) {
                         if(err){
-                            debug.error('Account.service@_shareGroup: cant append shared group on user <' + details.email + '>');
+                            debug.error('Account.service@_shareGroup: cant append shared group on user <' + details.uEmail + '>');
                             connection.close();
                             return callback(true, 'Error happens while retrieving group name');
                         }
@@ -320,14 +320,14 @@ const groupService = function () {
             function (connection, exist, callback) {
                 if(!exist){
                     rethinkdb.table('groups').get(convertGroupID(details.gID,'-')).update({
-                        participateUsers: rethinkdb.row('participateUsers').append(details.email)
+                        participateUsers: rethinkdb.row('participateUsers').append(details.uEmail)
                     }).run(connection, function (err, result) {
                         if(err){
                             debug.error('Account.service@_shareGroup: cant append user on shared group <' + details.gID + '>');
                             connection.close();
                             return callback(true, 'Error happens while retrieving group name');
                         }
-                        callback(null, {gID: details.gID, email: details.email, exist : false});
+                        callback(null, {gID: details.gID, uEmail: details.uEmail, exist : false});
                     });
                 }else{
                     callback(null, {exist : true});

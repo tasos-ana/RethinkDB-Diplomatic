@@ -282,7 +282,6 @@
                                         }
                                         vm.share.creating = false;
                                         delete vm.share.email;
-                                        // delete vm.share.group;
                                         vm.shareGroupFadeIn=false;
                                     });
                             });
