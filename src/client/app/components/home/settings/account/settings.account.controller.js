@@ -64,7 +64,7 @@
                 ngNotify.set("Invalid nickname. Please try again", "notice-danger");
                 $window.document.getElementById('newNickname_input').focus();
                 error = true;
-            }else if(newNickname!==undefined && newNickname.length>0){
+            }else if(newNickname!==undefined && newNickname.length>=3){
                 if(curPassword!==undefined && curPassword.length>=8){
                     changeNickname = true;
                 }else if($scope.accountSettingsForm.curPassword.$valid){
@@ -82,12 +82,12 @@
                 ngNotify.set("Invalid password. Please try again", "notice-danger");
                 $window.document.getElementById('newPassword_input').focus();
                 error=true;
-            }else if($scope.accountSettingsForm.confirmNewPassword.$invalid){
+            }else if($scope.accountSettingsForm.confirmNewPassword.$invalid && newPassword.length>=8){
                 ngNotify.set("Your passwords don't matched. Please try again", "notice-danger");
                 $window.document.getElementById('confirmNewPassword_input').focus();
                 error=true;
-            }else if(newPassword!==undefined && newPassword.length>0 && confirmNewPassword!==undefined && confirmNewPassword.length>0){
-                if(curPassword!==undefined && curPassword.length>0){
+            }else if(newPassword!==undefined && newPassword.length>=8 && confirmNewPassword!==undefined && confirmNewPassword.length>=8){
+                if(curPassword!==undefined && curPassword.length>=8){
                     if(curPassword === newPassword){
                         ngNotify.set("New password can't be the same with your current password. Please try again", "notice-danger");
                         $window.document.getElementById('newPassword_input').focus();
@@ -95,11 +95,14 @@
                     }else{
                         changePassword = true;
                     }
-                }else{
-                    ngNotify.dismiss();
+                }else if($scope.accountSettingsForm.curPassword.$valid){
                     ngNotify.set("Your current password is required", "notice-danger");
                     $window.document.getElementById('curPassword_input').focus();
                     error=true;
+                }else{
+                    ngNotify.set("Your current password is invalid", "notice-danger");
+                    $window.document.getElementById('curPassword_input').focus();
+                    error=true
                 }
             }
 
@@ -119,6 +122,15 @@
 
             if(!error){
                 if(changeNickname || changePassword || changeAvatar){
+                    if(!changeNickname){
+                        vm.accountSettings.newNickname = undefined;
+                    }
+                    if(!changeAvatar){
+                        vm.accountSettings.newAvatar = undefined;
+                    }
+                    if(!changePassword){
+                        vm.accountSettings.newPassword = undefined;
+                    }
                     settingsAccountService.accountUpdate(vm);
                 }
             }
