@@ -113,6 +113,9 @@ hr {
     background: #555;
 }
 
+nav.navbar .search-inner .submit {
+    height: 40px;
+}
 
 
 
