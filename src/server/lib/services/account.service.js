@@ -63,7 +63,7 @@ const accountService = function () {
                         return callback(true, 'Error happens while creating new account');
                     }
                     debug.correct('New user <' + details.uEmail + '> added successfully');
-                    callback(null, result);
+                    callback(null, {});
                 });
             }
         ],function (err,data) {
@@ -99,6 +99,7 @@ const accountService = function () {
              */
             function (connection, callback) {
                 rethinkdb.table('accounts').get(details.uEmail)
+                    .pluck('password')
                     .run(connection,function (err,result) {
                         connection.close();
                         if(err){
@@ -115,14 +116,7 @@ const accountService = function () {
                                 return callback(true, 'Email or password its wrong');
                             }else{
                                 debug.correct('User <' + details.uEmail + '> authenticated');
-                                callback(null, {
-                                        email                   : result.email,
-                                        nickname                : result.nickname,
-                                        avatar                  : result.avatar,
-                                        groupsList              : result.groups,
-                                        participateGroupsList   : result.participateGroups,
-                                        openedGroupsData        : { }
-                                });
+                                callback(null, {});
                             }
                         }
                     });
@@ -216,12 +210,16 @@ const accountService = function () {
              * @param callback
              */
             function (connection, data, callback) {
-                rethinkdb.table('groups').orderBy({index : 'userAndName'}).filter(
-                    function (group) {
-                     return group('participateUsers').contains(data.email)
-                         .or(group("user").eq(data.email));
-                    }
-                ).run(connection,function (err, result) {
+                rethinkdb.table('groups').orderBy({index : 'userAndName'})
+                    .without('lastTimeRead')
+                    .filter(
+                        function (group) {
+                            return group('participateUsers')
+                                .contains(data.email)
+                                .or(group("user").eq(data.email));
+                        })
+                    .pluck('id','name')
+                    .run(connection,function (err, result) {
                         connection.close();
                         if(err){
                             debug.error('Account.service@accountInfo: cant get for user <' + uEmail + '> the groups details');

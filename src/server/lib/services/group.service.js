@@ -1443,7 +1443,9 @@ const groupService = function () {
              * @param callback
              */
             function (connection, callback) {
-                rethinkdb.table(details.gID).orderBy({index : 'time'}).filter(rethinkdb.row('time').gt(details.timestamp)).count()
+                rethinkdb.table(details.gID).orderBy({index : 'time'})
+                    .pluck('time')
+                    .filter(rethinkdb.row('time').gt(details.timestamp)).count()
                     .run(connection, function (err, result) {
                         connection.close();
                         if(err){
