@@ -30,7 +30,6 @@
 
         (function initController() {
             vm.dataLoading = true;
-            socketService.connectSocket();
 
             ngNotify.config({
                 sticky   : false,
@@ -53,10 +52,6 @@
             }else{
                 dashboardService.retrieveGroupsData();
             }
-
-            socketService.onAccountDetails();
-            socketService.onGroupDetails();
-            socketService.onGroupData();
 
             vm.dataLoading = false;
         })();

@@ -89,8 +89,39 @@ const syncService = require('../lib/services/sync.service');
 io.use(cookieParser());
 
 io.on('connection',function (socket) {
+    //INITIALIAZE STRUCTURE ON socket THAT WE WILL KEEP CONNECTION OF DB
+    socket.feeds = {
+        account: {
+            password            : undefined,
+            name                : undefined,
+            avatar              : undefined,
+            insertGroup         : undefined,
+            deleteGroup         : undefined,
+            addParticipate      : undefined,
+            removeParticipate   : undefined
+        },
+        groupForBadgeNotification: {
+            //gID : connection
+        },
+        groupOnDataChange: {
+            //gID : connection
+        },
+        groupOnNameChange: {
+            //gID : connection
+        },
+        groupOnDelete: {
+            //gID : connection
+        }
+    };
+
+    socket.account = {
+        fingerprint       : undefined,
+        lastActiveGroup   : undefined
+    };
+
     //ACTION FOR USER
     socket.on('initConnection', function (fingerprint) {
+        socket.account.fingerprint = fingerprint;
         syncService.connectAll(socket, fingerprint);
     });
 

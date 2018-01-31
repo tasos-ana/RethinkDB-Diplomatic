@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('SettingsAccountController', SettingsAccountController);
 
-    SettingsAccountController.$inject = ['$rootScope', '$scope', '$location', 'homeService', 'dashboardService','socketService', 'httpService', '$timeout', 'ngNotify', '$window', 'settingsAccountService'];
-    function SettingsAccountController($rootScope, $scope, $location, homeService, dashboardService, socketService, httpService, $timeout, ngNotify, $window, settingsAccountService) {
+    SettingsAccountController.$inject = ['$rootScope', '$scope', '$location', 'homeService', 'dashboardService', 'httpService', '$timeout', 'ngNotify', '$window', 'settingsAccountService'];
+    function SettingsAccountController($rootScope, $scope, $location, homeService, dashboardService, httpService, $timeout, ngNotify, $window, settingsAccountService) {
         const vm = this;
 
         vm.generateNewAvatar        = _generateNewAvatar;
@@ -16,8 +16,6 @@
         (function initController() {
             vm.dataLoading = true;
             vm.templateURL = $location.path();
-
-            socketService.connectSocket();
 
             ngNotify.config({
                 sticky   : false,
@@ -33,9 +31,6 @@
             homeService.retrieveAccountDetails(function () {
                 vm.accountSettings.newAvatar = $rootScope.user.usersDetails[$rootScope.user.email].avatar;
             });
-
-            socketService.onAccountDetails();
-            socketService.onGroupDetails();
 
             vm.dataLoading = false;
         })();

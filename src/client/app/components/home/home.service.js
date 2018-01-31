@@ -5,8 +5,8 @@
         .module('starterApp')
         .factory('homeService', homeService);
 
-    homeService.$inject = ['$rootScope', '$location', 'httpService'];
-    function homeService($rootScope, $location, httpService) {
+    homeService.$inject = ['$rootScope', '$location', 'httpService','md5', 'socketService'];
+    function homeService($rootScope, $location, httpService, md5, socketService) {
         const service = {};
 
         service.retrieveAccountDetails = retrieveAccountDetails;
@@ -14,7 +14,7 @@
         return service;
         
         function retrieveAccountDetails(cb) {
-            if($rootScope.user === undefined || $rootScope.user ===null){
+                        if($rootScope.user === undefined || $rootScope.user ===null){
                 httpService.accountGetUserInfo(undefined)
                     .then(function (response) {
                         if(response.success){
@@ -37,7 +37,14 @@
                                 $rootScope.user.unreadMessages['groups'] = 0;
                             }
                             new Fingerprint2().get(function(result, components){
-                                $rootScope.user.fingerprint = result;
+                                $rootScope.user.fingerprint = md5(result+$rootScope.user.email);
+                                socketService.openSocket();
+                                socketService.connectSocket();
+                                socketService.onAccountDetails();
+                                socketService.onGroupDetails();
+                                if($location.path() === '/home/dashboard'){
+                                    socketService.onGroupData();
+                                }
                                 _calculateUnreadMessages();
                             });
 

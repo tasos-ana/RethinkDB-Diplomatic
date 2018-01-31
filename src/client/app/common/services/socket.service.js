@@ -13,6 +13,8 @@
         let socket = null;
 
         return {
+            openSocket          : _openSocket,
+
             connectSocket       : _connectSocket,
             disconnectSocket    : _disconnectSocket,
 
@@ -27,13 +29,13 @@
             onAccountDetails    : _onAccountDetails,
         };
 
-        function _connectSocket() {
+        function _openSocket() {
             socket = io();
-            new Fingerprint2().get(function(result, components){
-                if(socket !== null){
-                    socket.emit('initConnection', result);
-                }
-            });
+        }
+        
+        function _connectSocket() {
+            socketValidate();
+            socket.emit('initConnection', $rootScope.user.fingerprint);
         }
 
         function _disconnectSocket() {
@@ -409,7 +411,7 @@
         
         function socketValidate() {
             if(socket === null){
-                _connectSocket();
+                _openSocket();
             }
         }
 

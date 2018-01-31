@@ -44,35 +44,6 @@ const syncService = function () {
             if (socket.request.cookies['userCredentials'] !== undefined) {
                 accountService.info(undefined, socket.request.cookies['userCredentials'], function (err, responseData) {
                     if (!err) {
-                        //INITIALIAZE STRUCTURE ON socket THAT WE WILL KEEP CONNECTION
-                        socket.feeds = {
-                            account: {
-                                password            : undefined,
-                                name                : undefined,
-                                avatar              : undefined,
-                                insertGroup         : undefined,
-                                deleteGroup         : undefined,
-                                addParticipate      : undefined,
-                                removeParticipate   : undefined
-                            },
-                            groupForBadgeNotification: {
-                                //gID : connection
-                            },
-                            groupOnDataChange: {
-                                //gID : connection
-                            },
-                            groupOnNameChange: {
-                                //gID : connection
-                            },
-                            groupOnDelete: {
-                                //gID : connection
-                            }
-                        };
-
-                        socket.account = {
-                            fingerprint       : fingerprint,
-                            lastActiveGroup   : undefined
-                        };
 
                         //FEED ON ACCOUNT FOR CHANGES
                         const uEmail = responseData.email;

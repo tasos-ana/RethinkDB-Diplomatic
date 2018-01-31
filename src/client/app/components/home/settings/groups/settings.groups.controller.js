@@ -17,7 +17,7 @@
         (function initController() {
             vm.dataLoading = true;
             vm.templateURL = $location.path();
-            socketService.connectSocket();
+
 
             ngNotify.config({
                 sticky   : false,
@@ -45,9 +45,6 @@
                         });
                 }
             });
-
-            socketService.onAccountDetails();
-            socketService.onGroupDetails();
 
             vm.dataLoading = false;
         })();
