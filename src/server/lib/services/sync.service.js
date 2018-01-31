@@ -220,7 +220,7 @@ const syncService = function () {
              */
             function (connection, callback) {
                 debug.status('Start _feedGroupForBadgeNotification on group <' + gID + '>');
-                rethinkdb.table(gID).changes({includeTypes:true})
+                rethinkdb.table(gID).changes({includeTypes:true}).pluck('type')
                     .run(connection,function (err, cursor) {
                         if(err){
                             connection.close();
@@ -286,6 +286,8 @@ const syncService = function () {
                 if (socket.feeds.groupOnDataChange[gID] === undefined) {
                     socket.feeds.groupOnDataChange[gID] = connection;
                     rethinkdb.table(gID).changes({includeTypes:true})
+                        .pluck({'old_val' :['id']},'new_val', 'type')
+                        .without({'new_val':['file', 'password']})
                         .run(connection,function (err, cursor) {
                             if (err) {
                                 connection.close();
@@ -373,8 +375,11 @@ const syncService = function () {
                 if(socket.feeds.groupOnNameChange[gID] === undefined){
                     socket.feeds.groupOnNameChange[gID] = connection;
 
-                    rethinkdb.table('groups').get(groupID).changes().filter(
-                        rethinkdb.row('old_val')('name').ne(rethinkdb.row('new_val')('name'))
+                    rethinkdb.table('groups').get(groupID).changes()
+                        .pluck({'new_val' : ['name'], 'old_val' :['name']})
+                        .filter(
+                            rethinkdb.row('old_val')('name').ne(rethinkdb.row('new_val')('name')
+                            )
                     ).run(connection,function (err, cursor) {
                         if(err){
                             connection.close();
@@ -386,7 +391,7 @@ const syncService = function () {
                                 connection.close();
                             }
                             if(row !== undefined){
-                                if(Object.keys(row).length>0 && row.new_val !== null){
+                                if(Object.keys(row).length>0 && row.new_val.name !== null){
                                     debug.status('Broadcast groupNameChange for group <' + gID + '>');
                                     socket.emit('groupNameChange',{
                                         "gID"     : gID,
@@ -440,6 +445,7 @@ const syncService = function () {
                     socket.feeds.account.name = connection;
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['nickname'], 'old_val' :['nickname']})
                         .filter(
                             rethinkdb.row('old_val')('nickname').ne(rethinkdb.row('new_val')('nickname'))
                         ).run(connection,function (err, cursor) {
@@ -508,6 +514,7 @@ const syncService = function () {
                     socket.feeds.account.avatar = connection;
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['avatar'], 'old_val' :['avatar']})
                         .filter(
                             rethinkdb.row('old_val')('avatar').ne(rethinkdb.row('new_val')('avatar'))
                         ).run(connection,function (err, cursor) {
@@ -575,6 +582,7 @@ const syncService = function () {
                     socket.feeds.account.password = connection;
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['password'], 'old_val' :['password']})
                         .filter(
                             rethinkdb.row('old_val')('password').ne(rethinkdb.row('new_val')('password'))
                         ).run(connection,function (err, cursor) {
@@ -636,11 +644,12 @@ const syncService = function () {
              * @param callback
              */
             function (connection, callback) {
-                debug.status('Start _feedAccountOnPasswordChange on account <' + uEmail + '>');
+                debug.status('Start _feedAccountOnGroupCreate on account <' + uEmail + '>');
                 if(socket.feeds.account.insertGroup === undefined){
                     socket.feeds.account.insertGroup = connection;
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['groups'], 'old_val' :['groups']})
                         .filter(
                             rethinkdb.row('new_val')('groups').count().gt(rethinkdb.row('old_val')('groups').count())
                         ).run(connection,function (err, cursor) {
@@ -722,6 +731,7 @@ const syncService = function () {
 
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['groups'], 'old_val' :['groups']})
                         .filter(
                             rethinkdb.row('old_val')('groups').count().gt(rethinkdb.row('new_val')('groups').count())
                         ).run(connection,function (err, cursor) {
@@ -739,7 +749,7 @@ const syncService = function () {
                                 if(Object.keys(row).length>0 && row.new_val !== null){
 
                                     const gID   = (row.old_val.groups.diff(row.new_val.groups))[0];
-                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-')).pluck('name')
                                         .run(connection, function (err, result) {
                                             if(err){
                                                 debug.error('Sync.service@_feedAccountOnGroupDelete: error happen while retrieve name for group: ' + gID);
@@ -801,6 +811,7 @@ const syncService = function () {
 
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['participateGroups'], 'old_val' :['participateGroups']})
                         .filter(
                             rethinkdb.row('new_val')('participateGroups').count().gt(rethinkdb.row('old_val')('participateGroups').count())
                         ).run(connection,function (err, cursor) {
@@ -818,7 +829,7 @@ const syncService = function () {
                                 if(Object.keys(row).length>0 && row.new_val !== null){
 
                                     const gID   = (row.new_val.participateGroups.diff(row.old_val.participateGroups))[0];
-                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-')).pluck('name')
                                         .run(connection, function (err, result) {
                                             if(err){
                                                 debug.error('Sync.service@_feedAccountOnParticipateAdd: error happen while retrieve name for group: ' + gID);
@@ -883,6 +894,7 @@ const syncService = function () {
 
 
                     rethinkdb.table('accounts').get(uEmail).changes()
+                        .pluck({'new_val' : ['participateGroups'], 'old_val' :['participateGroups']})
                         .filter(
                             rethinkdb.row('old_val')('participateGroups').count().gt(rethinkdb.row('new_val')('participateGroups').count())
                         ).run(connection,function (err, cursor) {
@@ -899,7 +911,7 @@ const syncService = function () {
                             if(row !== undefined){
                                 if(Object.keys(row).length>0 && row.new_val !== null){
                                     const gID   = (row.old_val.participateGroups.diff(row.new_val.participateGroups))[0];
-                                    rethinkdb.table('groups').get(convertGroupID(gID, '-'))
+                                    rethinkdb.table('groups').get(convertGroupID(gID, '-')).pluck('name')
                                         .run(connection, function (err, result) {
                                             if(err){
                                                 debug.error('Sync.service@_feedAccountOnParticipateRemove: error happen while retrieve name for group: ' + gID);

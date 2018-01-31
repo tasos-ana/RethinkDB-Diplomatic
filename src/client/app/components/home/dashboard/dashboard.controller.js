@@ -77,7 +77,7 @@
             httpService.retrieveFileValue(gID, mID)
                 .then(function (response) {
                     if(response.success){
-                        var dataFile = new Blob([_convertDataURIToBinary(response.data.file)], { type: response.data.type + ';charset=utf-8' });
+                        let dataFile = new Blob([_convertDataURIToBinary(response.data.file)], { type: response.data.type + ';charset=utf-8' });
                         FileSaver.saveAs(dataFile, '' + response.data.name);
                     }else{
                         $rootScope.loginCauseError.enabled = true;
