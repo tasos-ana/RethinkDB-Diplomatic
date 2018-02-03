@@ -1,12 +1,15 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorLight</item>
-        <item name="colorPrimaryDark">@color/colorSecondary</item>
-        <item name="textColorPrimary">@color/colorInfo</item>
-        <item name="windowBackground">@color/colorBackgroundBlock</item>
+    <style name="AppTheme" parent="pushUP">
     </style>
+
+    <style name="pushUP" parent="Theme.AppCompat" >
+        <item name="colorPrimary">@color/colorBackgroundBlock</item>
+        <item name="colorPrimaryDark">@color/colorInfo</item>
+        <item name="android:textColorPrimary">@color/colorLight</item>
+        <item name="android:windowBackground">@color/colorBackgroundBlock</item>
+    </style>
+
 
 </resources>

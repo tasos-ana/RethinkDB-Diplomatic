@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="pushUP" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/colorBackgroundBlock</item>
+        <item name="colorPrimaryDark">@color/colorInfo</item>
+        <item name="android:textColorPrimary">@color/colorLight</item>
+        <item name="android:windowBackground">@color/colorBackgroundBlock</item>
+        <item name="android:navigationBarColor">@color/colorBackgroundBlock</item>
+    </style>
+</resources>
