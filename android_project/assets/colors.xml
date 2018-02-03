@@ -7,5 +7,6 @@
     <color name="colorInfo">#23bcc9</color>
     <color name="colorSuccess">#28a745</color>
     <color name="colorDanger">#dc3545</color>
-    <color name="colorBackgroundBlock">#2d3035</color>
+    <color name="colorBackgroundBloc">#2d3035</color>
+
 </resources>
