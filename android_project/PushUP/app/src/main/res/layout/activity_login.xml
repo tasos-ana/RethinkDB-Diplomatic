@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/AppTheme"
-    tools:context="com.diplomatic.pushup.LoginActivity">
+    tools:context="com.diplomatic.pushup.activity.LoginActivity">
 
     <!-- Login progress -->
     <ProgressBar
@@ -29,17 +29,22 @@
             android:id="@+id/email_login_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:padding="15dp"
+            android:orientation="vertical"
+            android:layout_gravity="center">
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorInfo"
+                android:layout_margin="5dp">
 
                 <AutoCompleteTextView
                     android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_email"
+                    android:textColor="@color/colorLight"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
                     android:singleLine="true" />
@@ -48,7 +53,9 @@
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorInfo"
+                android:layout_margin="5dp">
 
                 <EditText
                     android:id="@+id/password"
@@ -64,11 +71,18 @@
 
             </android.support.design.widget.TextInputLayout>
 
+            <CheckBox android:id="@+id/checkbox_remember_me"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/action_remember_me"
+                android:layout_margin="15dp"/>
+
             <Button
-                android:id="@+id/email_sign_in_button"
+                android:id="@+id/make_login_button"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/btn_primary_background"
                 android:layout_marginTop="16dp"
                 android:text="@string/action_login"
                 android:textStyle="bold" />

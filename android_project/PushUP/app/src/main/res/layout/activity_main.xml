@@ -8,7 +8,7 @@
     android:weightSum="4"
     android:theme="@style/AppTheme"
     android:background="@color/colorBackgroundBlock"
-    tools:context="com.diplomatic.pushup.MainActivity">
+    tools:context="com.diplomatic.pushup.activity.MainActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -28,8 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
-        android:layout_marginTop="30dp"
-        android:padding="50dp"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"
         android:id="@+id/linearLayout">
         <ImageView
             android:id="@+id/imageView"
@@ -57,6 +57,7 @@
             android:gravity="center"
             android:layout_centerInParent="true"
             android:text="@string/action_login"
+            android:textStyle="bold"
             android:textSize="30sp"/>
     </RelativeLayout>
 
@@ -71,6 +72,7 @@
 
             android:layout_above="@+id/goSignUpActivity"
             android:layout_centerInParent="true"
+            android:layout_marginBottom="2dp"
             android:text="@string/prompt_sign_up"
             android:textColor="@color/colorSecondary"
             android:textSize="15sp" />
@@ -84,6 +86,7 @@
             android:layout_marginBottom="5dp"
             android:background="@drawable/btn_secondary_background"
             android:text="@string/action_sign_up"
+            android:textStyle="bold"
             android:textColor="@color/colorPrimary"
             android:textSize="15sp"/>
 
