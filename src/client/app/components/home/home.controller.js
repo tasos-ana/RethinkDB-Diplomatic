@@ -5,8 +5,8 @@
         .module('starterApp')
         .controller('HomeController', HomeController);
 
-    HomeController.$inject = ['$rootScope', '$location', 'homeService', 'socketService', 'dashboardService', 'ngNotify'];
-    function HomeController($rootScope, $location, homeService, socketService, dashboardService, ngNotify) {
+    HomeController.$inject = ['$rootScope', '$location', 'homeService', 'dashboardService', 'ngNotify'];
+    function HomeController($rootScope, $location, homeService, dashboardService, ngNotify) {
         const vm = this;
 
         (function initController() {
@@ -24,16 +24,7 @@
             ngNotify.addType('notice-danger','bg-danger text-light');
             ngNotify.addType('notice-info','bg-info text-dark');
 
-            socketService.connectSocket();
-
-            socketService.onAccountNameChange();
-            socketService.onAccountPasswordChange();
-
-            socketService.onGroupCreate();
-            socketService.onGroupDelete();
-            socketService.onGroupNameChange();
             vm.dataLoading = false;
-            // socketService.onGroupDataBadge();
 
         })();
     }

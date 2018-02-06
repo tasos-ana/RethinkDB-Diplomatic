@@ -1,12 +1,32 @@
 (function () {
     'use strict';
     angular
-        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'angular-md5', 'ngNotify', 'monospaced.elastic', 'ngFileSaver'])
+        .module('starterApp',['ngRoute', 'ngCookies', 'ngAnimate', 'ngNotify', 'monospaced.elastic', 'ngFileSaver' ,'ui.gravatar'])
         .config(config)
         .run(run);
 
-    config.$inject = ['$routeProvider', '$locationProvider'];
-    function config($routeProvider, $locationProvider) {
+    config.$inject = ['$routeProvider', '$locationProvider', 'gravatarServiceProvider'];
+    function config($routeProvider, $locationProvider, gravatarServiceProvider) {
+        gravatarServiceProvider.defaults ={
+            size        : 50,
+            // "default"   : 'retro'
+            // "default"   : 'identicon'
+            default         : 'robohash'
+        };
+
+        String.prototype.shuffle = function () {
+            var a = this.split(""),
+                n = a.length;
+
+            for(var i = n - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = a[i];
+                a[i] = a[j];
+                a[j] = tmp;
+            }
+            return a.join("");
+        };
+
         $locationProvider.html5Mode(true);
         $routeProvider
             .when('/',{
@@ -33,11 +53,6 @@
             .when('/home/groups/settings',{
                 controller: 'SettingsGroupsController',
                 templateUrl: './app/components/home/settings/groups/groups.settings.view.html',
-                controllerAs: 'vm'
-            })
-            .when('/home/about',{
-                controller: 'HomeController',
-                templateUrl: './app/components/home/about/about.view.html',
                 controllerAs: 'vm'
             })
             .when('/login',{

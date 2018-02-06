@@ -3,9 +3,9 @@
     <div ng-show="vm.createGroupFadeIn">
         <div class="search-inner d-flex align-items-center justify-content-center">
             <div class="close-btn" ng-click="vm.createGroupFadeIn=false">Close <i class="fa fa-close"></i></div>
-            <form id="searchForm" name="createForm" ng-submit="vm.groupCreate(!createForm.$invalid)" role="form" novalidate>
+            <form  name="createForm" ng-submit="vm.groupCreate(!createForm.$invalid)" role="form" novalidate>
                 <div class="form-group">
-                    <input id='createGroupInput' type="search" name="create" placeholder="Group name is..." ng-model="vm.group.name"
+                    <input id='createGroupInput' type="text" name="create" placeholder="Group name is..." ng-model="vm.group.name"
                            required ng-minlength="3" title="Group name should have more than 3 characters">
                     <button type="submit" class="submit" ng-hide="createForm.$invalid">Create</button>
                 </div>
@@ -14,13 +14,44 @@
             </form>
         </div>
     </div>
-    <!-- CREATE GROUP PANEL END -->
+
+    <!-- SHARE GROUP PANEL BEGIN -->
+    <div ng-show="vm.shareGroupFadeIn">
+        <div class="search-inner d-flex align-items-center justify-content-center">
+            <div class="close-btn" ng-click="vm.shareGroupFadeIn=false">Close <i class="fa fa-close"></i></div>
+            <form name="shareForm" ng-submit="vm.groupShare(shareForm.share.$error.emailExists)"
+                  role="form" novalidate>
+                <div class="form-group">
+                    <label for="shareGroupSelect">Select a group:</label>
+                    <select class="form-control" id="shareGroupSelect" ng-model="vm.share.group">
+                        <option ng-repeat="gID in user.groupsList" value={{gID}}>{{user.groupsNames[gID]}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input id='shareGroupInput' type="email" name="share" placeholder="User email is..." ng-model="vm.share.email"
+                           required ng-minlength="3" title="Type the email of an exist user." ng-pattern="/^.+@.+\..+$/"
+                           email-exists="!$shareForm.share.$invalid">
+                    <small ng-show="shareForm.share.$error.pattern"
+                           class="text-danger">Email is invalid. Example csd3166@csd.gr</small>
+                    <small ng-show="!shareForm.share.$error.emailExists && !shareForm.$invalid"
+                           class="text-danger">Email does not exists.</small>
+                    <small ng-show="vm.share.email === user.email"
+                           class="text-danger">You can't share group in your self.
+                    </small>
+                    <button type="submit" class="submit"
+                            ng-show="shareForm.share.$error.emailExists && !vm.share.creating && vm.share.email !== user.email">
+                        Share</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <div class="navbar-header"><a href="/home" class="navbar-brand">
             <div class="brand-text brand-big visible text-uppercase" ng-class="{'visible' : !vm.sidebarToggled}"><strong class="text-primary">Push</strong><strong>Up</strong></div>
             <div class="brand-text brand-sm" ng-class="{'visible' : vm.sidebarToggled}"><strong class="text-primary">P</strong><strong>UP</strong></div></a>
             <button class="sidebar-toggle" ng-class="{'active' : vm.sidebarToggled}" ng-click="vm.sidebarToggled=!vm.sidebarToggled">
-                <i class="fa" ng-class="{'fa-long-arrow-left' : !vm.sidebarToggled ,'fa-long-arrow-right' : vm.sidebarToggled}"></i></button>
+                <i  ng-class="{'fa fa-long-arrow-left' : !vm.sidebarToggled ,'fa fa-long-arrow-right' : vm.sidebarToggled}"></i></button>
         </div>
         <ul class="right-menu list-inline no-margin-bottom">
             <li class="list-inline-item logout">

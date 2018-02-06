@@ -14,12 +14,11 @@ const encryption = require('./security/encryption.security');
 const accountService = function () {
 
     return {
-        create          : _create,
-        authenticate    : _authenticate,
-        info            : _info,
-        updateNickname  : _updateNickname,
-        updatePassword  : _updatePassword,
-        updateAll       : _updateAll
+        create                  : _create,
+        authenticate            : _authenticate,
+        info                    : _info,
+        participateInfo         : _participateInfo,
+        updateAccountDetails    : _updateAccountDetails
     };
 
     /**
@@ -50,11 +49,13 @@ const accountService = function () {
              */
             function(connection,callback) {
                 rethinkdb.table('accounts').insert({
-                    'nickname'      : details.uNickname,
-                    'email'         : details.uEmail,
-                    'password'      : details.uPassword,
-                    'groups'        : [],
-                    'openedGroups'  : []
+                    'nickname'          : details.uNickname,
+                    'email'             : details.uEmail,
+                    'password'          : details.uPassword,
+                    'avatar'            : details.uEmail,
+                    'groups'            : [],
+                    'participateGroups' : [],
+                    'openedGroups'      : []
                 }).run(connection,function(err,result){
                     connection.close();
                     if(err){
@@ -62,7 +63,7 @@ const accountService = function () {
                         return callback(true, 'Error happens while creating new account');
                     }
                     debug.correct('New user <' + details.uEmail + '> added successfully');
-                    callback(null, result);
+                    callback(null, {});
                 });
             }
         ],function (err,data) {
@@ -98,6 +99,7 @@ const accountService = function () {
              */
             function (connection, callback) {
                 rethinkdb.table('accounts').get(details.uEmail)
+                    .pluck('password')
                     .run(connection,function (err,result) {
                         connection.close();
                         if(err){
@@ -114,12 +116,7 @@ const accountService = function () {
                                 return callback(true, 'Email or password its wrong');
                             }else{
                                 debug.correct('User <' + details.uEmail + '> authenticated');
-                                callback(null, {
-                                        email       : result.email,
-                                        nickname    : result.nickname,
-                                        groupsList  : result.groups,
-                                        openedGroupsData  : { }
-                                });
+                                callback(null, {});
                             }
                         }
                     });
@@ -187,14 +184,16 @@ const accountService = function () {
                             }else{
                                 debug.status('Retrieved info for user <' + result.email +'>');
                                 callback(null, connection, {
-                                    "email"             : result.email,
-                                    "nickname"          : result.nickname,
-                                    "tmpGroupsList"     : result.groups,
-                                    "groupsList"        : [ ],
-                                    "groupsNames"       : { },
-                                    "openedGroupsData"  : { },
-                                    "unreadMessages"    : { },
-                                    "openedGroupsList"  : result.openedGroups
+                                    "email"                 : result.email,
+                                    "nickname"              : result.nickname,
+                                    "avatar"                : result.avatar,
+                                    "tmpGroupsList"         : result.groups,
+                                    "groupsList"            : [ ],
+                                    "participateGroupsList" : result.participateGroups,
+                                    "groupsNames"           : { },
+                                    "openedGroupsData"      : { },
+                                    "unreadMessages"        : {groups:0, participate:0},
+                                    "openedGroupsList"      : result.openedGroups
                                 });
                             }
                         });
@@ -211,7 +210,15 @@ const accountService = function () {
              * @param callback
              */
             function (connection, data, callback) {
-                rethinkdb.table('groups').orderBy({index : 'userAndName'}).filter({user : data.email})
+                rethinkdb.table('groups').orderBy({index : 'userAndName'})
+                    .without('lastTimeRead')
+                    .filter(
+                        function (group) {
+                            return group('participateUsers')
+                                .contains(data.email)
+                                .or(group("user").eq(data.email));
+                        })
+                    .pluck('id','name')
                     .run(connection,function (err, result) {
                         connection.close();
                         if(err){
@@ -230,7 +237,8 @@ const accountService = function () {
                                 if(data.tmpGroupsList.indexOf(gID) !== -1){
                                     data.groupsList.push(gID);
                                     data.groupsNames[gID] = arr[i].name;
-                                    data.unreadMessages[gID] = arr[i].unreadMessages;
+                                }else if(data.participateGroupsList.indexOf(gID) !== -1){
+                                    data.groupsNames[gID] = arr[i].name;
                                 }else{
                                     debug.error('Account.service@accountInfo: group with id <' + gID + '> not belong to user');
                                     return callback(true, 'Error happens while getting user details');
@@ -249,14 +257,14 @@ const accountService = function () {
     }
 
     /**
-     * We update account nickname with new
+     * Retrieve participate user info
      *
-     * @param details   contains {curPassword, nickname:newNickname}
-     * @param cookie    Authorization field from request, required for validation
+     * @param uEmail
+     * @param cookie
      * @param callback
      * @private
      */
-    function _updateNickname(details, cookie, callback) {
+    function _participateInfo(uEmail, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -265,160 +273,36 @@ const accountService = function () {
             function (callback) {
                 db.connectToDb(function (err,connection) {
                     if(err){
-                        debug.error('Account.service@_updateNickname: cant connect to database');
+                        debug.error('Account.service@_participateInfo: cant connect to database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null, connection);
                 });
             },
             /**
-             * Validate req cookie with details on database
+             * Get details
              * @param connection
              * @param callback
              */
             function (connection, callback) {
-                try{
-                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
-                        .run(connection,function (err,result) {
-                            if(err){
-                                debug.error('Account.service@_updateNickname: cant get user <' + cookieDetails.uEmail + '> info');
-                                connection.close();
-                                return callback(true, 'Error happens while getting user details that required for validation');
-                            }
-                            if(result === null){
-                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
-                                connection.close();
-                                return callback(true,'Email do not exists');
-                            }
-
-                            //PASSWORD CHECKINGS
-                            if(cookieDetails.uPassword !== result.password){
-                                debug.error('Account.service@_updateNickname: user details and cookie isnt match');
-                                connection.close();
-                                return callback(true, 'Invalid cookie');
-                            }else if(result.password!==details.curPassword){
-                                debug.error('Account.service@_updateNickname: user curPassword isn\'t matched');
-                                connection.close();
-                                return callback(true, {wrongPassword : true, msg : 'Current password it\'s wrong'});
-                            }else {
-                                callback(null, connection, cookieDetails.uEmail);
-                            }
-                        });
-                }catch (e){
-                    debug.error('Account.service@_updateNickname (catch): user details and cookie isnt match');
-                    connection.close();
-                    return callback(true,'Invalid cookie');
-                }
-            },
-            /**
-             * Update the nickname of the user
-             * @param connection
-             * @param uEmail
-             * @param callback
-             */
-            function (connection,uEmail, callback) {
-                rethinkdb.table('accounts').get(uEmail).update({
-                    nickname : details.nickname
-                }).run(connection, function (err,result) {
-                    connection.close();
-                   if(err){
-                       debug.error('Account.service@_updateNickname: cant update user <' + uEmail + '> nickname');
-                       connection.close();
-                       return callback(true, 'Error happens while updating user nickname');
-                   }
-                    callback(null, {nickname : details.nickname});
-                });
-            }
-        ], function (err,data) {
-            callback(err !== null, data);
-        });
-    }
-
-    /**
-     * Update account password with new
-     * @param details   contains {curPassword, password : newPassword}
-     * @param cookie    Authorization field from request, required for validation
-     * @param callback
-     * @private
-     */
-    function _updatePassword(details, cookie, callback) {
-        async.waterfall([
-            /**
-             * Connect on database
-             * @param callback
-             */
-            function (callback) {
-                db.connectToDb(function (err,connection) {
-                    if(err){
-                        debug.error('Account.service@_updatePassword: cant connect to database');
-                        return callback(true, 'Error connecting to database');
-                    }
-                    callback(null, connection);
-                });
-            },
-            /**
-             * Validate req cookie with details on database
-             * @param connection
-             * @param callback
-             */
-            function (connection, callback) {
-                try{
-                    const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
-                        .run(connection,function (err,result) {
-                            if(err){
-                                debug.error('Account.service@_updatePassword: cant get user <' + cookieDetails.uEmail + '> info');
-                                connection.close();
-                                return callback(true, 'Error happens while getting user details that required for validation');
-                            }
-                            if(result === null){
-                                debug.status('User <' + cookieDetails.uEmail + '> do not exists');
-                                connection.close();
-                                return callback(true,'Email do not exists');
-                            }
-
-                            //PASSWORD CHECKINGS
-                            if(cookieDetails.uPassword !== result.password){
-                                debug.error('Account.service@_updatePassword: user details and cookie isnt match');
-                                connection.close();
-                                return callback(true, {wrongPassword : false, msg : 'Invalid cookie'});
-                            }else if(result.password!==details.curPassword){
-                                debug.error('Account.service@_updatePassword: user curPassword isn\'t matched');
-                                connection.close();
-                                return callback(true, {wrongPassword : true, msg : 'Current password it\'s wrong'});
-                            }else {
-                                callback(null, connection, cookieDetails.uEmail);
-                            }
-                        });
-                }catch (e){
-                    debug.error('Account.service@_updatePassword (catch): user details and cookie isnt match');
-                    connection.close();
-                    return callback(true,'Invalid cookie');
-                }
-            },
-            /**
-             * Update the password of the user
-             * @param connection
-             * @param uEmail
-             * @param callback
-             */
-            function (connection,uEmail, callback) {
-                rethinkdb.table('accounts').get(uEmail).update({
-                    password : details.password
-                }).run(connection, function (err,result) {
-                    connection.close();
-                    if(err){
-                        debug.error('Account.service@_updatePassword: cant update user <' + uEmail + '> password');
+                rethinkdb.table('accounts').get(uEmail).pluck('email','nickname', 'avatar')
+                    .run(connection,function (err,result) {
                         connection.close();
-                        return callback(true, 'Error happens while updating user password');
-                    }
-                    const retVal = {
-                      cookie    : {uEmail : uEmail, uPassword : details.password},
-                      data      : ''
-                    };
-                    callback(null, retVal);
-                });
+                        if(err){
+                            debug.error('Account.service@_participateInfo: cant get user <' + uEmail + '> info');
+                            return callback(true, 'Error happens while getting user details');
+                        }
+                        if(result === null){
+                            debug.status('User <' + uEmail + '> do not exists');
+                            return callback(true,'Email do not exists');
+                        }
+                        debug.status('Retrieved info for participate user <' + result.email +'>');
+                        callback(null, {
+                            "email"                 : result.email,
+                            "nickname"              : result.nickname,
+                            "avatar"                : result.avatar
+                        });
+                    });
             }
         ], function (err,data) {
             callback(err !== null, data);
@@ -426,14 +310,14 @@ const accountService = function () {
     }
 
     /**
-     * Update nickname and password
+     * Update account fields if are not undefined
      *
-     * @param details   contains {curPassword, nickname : newNickname, password : newPassword}
+     * @param details   contains {curPassword, newNickname, newPassword, newAvatar}
      * @param cookie    Authorization field from request, required for validation
      * @param callback
      * @private
      */
-    function _updateAll(details, cookie, callback) {
+    function _updateAccountDetails(details, cookie, callback) {
         async.waterfall([
             /**
              * Connect on database
@@ -442,7 +326,7 @@ const accountService = function () {
             function (callback) {
                 db.connectToDb(function (err,connection) {
                     if(err){
-                        debug.error('Account.service@_updateAll: cant connect to database');
+                        debug.error('Account.service@_updateAccountDetails: cant connect to database');
                         return callback(true, 'Error connecting to database');
                     }
                     callback(null, connection);
@@ -456,10 +340,10 @@ const accountService = function () {
             function (connection, callback) {
                 try{
                     const cookieDetails = JSON.parse(encryption.decrypt(cookie));
-                    rethinkdb.table('accounts').get(cookieDetails.uEmail)
+                    rethinkdb.table('accounts').get(cookieDetails.uEmail).pluck('password', 'nickname', 'avatar')
                         .run(connection,function (err,result) {
                             if(err){
-                                debug.error('Account.service@_updateAll: cant get user <' + cookieDetails.uEmail + '> info');
+                                debug.error('Account.service@_updateAccountDetails: cant get user <' + cookieDetails.uEmail + '> info');
                                 connection.close();
                                 return callback(true, 'Error happens while getting user details that required for validation');
                             }
@@ -471,19 +355,28 @@ const accountService = function () {
 
                             //PASSWORD CHECKINGS
                             if(cookieDetails.uPassword !== result.password){
-                                debug.error('Account.service@_updateAll: user details and cookie isnt match');
+                                debug.error('Account.service@_updateAccountDetails: user details and cookie isnt match');
                                 connection.close();
                                 return callback(true, {wrongPassword : false, msg : 'Invalid cookie'});
                             }else if(result.password!==details.curPassword){
-                                debug.error('Account.service@_updateAll: user curPassword isn\'t matched');
+                                debug.error('Account.service@_updateAccountDetails: user curPassword isn\'t matched');
                                 connection.close();
                                 return callback(true, {wrongPassword : true, msg : 'Current password it\'s wrong'});
                             }else {
+                                if (details.newNickname === undefined){
+                                    details.newNickname = result.nickname;
+                                }
+                                if (details.newPassword === undefined){
+                                    details.newPassword = result.password;
+                                }
+                                if (details.newAvatar === undefined){
+                                    details.newAvatar = result.avatar;
+                                }
                                 callback(null, connection, cookieDetails.uEmail);
                             }
                         });
                 }catch (e){
-                    debug.error('Account.service@_updateAll (catch): user details and cookie isnt match');
+                    debug.error('Account.service@_updateAccountDetails (catch): user details and cookie isnt match');
                     connection.close();
                     return callback(true,'Invalid cookie');
                 }
@@ -494,20 +387,21 @@ const accountService = function () {
              * @param uEmail
              * @param callback
              */
-            function (connection,uEmail, callback) {
+            function (connection, uEmail, callback) {
                 rethinkdb.table('accounts').get(uEmail).update({
-                    nickname : details.nickname,
-                    password : details.password
+                    nickname    : details.newNickname,
+                    password    : details.newPassword,
+                    avatar      : details.newAvatar
                 }).run(connection, function (err,result) {
                     connection.close();
                     if(err){
-                        debug.error('Account.service@_updateAll: cant update user <' + uEmail + '> nickname & password');
+                        debug.error('Account.service@_updateAccountDetails: cant update user <' + uEmail + '> account details');
                         connection.close();
-                        return callback(true, 'Error happens while updating user nickname & password');
+                        return callback(true, 'Error happens while updating user account details');
                     }
                     const retVal = {
-                        cookie    : {uEmail : uEmail, uPassword : details.password},
-                        data      : {nickname : details.nickname}
+                        cookie    : {uEmail : uEmail, uPassword : details.newPassword},
+                        data      : {nickname : details.newNickname, avatar : details.newAvatar}
                     };
                     callback(null, retVal);
                 });

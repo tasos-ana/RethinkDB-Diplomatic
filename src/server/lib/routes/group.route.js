@@ -12,9 +12,29 @@ router.route('/create')
         });
     });
 
+router.route('/share')
+    .post(function (req,res) {
+        groupService.shareGroup(req.body , req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
 router.route('/retrieve/data')
     .get(function (req,res) {
         groupService.retrieveGroupData({gID : req.query.gID, afterFrom : req.query.afterFrom, limitVal : req.query.limitVal}, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/retrieve/participants')
+    .get(function (req,res) {
+        groupService.retrieveGroupParticipants(req.query.gID, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -64,7 +84,21 @@ router.route('/update/name')
 
 router.route('/delete')
     .get(function (req,res) {
-        groupService.deleteGroup({gID : req.query.gID, gName : req.query.gName}, req.cookies.userCredentials, function (err, responseData) {
+        groupService.deleteGroup({gID : req.query.gID}, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/participant/remove')
+    .get(function (req,res) {
+        let cookie = undefined;
+        if(req.query.uEmail === undefined){
+            cookie = req.cookies.userCredentials;
+        }
+        groupService.removeParticipateUser({gID : req.query.gID, uEmail : req.query.uEmail}, cookie, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -93,9 +127,9 @@ router.route('/openedList/remove')
     });
 
 
-router.route('/update/unreadMessages')
-    .post(function (req,res) {
-        groupService.messageNotification(req.body, req.cookies.userCredentials, function (err, responseData) {
+router.route('/retrieve/unreadMessages')
+    .get(function (req,res) {
+        groupService.retrieveUnreadMessages({gID : req.query.gID, fingerprint : req.query.fingerprint}, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }
@@ -106,6 +140,16 @@ router.route('/update/unreadMessages')
 router.route('/delete/message')
     .post(function (req,res) {
         groupService.deleteMessage(req.body, req.cookies.userCredentials, function (err, responseData) {
+            if(err){
+                return res.json({'success' : false, 'message': responseData, 'data' : null});
+            }
+            res.json({'success' : true, 'message' : 'Success', 'data' : responseData});
+        });
+    });
+
+router.route('/modify/message')
+    .post(function (req,res) {
+        groupService.modifyMessage(req.body, req.cookies.userCredentials, function (err, responseData) {
             if(err){
                 return res.json({'success' : false, 'message': responseData, 'data' : null});
             }

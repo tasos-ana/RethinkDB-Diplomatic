@@ -13,25 +13,30 @@
     function httpService($http, md5) {
         const service = {};
 
-        service.accountGetUserInfo          = _accountGetUserInfo;
-        service.accountCreate               = _accountCreate;
-        service.accountAuthenticate         = _accountAuthenticate;
-        service.accountUpdateNickname       = _accountUpdateNickname;
-        service.accountUpdatePassword       = _accountUpdatePassword;
-        service.accountUpdateAll            = _accountUpdateAll;
+        service.accountGetUserInfo              = _accountGetUserInfo;
+        service.accountGetParticipateUserInfo   = _accountGetParticipateUserInfo;
+        service.accountCreate                   = _accountCreate;
+        service.accountAuthenticate             = _accountAuthenticate;
+        service.accountUpdate                   = _accountUpdate;
 
-        service.groupAddData                = _groupAddData;
-        service.groupRetrieveData           = _groupRetrieveData;
-        service.retrieveFileValue           = _retrieveFileValue;
-        service.groupRetrieveName           = _groupRetrieveName;
-        service.groupCreate                 = _groupCreate;
-        service.groupDelete                 = _groupDelete;
-        service.groupUpdateName             = _groupUpdateName;
-        service.groupInsertToOpenedList     = _groupInsertToOpenedList;
-        service.groupRemoveFromOpenedList   = _groupRemoveFromOpenedList;
-        service.groupUpdateUnreadMessages   = _groupUpdateUnreadMessages;
+        service.groupAddData                    = _groupAddData;
+        service.groupRetrieveData               = _groupRetrieveData;
+        service.retrieveGroupParticipants       = _retrieveGroupParticipants;
+        service.retrieveFileValue               = _retrieveFileValue;
+        service.groupRetrieveName               = _groupRetrieveName;
+        service.groupCreate                     = _groupCreate;
+        service.groupShare                      = _groupShare;
+        service.groupDelete                     = _groupDelete;
+        service.groupUpdateName                 = _groupUpdateName;
+        service.groupRemoveParticipant          = _groupRemoveParticipant;
 
-        service.groupDeleteMessage          = _groupDeleteMessage;
+        service.groupInsertToOpenedList         = _groupInsertToOpenedList;
+        service.groupRemoveFromOpenedList       = _groupRemoveFromOpenedList;
+        service.groupRetrieveTotalUnreadMessages= _groupRetrieveTotalUnreadMessages;
+
+        service.groupDeleteMessage              = _groupDeleteMessage;
+        service.groupModifyMessage              = _groupModifyMessage;
+
         return service;
 
         // private functions
@@ -47,6 +52,16 @@
             }).then(handleSuccess, handleError('User do not exist'));
         }
 
+        function _accountGetParticipateUserInfo(uEmail) {
+            return $http({
+                method          : 'GET',
+                url             : '/account/participate/info',
+                params          : { uEmail : uEmail},
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Participate user do not exist'));
+        }
+
         function _accountCreate(user) {
             return $http({
                 method          : 'POST',
@@ -54,7 +69,7 @@
                 data            : {
                                     uNickname   : user.uNickname,
                                     uEmail      : user.uEmail,
-                                    uPassword   : md5.createHash(user.uPassword || '')
+                                    uPassword   : md5(user.uPassword || '')
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -67,7 +82,7 @@
                 url             : '/account/authenticate',
                 params          : {
                                     uEmail      : user.uEmail,
-                                    uPassword   : md5.createHash(user.uPassword),
+                                    uPassword   : md5(user.uPassword),
                                     rememberMe  : user.rememberMe
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
@@ -75,44 +90,25 @@
             }).then(handleSuccess,handleError('Error at user login'));
         }
 
-        function _accountUpdateNickname(curPassword, nickname) {
+        function _accountUpdate(details) {
+            let newPassword;
+            if(details.newPassword !== undefined){
+                newPassword = md5(details.newPassword);
+            }else{
+                newPassword = undefined;
+            }
             return $http({
-                method          : 'POST',
-                url             : '/account/update/nickname',
-                data            : {
-                    curPassword : md5.createHash(curPassword),
-                    nickname    : nickname
+                method      : 'POST',
+                url         : '/account/update/details',
+                data        : {
+                    newAvatar   : details.newAvatar,
+                    newNickname : details.newNickname,
+                    newPassword : newPassword,
+                    curPassword : md5(details.curPassword)
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Error updating nickname'));
-        }
-
-        function _accountUpdatePassword(curPassword, newPassword) {
-            return $http({
-                method          : 'POST',
-                url             : '/account/update/password',
-                data            : {
-                    curPassword : md5.createHash(curPassword),
-                    password    : md5.createHash(newPassword)
-                },
-                xsrfCookieName  : 'XSRF-TOKEN',
-                xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Error updating password'));
-        }
-
-        function _accountUpdateAll(curPassword, nickname, newPassword) {
-            return $http({
-                method          : 'POST',
-                url             : '/account/update/all',
-                data            : {
-                    curPassword : md5.createHash(curPassword),
-                    nickname    : nickname,
-                    password    : md5.createHash(newPassword)
-                },
-                xsrfCookieName  : 'XSRF-TOKEN',
-                xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Error updating nickname and password'));
+            }).then(handleSuccess, handleError('Error while updating account details'));
         }
 
         //Functions for group managing
@@ -121,7 +117,8 @@
                 gID     : data.gID,
                 data    : data.value,
                 time    : data.time,
-                type    : data.type
+                type    : data.type,
+                user    : data.user
             };
             if(data.type !== 'text'){
                 data2send.file = data.file;
@@ -148,6 +145,18 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess,handleError('Cant retrieve data from table:' + gID));
+        }
+
+        function _retrieveGroupParticipants(gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/retrieve/participants',
+                params          : {
+                    gID         : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant retrieve participants from table:' + gID));
         }
 
         function _retrieveFileValue(gID, mID) {
@@ -187,13 +196,25 @@
             }).then(handleSuccess,handleError('Cant create group \'' + gName + '\''));
         }
 
-        function _groupDelete(gID, gName) {
+        function _groupShare(uEmail, gID) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/share',
+                data            : {
+                    uEmail  : uEmail,
+                    gID     : gID
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant share group to user \'' + uEmail + '\''));
+        }
+
+        function _groupDelete(gID) {
             return $http({
                 method          : 'GET',
                 url             : '/group/delete',
                 params          : {
-                                    gID     : gID,
-                                    gName   : gName
+                                    gID     : gID
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
@@ -211,6 +232,19 @@
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
             }).then(handleSuccess, handleError('Cant update group name'));
+        }
+
+        function _groupRemoveParticipant(uEmail, gID) {
+            return $http({
+                method          : 'GET',
+                url             : '/group/participant/remove',
+                params          : {
+                    gID     : gID,
+                    uEmail  : uEmail,
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess,handleError('Cant remove participant from group \'' + gID + '\''));
         }
 
         function _groupInsertToOpenedList(gID) {
@@ -237,17 +271,17 @@
             }).then(handleSuccess, handleError('Cant remove on opened group list'));
         }
 
-        function _groupUpdateUnreadMessages(gID, newVal) {
+        function _groupRetrieveTotalUnreadMessages(gID, fingerprint) {
             return $http({
-                method          : 'POST',
-                url             : '/group/update/unreadMessages',
-                data            : {
-                    gID     : gID,
-                    unread  : newVal
+                method          : 'GET',
+                url             : '/group/retrieve/unreadMessages',
+                params          : {
+                    gID         : gID,
+                    fingerprint : fingerprint
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
+            }).then(handleSuccess,handleError('Cant retrieve unreadMessages from table:' + gID));
         }
 
         function _groupDeleteMessage(gID, mID) {
@@ -260,7 +294,22 @@
                 },
                 xsrfCookieName  : 'XSRF-TOKEN',
                 xsrfHeaderName  : 'x-xsrf-token'
-            }).then(handleSuccess, handleError('Cant update group new value for messages notification'));
+            }).then(handleSuccess, handleError('Cant delete message from group'));
+        }
+
+        function _groupModifyMessage(gID, mID, data) {
+            return $http({
+                method          : 'POST',
+                url             : '/group/modify/message',
+                data            : {
+                    gID     : gID,
+                    mID     : mID,
+                    data    : data,
+                    modify  : Date.now()
+                },
+                xsrfCookieName  : 'XSRF-TOKEN',
+                xsrfHeaderName  : 'x-xsrf-token'
+            }).then(handleSuccess, handleError('Cant modify message on group'));
         }
 
         function handleSuccess(res) {

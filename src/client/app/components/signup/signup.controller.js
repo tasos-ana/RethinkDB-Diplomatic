@@ -33,12 +33,12 @@
                     httpService.accountCreate(vm.user).then(function (response) {
                             if (response.success) {
                                 ngNotify.dismiss();
-                                ngNotify.set("Register complete! Automatic redirect to login page in 5sec...", "notice-success");
+                                ngNotify.set("Register complete! Automatic redirect to login page in 3sec...", "notice-success");
                                 $timeout(function () {
                                     if($location.path()==='/signup'){
                                         $window.location.href = '/login';
                                     }
-                                },5000);
+                                },3000);
                             } else {
                                 vm.dataLoading = false;
                                 ngNotify.dismiss();

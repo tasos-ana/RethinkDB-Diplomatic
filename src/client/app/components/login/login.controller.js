@@ -8,8 +8,8 @@
         .module('starterApp')
         .controller('LoginController', LoginController);
 
-    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService', '$window'];
-    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService, $window) {
+    LoginController.$inject = ['$rootScope', '$location', 'httpService', 'ngNotify', '$cookies', 'socketService'];
+    function LoginController($rootScope, $location, httpService, ngNotify, $cookies, socketService) {
         const vm = this;
 
         vm.login = login;
@@ -57,9 +57,6 @@
             httpService.accountAuthenticate(vm.user)
                 .then(function (response) {
                     if (response.success) {
-                        $rootScope.user = response.data;
-                        $rootScope.user.openedGroupsList = [];
-                        $rootScope.user.activeGroup = undefined;
                         $rootScope.loginStatus = true;
                         $location.path('/home');
                     } else {

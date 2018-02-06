@@ -1,9 +1,9 @@
 <div class="sidebar-header d-flex align-items-center">
-    <div class="avatar bg-primary">
-        <img src="./assets/img/account.svg" alt="..." class="img-fluid rounded-circle">
+    <div class="avatar bg-dark border-dark">
+        <img gravatar-src="user.usersDetails[user.email].avatar" alt="..." class="img-fluid rounded-circle">
     </div>
     <div class="title">
-        <h1 class="h5">{{user.nickname}}</h1>
+        <h1 class="h5">{{user.usersDetails[user.email].nickname}}</h1>
         <a class="small">{{user.email}}</a>
     </div>
 </div><span class="heading">Main</span>
@@ -14,18 +14,33 @@
     </li>
     <li ng-class="{'active' : vm.templateURL==='/home/dashboard'}">
         <a href="/home/dashboard" ng-class="{'collapse' : vm.templateURL==='/home/dashboard'}">
-            <i class="icon-cloud"></i>
-                <span class="badge bg-primary text-dark" ng-show="user.unreadMessages.total>0">{{user.unreadMessages.total}}</span> Dashboard
+            <i class="icon-cloud"></i> Dashboard
+            <span class="badge bg-primary text-dark" ng-show="user.unreadMessages.groups+user.unreadMessages.participate>0">{{user.unreadMessages.groups+user.unreadMessages.participate}}</span>
         </a>
         <ul id="dashboardList" class="collapse list-unstyled" ng-class="{'show' : vm.templateURL==='/home/dashboard'}">
             <li>
-                <a class="create-group" href="" ng-click="vm.openGroupCreate()"><i class="icon-new-file"></i>Create Group</a>
+                <a href="" ng-click="vm.openGroupCreateModal()"><i class="icon-new-file"></i> Create a group</a>
+            </li>
+            <li ng-show="user.groupsList.length!=0">
+                <a href="" ng-click="vm.openShareGroupModal()"><i class="fa fa-share-alt"></i> Share a group</a>
             </li>
             <li>
-                <a href="" data-toggle="collapse" data-target="#groupsList"> <i class="icon-windows"></i>My Groups</a>
-                <ul id="groupsList" class="collapse list-unstyled">
+                <a href="" data-toggle="collapse" data-target="#groupsList"> <i class="icon-windows"></i> My groups
+                    <span class="badge bg-primary text-dark" ng-show="user.unreadMessages.groups>0">{{user.unreadMessages.groups}}</span></a>
+                <ul id="groupsList" class="collapse list-unstyled" style="max-height: 250px; overflow-y:auto;">
                     <li ng-repeat="gID in user.groupsList">
-                        <a href="" ng-click="vm.groupOpen(gID)">
+                        <a href="" ng-click="vm.groupOpen(gID)" class="text-overflow" style="overflow-x: hidden;">
+                            <span class="badge bg-primary text-dark" ng-show="user.unreadMessages[gID]>0">{{user.unreadMessages[gID]}}</span> {{user.groupsNames[gID]}}
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="" data-toggle="collapse" data-target="#participateGroupsList"> <i class="fa fa-users"></i><small> Participate groups </small>
+                    <span class="badge bg-primary text-dark" ng-show="user.unreadMessages.participate>0">{{user.unreadMessages.participate}}</span></a>
+                <ul id="participateGroupsList" class="collapse list-unstyled" style="max-height: 250px; overflow-y:auto;">
+                    <li ng-repeat="gID in user.participateGroupsList">
+                        <a href="" ng-click="vm.groupOpen(gID)" class="text-overflow" style="overflow-x: hidden;">
                             <span class="badge bg-primary text-dark" ng-show="user.unreadMessages[gID]>0">{{user.unreadMessages[gID]}}</span> {{user.groupsNames[gID]}}
                         </a>
                     </li>
@@ -45,10 +60,4 @@
         <a href="/home/account/settings">
             <i class="icon-settings"></i>Account</a>
     </li>
-</ul>
-<span class="heading">Extras</span>
-<ul class="list-unstyled">
-    <li ng-class="{'active' : vm.templateURL==='/home/about'}">
-        <a href="/home/about">
-            <i class="icon-info"></i>About </a></li>
 </ul>
